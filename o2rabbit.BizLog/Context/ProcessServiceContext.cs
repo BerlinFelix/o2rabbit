@@ -3,9 +3,9 @@ using o2rabbit.Models;
 
 namespace o2rabbit.BizLog.Context;
 
-public class DbProcessesContext: DbContext
+public class ProcessServiceContext: DbContext
 {
-    public DbProcessesContext(DbContextOptions<DbProcessesContext> options) : base(options)
+    public ProcessServiceContext(DbContextOptions<ProcessServiceContext> options) : base(options)
     {
         
     }
