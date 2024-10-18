@@ -1,0 +1,12 @@
+services:
+  db-processes:
+    container_name: db-processes
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: felix
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: processes
+    volumes:
+      - ~/data/o2rabbit/processes:/var/lib/postgresql/data
+    ports:
+      - "7777:5432"
