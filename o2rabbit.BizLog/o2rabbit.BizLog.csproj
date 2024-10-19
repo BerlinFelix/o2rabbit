@@ -13,12 +13,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\o2rabbit.Core\o2rabbit.Core.csproj" />
+      <PackageReference Include="FluentResults" Version="3.16.0" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentResults" Version="3.16.0" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+      <ProjectReference Include="..\o2rabbit.BizLog.Abstractions\o2rabbit.BizLog.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

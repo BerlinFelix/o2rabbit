@@ -1,16 +1,16 @@
 using FluentResults;
 using Microsoft.Extensions.Logging;
+using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
-using o2rabbit.Core;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.BizLog.Services;
 
-internal class ProcessService
+internal class ProcessService: IProcessService
 {
     private readonly ProcessServiceContext _context;
-    private ILogger<ProcessService> _logger;
+    private readonly ILogger<ProcessService> _logger;
 
     public ProcessService(ProcessServiceContext context, ILogger<ProcessService> logger)
     {
@@ -26,20 +26,20 @@ internal class ProcessService
         throw new NotImplementedException();
     }
 
-    public async Task<Result<Process>> CreateAsync(Process? process)
+    public async Task<Result<Process>> CreateAsync(Process? process, CancellationToken cancellationToken = default)
     {
         if (process == null) return Result.Fail<Process>("Process is null");
 
         try
         {
-            var existingProcess = await _context.Processes.FindAsync(process.Id).ConfigureAwait(false);
+            var existingProcess = await _context.Processes.FindAsync(process.Id, cancellationToken).ConfigureAwait(false);
             if (existingProcess != null)
             {
                 return Result.Fail<Process>(new InvalidIdError());
             }
 
-            await _context.Processes.AddAsync(process).ConfigureAwait(false);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await _context.Processes.AddAsync(process, cancellationToken).ConfigureAwait(false);
+            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return Result.Ok(process);
         }
