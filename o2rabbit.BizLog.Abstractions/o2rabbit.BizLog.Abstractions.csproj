@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\o2rabbit.Models\o2rabbit.Models.csproj" />
+      <ProjectReference Include="..\o2rabbit.Core\o2rabbit.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using o2rabbit.Models;
+using o2rabbit.Core;
+using o2rabbit.Core.Entities;
+
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace o2rabbit.Migrations.Context;
 
@@ -19,9 +22,11 @@ public class DefaultContext: DbContext
         
     }
 
+    public DbSet<Process> Processes { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Add ConnectionString directly when testing.
+        // Add ConnectionString directly when unit testing.
         if (_connectionString is not null)
         {
             optionsBuilder.UseNpgsql(_connectionString);
@@ -30,5 +35,21 @@ public class DefaultContext: DbContext
         base.OnConfiguring(optionsBuilder);
     }
 
-    public DbSet<Process> Processes { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Process>()
+            .HasKey(x => x.Id);
+        
+        modelBuilder.Entity<Process>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Process>()
+            .HasMany(x => x.Children)
+            .WithOne(x => x.Parent)
+            .HasForeignKey(x => x.ParentId)
+            .IsRequired(false);
+        
+        base.OnModelCreating(modelBuilder);
+    }
 }

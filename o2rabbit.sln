@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "o2rabbit.Models", "o2rabbit.Models\o2rabbit.Models.csproj", "{932B0897-2A23-4FD3-922C-F9FB8E1F87C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "o2rabbit.Core", "o2rabbit.Core\o2rabbit.Core.csproj", "{932B0897-2A23-4FD3-922C-F9FB8E1F87C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{90C1D01D-0856-4BD5-B9D9-519A9180C266}"
 EndProject

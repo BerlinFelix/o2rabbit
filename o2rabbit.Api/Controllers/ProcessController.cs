@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using o2rabbit.Models;
+using o2rabbit.Core;
+using o2rabbit.Core.Entities;
 
 namespace o2rabbit.Api.Controllers;
 

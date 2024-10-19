@@ -1,4 +1,5 @@
-using o2rabbit.Models;
+using o2rabbit.Core;
+using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Abstractions.Services;
 

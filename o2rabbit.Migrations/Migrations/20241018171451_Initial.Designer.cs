@@ -24,7 +24,7 @@ namespace o2rabbit.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("o2rabbit.Models.Process", b =>
+            modelBuilder.Entity("o2rabbit.Core.Process", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
