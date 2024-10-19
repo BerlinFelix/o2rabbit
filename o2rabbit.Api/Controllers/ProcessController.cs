@@ -6,8 +6,8 @@ using o2rabbit.Core.Entities;
 
 namespace o2rabbit.Api.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class ProcessController : ControllerBase
 {
    private readonly IProcessService _processService;
@@ -23,5 +23,20 @@ public class ProcessController : ControllerBase
    {
       var process =  new Process{Id = id, Name = "ProcessName"};
       return Ok(process);
+   }
+
+   public async Task<ActionResult<Process>> CreateAsync(Process process, CancellationToken cancellationToken = default)
+   {
+      if (process is null) return BadRequest("Process is null");
+      
+      var result = await _processService.CreateAsync(process, cancellationToken).ConfigureAwait(false);
+      if (result.IsSuccess)
+      {
+         return Ok(result.Value);
+      }
+      else
+      {
+         return BadRequest(result.Errors);
+      }
    }
 }

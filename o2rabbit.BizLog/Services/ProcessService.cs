@@ -26,7 +26,8 @@ internal class ProcessService: IProcessService
         throw new NotImplementedException();
     }
 
-    public async Task<Result<Process>> CreateAsync(Process? process, CancellationToken cancellationToken = default)
+    public async Task<Result<Process>> CreateAsync(Process process,
+        CancellationToken cancellationToken = default)
     {
         if (process == null) return Result.Fail<Process>("Process is null");
 
