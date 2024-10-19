@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "o2rabbit.BizLog", "o2rabbit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "o2rabbit.Migrations", "o2rabbit.Migrations\o2rabbit.Migrations.csproj", "{57F7B824-0002-43D2-BCDD-430A2D0D9CCF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "o2rabbit.Api.Tests", "o2rabbit.Api.Tests\o2rabbit.Api.Tests.csproj", "{EFF22171-D277-49F4-8A90-144EC3890733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,10 +50,15 @@ Global
 		{57F7B824-0002-43D2-BCDD-430A2D0D9CCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F7B824-0002-43D2-BCDD-430A2D0D9CCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F7B824-0002-43D2-BCDD-430A2D0D9CCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFF22171-D277-49F4-8A90-144EC3890733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFF22171-D277-49F4-8A90-144EC3890733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFF22171-D277-49F4-8A90-144EC3890733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFF22171-D277-49F4-8A90-144EC3890733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6F8A8162-1F21-4F72-9078-E97636484AB7} = {90C1D01D-0856-4BD5-B9D9-519A9180C266}
 		{0756C327-9444-453D-A383-F45C35DC3A43} = {EEB1EAEF-4352-4D50-B34E-F67DE41B7E77}
 		{57F7B824-0002-43D2-BCDD-430A2D0D9CCF} = {EEB1EAEF-4352-4D50-B34E-F67DE41B7E77}
+		{EFF22171-D277-49F4-8A90-144EC3890733} = {90C1D01D-0856-4BD5-B9D9-519A9180C266}
 	EndGlobalSection
 EndGlobal
