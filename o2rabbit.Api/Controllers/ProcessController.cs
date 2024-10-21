@@ -25,7 +25,7 @@ public class ProcessController : ControllerBase
       return Ok(process);
    }
 
-   public async Task<ActionResult<Process>> CreateAsync(Process process, CancellationToken cancellationToken = default)
+   public async Task<ActionResult<Process>> CreateAsync(Process? process, CancellationToken cancellationToken = default)
    {
       if (process is null) return BadRequest("Process is null");
       

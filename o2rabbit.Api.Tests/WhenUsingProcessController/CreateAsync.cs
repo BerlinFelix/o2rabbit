@@ -19,7 +19,8 @@ public class CreateAsync
     public CreateAsync()
     {
         _processServiceMock = new Mock<IProcessService>();
-        _processServiceMock.Setup(m => m.CreateAsync(It.IsAny<Process>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Fail(""));
+        _processServiceMock.Setup(m => m.CreateAsync(It.IsAny<Process>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Fail(""));
         _sut = new ProcessController(_processServiceMock.Object);
         _fixture = new Fixture();
         _fixture.Customize(new IgnoreRecursion());
@@ -29,9 +30,9 @@ public class CreateAsync
     public async Task WhenCalled_CallsProcessService()
     {
         var process = _fixture.Create<Process>();
-        
+
         await _sut.CreateAsync(process);
-        
+
         _processServiceMock.Verify(m => m.CreateAsync(process, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -41,9 +42,21 @@ public class CreateAsync
         var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m => m.CreateAsync(It.IsAny<Process>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail("Failed to create process"));
+
+        var response = await _sut.CreateAsync(process);
+
+        response.Result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task WhenProcessServiceReturnsSuccess_ReturnsOk()
+    {
+        var process = _fixture.Create<Process>();
+        _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(process));
         
         var response = await _sut.CreateAsync(process);
         
-        response.Result.Should().BeOfType<BadRequestObjectResult>();
+        response.Result.Should().BeOfType<OkObjectResult>();
     }
 }
