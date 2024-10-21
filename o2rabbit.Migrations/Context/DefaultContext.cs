@@ -10,7 +10,7 @@ public class DefaultContext: DbContext
 {
     private readonly string? _connectionString;
 
-    public DefaultContext(string connectionString)
+    public DefaultContext(string? connectionString)
     {
         ArgumentNullException.ThrowIfNull(connectionString);
         

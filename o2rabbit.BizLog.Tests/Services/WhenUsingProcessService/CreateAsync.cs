@@ -4,6 +4,7 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic.CompilerServices;
 using Moq;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
@@ -18,35 +19,25 @@ using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class CreateAsync
+public class CreateAsync: IClassFixture<ProcessServiceClassFixture>
 {
-    private const string _USER = "testUser";
-    private const string _PASSWORD = "password";
     private readonly Fixture _fixture;
     private readonly ProcessServiceContext _context;
     private readonly Mock<ILogger<ProcessService>> _loggerMock;
     private readonly ProcessService _sut;
-    private string? _connectionString;
 
     public CreateAsync()
     {
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
-        
-        var container = new PostgreSqlBuilder()
-            .WithDatabase("Processes")
-            .WithUsername(_USER)
-            .WithPassword(_PASSWORD)
-            .Build();
-
-        container.StartAsync().Wait();
-        _connectionString = container.GetConnectionString();
-        var migrationContext = new DefaultContext(_connectionString);
-        migrationContext.Database.Migrate();
 
         _context = new ProcessServiceContext(
             new OptionsWrapper<ProcessServiceContextOptions>(
-                new ProcessServiceContextOptions() { ConnectionString = _connectionString }));
+                new ProcessServiceContextOptions()
+                {
+                    ConnectionString = ProcessServiceClassFixture.ConnectionString ??
+                                       throw new TypeInitializationException(nameof(ProcessServiceClassFixture), null)
+                }));
 
         _loggerMock = new Mock<ILogger<ProcessService>>();
 
@@ -111,7 +102,7 @@ public class CreateAsync
         process.Id = 0;
         var result = await _sut.CreateAsync(process);
 
-        var context = new DefaultContext(_connectionString!);
+        var context = new DefaultContext(ProcessServiceClassFixture.ConnectionString);
 
         var savedProcess = await context.Processes.FindAsync(process.Id);
 
