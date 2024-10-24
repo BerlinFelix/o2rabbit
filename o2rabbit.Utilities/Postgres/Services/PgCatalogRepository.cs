@@ -7,7 +7,7 @@ namespace o2rabbit.Utilities.Postgres.Services;
 
 public class PgCatalogRepository : IPgCatalogRepository
 {
-    public async Task<IEnumerable<string>> GetTableNamesAsync(string connectionString, string? schemaName = null)
+    public async Task<IEnumerable<string>> GetTableNamesAsync(string connectionString, string? schemaName = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionString);
 
@@ -16,14 +16,14 @@ public class PgCatalogRepository : IPgCatalogRepository
 
         await using var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString);
 
-        await using var command = await GetNpgsqlCommand(schemaName, connection).ConfigureAwait(false);
+        await using var command = await GetNpgsqlCommandAsync(schemaName, connection, cancellationToken).ConfigureAwait(false);
 
-        await connection.OpenAsync().ConfigureAwait(false);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        await using var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         var ret = new List<string>();
-        while (await reader.ReadAsync().ConfigureAwait(false))
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             ret.Add(reader.GetString(0));
         }
@@ -31,7 +31,8 @@ public class PgCatalogRepository : IPgCatalogRepository
         return ret;
     }
 
-    private async ValueTask<NpgsqlCommand> GetNpgsqlCommand(string? schemaName, NpgsqlConnection connection)
+    private async ValueTask<NpgsqlCommand> GetNpgsqlCommandAsync(string? schemaName, NpgsqlConnection connection,
+        CancellationToken cancellationToken = default)
     {
         NpgsqlCommand? command = null;
         try
