@@ -1,7 +1,7 @@
 using Npgsql;
 using Testcontainers.PostgreSql;
 
-namespace o2rabbit.Utilities.Tests.Postgres.Services;
+namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 
 public class PgCatalogRepositoryClassFixture : IDisposable
 {

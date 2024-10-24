@@ -1,13 +1,13 @@
 using FluentAssertions;
 using o2rabbit.Utilities.Postgres.Services;
 
-namespace o2rabbit.Utilities.Tests.Postgres.Services;
+namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 
-public class UsingPgCatalogRepository : IClassFixture<PgCatalogRepositoryClassFixture>
+public class GetTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
 {
     private readonly PgCatalogRepository _sut;
 
-    public UsingPgCatalogRepository()
+    public GetTableNamesAsync()
     {
         _sut = new PgCatalogRepository();
     }
