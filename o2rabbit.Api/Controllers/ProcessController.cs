@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core;
 using o2rabbit.Core.Entities;
+using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.Api.Controllers;
 
@@ -32,11 +33,15 @@ public class ProcessController : ControllerBase
       var result = await _processService.CreateAsync(process, cancellationToken).ConfigureAwait(false);
       if (result.IsSuccess)
       {
-         return Ok(result.Value);
+         return result.Value;
+      }
+      else if (result.HasError<InvalidIdError>())
+      {
+         return BadRequest(result.Errors);
       }
       else
       {
-         return BadRequest(result.Errors);
+         return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
       }
    }
 }

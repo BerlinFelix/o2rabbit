@@ -36,7 +36,7 @@ internal class ProcessService: IProcessService
             var existingProcess = await _context.Processes.FindAsync(process.Id, cancellationToken).ConfigureAwait(false);
             if (existingProcess != null)
             {
-                return Result.Fail<Process>(new InvalidIdError());
+                return Result.Fail(new InvalidIdError());
             }
 
             await _context.Processes.AddAsync(process, cancellationToken).ConfigureAwait(false);

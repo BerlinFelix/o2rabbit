@@ -2,11 +2,14 @@ using AutoFixture;
 using FluentAssertions;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Moq;
 using o2rabbit.Api.Controllers;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
+using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.Api.Tests.WhenUsingProcessController;
 
@@ -37,11 +40,11 @@ public class CreateAsync
     }
 
     [Fact]
-    public async Task WhenProcessServiceReturnsError_ReturnsBadRequest()
+    public async Task WhenProcessServiceReturnsInvalidIdError_ReturnsBadRequest()
     {
         var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m => m.CreateAsync(It.IsAny<Process>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Fail("Failed to create process"));
+            .ReturnsAsync(Result.Fail(new InvalidIdError()));
 
         var response = await _sut.CreateAsync(process);
 
@@ -54,9 +57,24 @@ public class CreateAsync
         var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(process));
-        
+
         var response = await _sut.CreateAsync(process);
+
+        response.Value.Should().BeEquivalentTo(process);
+    }
+
+    [Fact]
+    public async Task WhenProcessServiceReturnsUnknownError_Returns500()
+    {
+        var process = _fixture.Create<Process>();
+        _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Fail(new UnknownError()));
+
+        var response = await _sut.CreateAsync(process);
+
+        response.Result.Should().BeOfType<ObjectResult>();
         
-        response.Result.Should().BeOfType<OkObjectResult>();
+        var objectResult = (ObjectResult)response.Result;
+        objectResult.StatusCode.Should().Be(500);
     }
 }

@@ -27,6 +27,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\o2rabbit.Api\o2rabbit.Api.csproj" />
+      <ProjectReference Include="..\o2rabbit.Utilities\o2rabbit.Utilities.csproj" />
     </ItemGroup>
 
 </Project>
