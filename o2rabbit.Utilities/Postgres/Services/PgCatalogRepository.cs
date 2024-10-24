@@ -13,8 +13,12 @@ public class PgCatalogRepository : IPgCatalogRepository
         //Throws ArgumentException, if connectionstring is invalid.
         var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString);
 
+        
         var commandText =
-            $"SELECT tablename FROM pg_catalog.pg_tables {(schemaName is null ? string.Empty: $"WHERE schemaname = {schemaName}")}";
+            @$"
+SELECT tablename FROM pg_catalog.pg_tables 
+WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
+{(schemaName is null ? string.Empty: $"AND schemaname = {schemaName}")}";
         
         await using var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString);
         await using var command = new NpgsqlCommand(commandText, connection);

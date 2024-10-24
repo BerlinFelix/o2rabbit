@@ -17,8 +17,8 @@ public class UsingPgCatalogRepository : IClassFixture<PgCatalogRepositoryClassFi
     {
         var output = await _sut.GetTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString);
 
-        output.Intersect(PgCatalogRepositoryClassFixture.ExistingSchemas).Should()
-            .HaveCount(PgCatalogRepositoryClassFixture.ExistingSchemas.Count);
+        output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
+            .HaveCount(PgCatalogRepositoryClassFixture.ExistingTables.Count);
 
     }
 
