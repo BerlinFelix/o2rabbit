@@ -36,7 +36,6 @@ public class PgCatalogRepositoryClassFixture : IDisposable
 
         foreach (var table in ExistingTables)
         {
-            
             using var command = new NpgsqlCommand($"create table {ExistingSchemas[0]}.{table} (Id int not null)", connection);
             command.ExecuteNonQuery();
         }

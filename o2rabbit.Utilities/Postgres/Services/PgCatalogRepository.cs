@@ -18,7 +18,7 @@ public class PgCatalogRepository : IPgCatalogRepository
             @$"
 SELECT tablename FROM pg_catalog.pg_tables 
 WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
-{(schemaName is null ? string.Empty: $"AND schemaname = {schemaName}")}";
+{(schemaName is null ? string.Empty: $"AND schemaname = '{schemaName}'")}";
         
         await using var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString);
         await using var command = new NpgsqlCommand(commandText, connection);

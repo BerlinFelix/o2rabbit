@@ -21,6 +21,17 @@ public class UsingPgCatalogRepository : IClassFixture<PgCatalogRepositoryClassFi
             .HaveCount(PgCatalogRepositoryClassFixture.ExistingTables.Count);
 
     }
+    
+    
+    [Fact]
+    public async Task GivenExistingSchemaInput_ReturnsAllTablesBelongingToSchema()
+    {
+        var output = await _sut.GetTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, PgCatalogRepositoryClassFixture.ExistingSchemas[0]);
+
+        output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
+            .HaveCount(2);
+
+    }
 
     [Fact]
     public async Task GivenInvalidConnectionString_ThrowsException()
