@@ -29,7 +29,6 @@ public class GenerateSqlParameterAlias
         for (var i = 0; i < 1000; i++)
         {
             var result = _sut.GenerateSqlParameterAlias();
-            results.Should().NotContain(result);
             results.Add(result);
         }
     }

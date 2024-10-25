@@ -3,11 +3,11 @@ using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 
-public class GetTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
+public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
 {
     private readonly PgCatalogRepository _sut;
 
-    public GetTableNamesAsync()
+    public GetAllTableNamesAsync()
     {
         _sut = new PgCatalogRepository();
     }
@@ -15,7 +15,7 @@ public class GetTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
     [Fact]
     public async Task GivenNullSchemaInput_ReturnsAllTables()
     {
-        var output = await _sut.GetTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString);
+        var output = await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString);
 
         output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
             .HaveCount(PgCatalogRepositoryClassFixture.ExistingTables.Count);
@@ -25,7 +25,7 @@ public class GetTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
     [Fact]
     public async Task GivenExistingSchemaInput_ReturnsAllTablesBelongingToSchema()
     {
-        var output = await _sut.GetTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString,
+        var output = await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString,
             PgCatalogRepositoryClassFixture.ExistingSchemas[0]);
 
         output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
@@ -36,7 +36,7 @@ public class GetTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
     public async Task GivenNotExistingSchemaInput_ReturnsAllTablesBelongingToSchema()
     {
         var output =
-            await _sut.GetTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, "NotExistingSchema");
+            await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, "NotExistingSchema");
 
         output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
             .HaveCount(0);
@@ -47,7 +47,7 @@ public class GetTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
     {
         var connectionString = "InvalidConnectionString";
 
-        var action = () => _sut.GetTableNamesAsync("testSchema", connectionString);
+        var action = () => _sut.GetAllTableNamesAsync("testSchema", connectionString);
 
         await action.Should().ThrowAsync<ArgumentException>();
     }
