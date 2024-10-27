@@ -28,6 +28,7 @@
     <ItemGroup>
       <ProjectReference Include="..\o2rabbit.BizLog\o2rabbit.BizLog.csproj" />
       <ProjectReference Include="..\o2rabbit.Migrations\o2rabbit.Migrations.csproj" />
+      <ProjectReference Include="..\o2rabbit.Utilities\o2rabbit.Utilities.csproj" />
     </ItemGroup>
 
 </Project>

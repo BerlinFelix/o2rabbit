@@ -20,7 +20,7 @@ public class PgCatalogRepository : IPgCatalogRepository
         await using var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString);
 
         await using var command =
-            GetNpgsqlCommand(schemaName, connection, cancellationToken);
+            GetNpgsqlCommand(schemaName, connection);
 
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -35,11 +35,9 @@ public class PgCatalogRepository : IPgCatalogRepository
         return ret;
     }
 
-    private NpgsqlCommand GetNpgsqlCommand(string? schemaName, NpgsqlConnection connection,
-        CancellationToken cancellationToken = default)
+    private NpgsqlCommand GetNpgsqlCommand(string? schemaName, NpgsqlConnection connection)
     {
         NpgsqlCommand? command = null;
-        //TODO Add schemaname to output
         var sb = new StringBuilder()
             .Append(
                 @$"
@@ -52,7 +50,7 @@ WHERE schemaname NOT IN ('information_schema', 'pg_catalog')"
         if (schemaName != null)
         {
             sb.Append("AND schemaname = $1");
-            command.Parameters.Add(new (){Value = schemaName, });
+            command.Parameters.Add(new() { Value = schemaName, });
         }
 
         command.CommandText = sb.ToString();

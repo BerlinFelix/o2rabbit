@@ -6,20 +6,21 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic.CompilerServices;
 using Moq;
+using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core;
 using o2rabbit.Migrations.Context;
-using o2rabbit.Core;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Utilities.Postgres.Services;
 using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class CreateAsync: IClassFixture<ProcessServiceClassFixture>
+public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncDisposable, IDisposable
 {
     private readonly Fixture _fixture;
     private readonly ProcessServiceContext _context;
@@ -108,5 +109,23 @@ public class CreateAsync: IClassFixture<ProcessServiceClassFixture>
 
         savedProcess.Should().NotBeNull();
         savedProcess.Name.Should().Be(process.Name);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+    }
+
+    public void Dispose()
+    {
+        using var connection = new NpgsqlConnection(ProcessServiceClassFixture.ConnectionString);
+        connection.Open();
+        var pgCatalogRepository = new PgCatalogRepository();
+        var exitingTables = pgCatalogRepository.GetAllTableNamesAsync((ProcessServiceClassFixture.ConnectionString!))
+            .GetAwaiter().GetResult();
+        foreach (var table in exitingTables)
+        {
+            using var command = new PgDdlService().GenerateTruncateTableCommand(table, connection);
+            command.ExecuteNonQuery();
+        }
     }
 }
