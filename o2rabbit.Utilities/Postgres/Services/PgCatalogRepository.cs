@@ -51,9 +51,8 @@ WHERE schemaname NOT IN ('information_schema', 'pg_catalog')"
 
         if (schemaName != null)
         {
-            var sqlParam = new NpgsqlParameter("schema_name", schemaName);
-            sb.Append("AND schemaname = schema_name");
-            command.Parameters.Add(sqlParam);
+            sb.Append("AND schemaname = $1");
+            command.Parameters.Add(new (){Value = schemaName, });
         }
 
         command.CommandText = sb.ToString();

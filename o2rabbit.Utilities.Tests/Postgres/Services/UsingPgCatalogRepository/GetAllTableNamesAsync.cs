@@ -33,7 +33,7 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
     }
 
     [Fact]
-    public async Task GivenNotExistingSchemaInput_ReturnsAllTablesBelongingToSchema()
+    public async Task GivenNotExistingSchemaInput_ReturnsNoTables()
     {
         var output =
             await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, "NotExistingSchema");
