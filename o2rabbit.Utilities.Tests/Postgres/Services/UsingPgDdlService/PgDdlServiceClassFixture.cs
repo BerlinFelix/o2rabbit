@@ -1,10 +1,12 @@
 using Npgsql;
+using o2rabbit.Utilities.Postgres.Models;
 using Testcontainers.PostgreSql;
 
 namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgDdlService;
 
 public class PgDdlServiceClassFixture : IDisposable
 {
+    public static readonly QualifiedTableName TableName = new QualifiedTableName("public", "testTable");
     public static string ConnectionString { get; private set; }
 
     private const string _USER = "testUser";
@@ -27,11 +29,11 @@ public class PgDdlServiceClassFixture : IDisposable
 
         connection.Open();
         
-        using var command = new NpgsqlCommand($"create table public.testTable(Id integer)", connection);
+        using var command = new NpgsqlCommand($"create table {TableName}(Id integer)", connection);
         
         command.ExecuteNonQuery();
         
-        using var command2 = new NpgsqlCommand($"insert into public.testTable VALUES (1),(2)", connection);
+        using var command2 = new NpgsqlCommand($"insert into {TableName}VALUES (1),(2)", connection);
         
         command2.ExecuteNonQuery();
     }

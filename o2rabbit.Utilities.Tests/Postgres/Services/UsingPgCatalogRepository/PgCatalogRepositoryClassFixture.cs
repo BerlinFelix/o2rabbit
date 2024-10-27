@@ -6,7 +6,7 @@ namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 public class PgCatalogRepositoryClassFixture : IDisposable
 {
     public static List<string> ExistingSchemas { get; } = ["testschema1", "testschema2"];
-    public static List<string> ExistingTables { get; } = ["testschema1.table1", "testschema1.table2"];
+    public static List<string> ExistingTables { get; } = ["\"testschema1\".\"table1\"", "\"testschema1\".\"table2\""];
     public static string ConnectionString { get; private set; }
 
     private const string _USER = "testUser";

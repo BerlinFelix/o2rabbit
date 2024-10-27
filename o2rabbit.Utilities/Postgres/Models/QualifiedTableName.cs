@@ -43,5 +43,5 @@ public class QualifiedTableName
         }
     }
 
-    public override string ToString() => $"{Schema}.{Table}";
+    public override string ToString() => $"\"{Schema}\".\"{Table}\"";
 }

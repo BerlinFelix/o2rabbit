@@ -16,13 +16,13 @@ public class PgDdlService : IPgDdlService
         if (connection != null)
             command.Connection = connection;
 
-        command.CommandText = $"TRUNCATE TABLE {schemaName}.{tableName}";
+        command.CommandText = $"TRUNCATE TABLE \"{schemaName}\".\"{tableName}\"";
 
         return command;
     }
 
     public NpgsqlCommand GenerateTruncateTableCommand(QualifiedTableName tableName, NpgsqlConnection? connection = null)
-        => GenerateTruncateTableCommand(tableName.Table, tableName.Schema, connection);
+        => GenerateTruncateTableCommand(tableName.Schema, tableName.Table, connection);
 
     public string GenerateSqlParameterAlias()
     {

@@ -18,7 +18,7 @@ public class GenerateTruncateTableCommand : IClassFixture<PgDdlServiceClassFixtu
     {
         await using var connection = new NpgsqlConnection(PgDdlServiceClassFixture.ConnectionString);
         await connection.OpenAsync();
-        var getCountCommand = new NpgsqlCommand("select count(*) from public.testTable", connection);
+        var getCountCommand = new NpgsqlCommand($"select count(*) from {PgDdlServiceClassFixture.TableName}", connection);
 
         var previousCount = (long?)await getCountCommand.ExecuteScalarAsync();
         previousCount.Should().NotBeNull();
