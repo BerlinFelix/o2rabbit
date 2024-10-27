@@ -2,12 +2,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Npgsql;
 using o2rabbit.Utilities.Postgres.Abstractions;
+using o2rabbit.Utilities.Postgres.Models;
 
 namespace o2rabbit.Utilities.Postgres.Services;
 
 public class PgCatalogRepository : IPgCatalogRepository
 {
-    public async Task<IEnumerable<string>> GetAllTableNamesAsync(string connectionString, string? schemaName = null,
+    public async Task<List<QualifiedTableName>> GetAllTableNamesAsync(string connectionString,
+        string? schemaName = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionString);
@@ -18,22 +20,22 @@ public class PgCatalogRepository : IPgCatalogRepository
         await using var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString);
 
         await using var command =
-            await GetNpgsqlCommandAsync(schemaName, connection, cancellationToken).ConfigureAwait(false);
+            GetNpgsqlCommand(schemaName, connection, cancellationToken);
 
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        var ret = new List<string>();
+        var ret = new List<QualifiedTableName>();
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            ret.Add(reader.GetString(0));
+            ret.Add(new QualifiedTableName(reader.GetString(0), reader.GetString(1)));
         }
 
         return ret;
     }
 
-    private async ValueTask<NpgsqlCommand> GetNpgsqlCommandAsync(string? schemaName, NpgsqlConnection connection,
+    private NpgsqlCommand GetNpgsqlCommand(string? schemaName, NpgsqlConnection connection,
         CancellationToken cancellationToken = default)
     {
         NpgsqlCommand? command = null;
@@ -41,16 +43,16 @@ public class PgCatalogRepository : IPgCatalogRepository
         var sb = new StringBuilder()
             .Append(
                 @$"
-SELECT tablename FROM pg_catalog.pg_tables 
+SELECT schemaname, tablename FROM pg_catalog.pg_tables 
 WHERE schemaname NOT IN ('information_schema', 'pg_catalog')"
             );
 
-        var sqlParam = new NpgsqlParameter("@schema", schemaName);
         command = new NpgsqlCommand();
 
         if (schemaName != null)
         {
-            sb.Append($"AND schemaname = @schema");
+            var sqlParam = new NpgsqlParameter("schema_name", schemaName);
+            sb.Append("AND schemaname = schema_name");
             command.Parameters.Add(sqlParam);
         }
 

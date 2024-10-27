@@ -6,7 +6,7 @@ namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 public class PgCatalogRepositoryClassFixture : IDisposable
 {
     public static List<string> ExistingSchemas { get; } = ["testschema1", "testschema2"];
-    public static List<string> ExistingTables { get; } = ["table1", "table2"];
+    public static List<string> ExistingTables { get; } = ["testschema1.table1", "testschema1.table2"];
     public static string ConnectionString { get; private set; }
 
     private const string _USER = "testUser";
@@ -36,7 +36,7 @@ public class PgCatalogRepositoryClassFixture : IDisposable
 
         foreach (var table in ExistingTables)
         {
-            using var command = new NpgsqlCommand($"create table {ExistingSchemas[0]}.{table} (Id int not null)", connection);
+            using var command = new NpgsqlCommand($"create table {table} (Id int not null)", connection);
             command.ExecuteNonQuery();
         }
     }

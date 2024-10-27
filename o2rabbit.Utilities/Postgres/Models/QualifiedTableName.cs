@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace o2rabbit.Utilities.Postgres.Models;
 
 public class QualifiedTableName
@@ -5,6 +7,7 @@ public class QualifiedTableName
     private string _table = null!;
     private string _schema = null!;
     
+    [SetsRequiredMembers]
     public QualifiedTableName(string schema, string table)
     {
         Schema = schema;
@@ -40,5 +43,5 @@ public class QualifiedTableName
         }
     }
 
-    public override string ToString() => $"[{Schema}].[{Table}]";
+    public override string ToString() => $"{Schema}.{Table}";
 }

@@ -13,11 +13,11 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
     }
 
     [Fact]
-    public async Task GivenNullSchemaInput_ReturnsAllTables()
+    public async Task GivenNullSchemaInput_ReturnsAllSchemasAndTables()
     {
         var output = await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString);
 
-        output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
+        output.Select(tablename => tablename.ToString()).Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
             .HaveCount(PgCatalogRepositoryClassFixture.ExistingTables.Count);
     }
 
@@ -28,7 +28,7 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
         var output = await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString,
             PgCatalogRepositoryClassFixture.ExistingSchemas[0]);
 
-        output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
+        output.Select(tablename => tablename.ToString()).Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
             .HaveCount(2);
     }
 
@@ -38,7 +38,7 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
         var output =
             await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, "NotExistingSchema");
 
-        output.Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
+        output.Select(tablename => tablename.ToString()).Intersect(PgCatalogRepositoryClassFixture.ExistingTables).Should()
             .HaveCount(0);
     }
 
