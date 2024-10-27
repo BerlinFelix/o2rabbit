@@ -20,7 +20,7 @@ using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncDisposable, IDisposable
+public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IDisposable
 {
     private readonly Fixture _fixture;
     private readonly ProcessServiceContext _context;
@@ -111,10 +111,21 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncDisp
         savedProcess.Name.Should().Be(process.Name);
     }
 
-    public async ValueTask DisposeAsync()
+    [Fact]
+    public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
+        var process = _fixture.Create<Process>();
+        var contextMock = new Mock<ProcessServiceContext>();
+        contextMock.Setup(x => x.Processes).Throws<Exception>();
+        var loggerMock = new Mock<ILogger<ProcessService>>();
+        
+        var sut = new ProcessService(contextMock.Object, loggerMock.Object);
+        
+        var result = await sut.CreateAsync(process);
+        
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().Contain(error => error is UnknownError);
     }
-
     public void Dispose()
     {
         using var connection = new NpgsqlConnection(ProcessServiceClassFixture.ConnectionString);

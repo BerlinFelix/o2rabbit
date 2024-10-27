@@ -46,8 +46,7 @@ internal class ProcessService: IProcessService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occured while creating a new process.");
-            throw;
+            return Result.Fail<Process>(new UnknownError());
         }
     }
 }
