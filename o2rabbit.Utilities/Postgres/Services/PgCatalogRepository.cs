@@ -37,6 +37,7 @@ public class PgCatalogRepository : IPgCatalogRepository
         CancellationToken cancellationToken = default)
     {
         NpgsqlCommand? command = null;
+        //TODO Add schemaname to output
         var sb = new StringBuilder()
             .Append(
                 @$"

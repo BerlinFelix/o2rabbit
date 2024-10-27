@@ -11,9 +11,10 @@ public interface IPgDdlService
     /// </summary>
     /// <param name="schemaName"></param>
     /// <param name="tableName"></param>
-    /// <param name="connectionString"></param>
+    /// <param name="connection"></param>
     /// <returns></returns>
-    public NpgsqlCommand GenerateTruncateTableCommand(string schemaName, string tableName, string? connectionString = null);
+    public NpgsqlCommand GenerateTruncateTableCommand(string schemaName, string tableName,
+        NpgsqlConnection? connection = null);
 
     /// <summary>
     /// Generate a random unique Sql parameter name prefixed with '@'.

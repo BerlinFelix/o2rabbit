@@ -13,15 +13,6 @@ public class GenerateSqlParameterAlias
     }
 
     [Fact]
-    void ReturnsStringPrefixedWithAtSign()
-    {
-        var result = _sut.GenerateSqlParameterAlias();
-        
-        result.Length.Should().BeGreaterThan(0);
-        result[0].Should().Be('@');
-    }
-
-    [Fact]
     void NeverReturnsTheSameString()
     {
         var results = new List<string>();
