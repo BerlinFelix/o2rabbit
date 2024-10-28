@@ -8,4 +8,6 @@ public interface IProcessService
 {
     public Task<Result<Process>> CreateAsync(Process process,
         CancellationToken cancellationToken = default);
+
+    public Task<Result<Process>> GetByIdAsync(long id, CancellationToken cancellationToken = default);
 }

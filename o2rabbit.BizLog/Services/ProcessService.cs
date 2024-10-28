@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using o2rabbit.BizLog.Abstractions.Services;
@@ -7,6 +8,7 @@ using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.BizLog.Services;
 
+[SuppressMessage("ReSharper", "MethodSupportsCancellation")]
 internal class ProcessService: IProcessService
 {
     private readonly ProcessServiceContext _context;
@@ -21,14 +23,10 @@ internal class ProcessService: IProcessService
         _logger = logger;
     }
 
-    internal async Task<Result<Process>> GetById(int id)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<Result<Process>> CreateAsync(Process process,
         CancellationToken cancellationToken = default)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (process == null) return Result.Fail<Process>("Process is null");
 
         try
@@ -46,7 +44,26 @@ internal class ProcessService: IProcessService
         }
         catch (Exception e)
         {
+            _logger.LogError(e, e.Message);
             return Result.Fail<Process>(new UnknownError());
+        }
+    }
+
+    public async Task<Result<Process>> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var process = await _context.Processes.FindAsync(id, cancellationToken).ConfigureAwait(false);
+            if (process == null)
+            {
+                return Result.Fail<Process>(new InvalidIdError());
+            }
+            return Result.Ok(process);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            throw;
         }
     }
 }
