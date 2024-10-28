@@ -1,22 +1,17 @@
 using AutoFixture;
 using FluentAssertions;
-using FluentResults;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic.CompilerServices;
 using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
-using o2rabbit.Core;
 using o2rabbit.Migrations.Context;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Postgres.Services;
-using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
@@ -105,7 +100,7 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
 
         var context = new DefaultContext(ProcessServiceClassFixture.ConnectionString);
 
-        var savedProcess = await context.Processes.FindAsync(process.Id);
+        var savedProcess = await context.Processes.FindAsync(result.Value.Id);
 
         savedProcess.Should().NotBeNull();
         savedProcess.Name.Should().Be(process.Name);
@@ -125,9 +120,6 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(error => error is UnknownError);
-    }
-    public void Dispose()
-    {
     }
 
     public Task InitializeAsync()
