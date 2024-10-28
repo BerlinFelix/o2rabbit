@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using o2rabbit.Migrations.Context;
-using o2rabbit.Utilities.Postgres.Services;
 using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class ProcessServiceClassFixture  
+// ReSharper disable once ClassNeverInstantiated.Global
+public class ProcessServiceClassFixture : IAsyncLifetime 
 {
     public static string? ConnectionString { get; private set; }
     private const string _USER = "testUser";
     private const string _PASSWORD = "password";
 
-    public ProcessServiceClassFixture()
+    public async Task InitializeAsync()
     {
         var container = new PostgreSqlBuilder()
             .WithDatabase("Processes")
@@ -20,10 +19,14 @@ public class ProcessServiceClassFixture
             .WithPassword(_PASSWORD)
             .Build();
 
-        container.StartAsync().Wait(TimeSpan.FromMinutes(1));
+        await container.StartAsync();
         ConnectionString = container.GetConnectionString();
         var migrationContext = new DefaultContext(ConnectionString);
-        migrationContext.Database.Migrate();
+        await migrationContext.Database.MigrateAsync();
     }
 
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;   
+    }
 }

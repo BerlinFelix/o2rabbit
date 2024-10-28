@@ -20,7 +20,7 @@ using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IDisposable
+public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLifetime
 {
     private readonly Fixture _fixture;
     private readonly ProcessServiceContext _context;
@@ -128,15 +128,23 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IDisposabl
     }
     public void Dispose()
     {
-        using var connection = new NpgsqlConnection(ProcessServiceClassFixture.ConnectionString);
-        connection.Open();
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        await using var connection = new NpgsqlConnection(ProcessServiceClassFixture.ConnectionString);
+        await connection.OpenAsync();
         var pgCatalogRepository = new PgCatalogRepository();
-        var exitingTables = pgCatalogRepository.GetAllTableNamesAsync((ProcessServiceClassFixture.ConnectionString!))
-            .GetAwaiter().GetResult();
+        var exitingTables = await pgCatalogRepository.GetAllTableNamesAsync((ProcessServiceClassFixture.ConnectionString!));
         foreach (var table in exitingTables)
         {
             using var command = new PgDdlService().GenerateTruncateTableCommand(table, connection);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
     }
 }
