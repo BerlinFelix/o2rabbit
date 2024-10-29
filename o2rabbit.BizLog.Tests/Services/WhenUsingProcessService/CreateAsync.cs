@@ -18,13 +18,16 @@ namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
 public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLifetime
 {
+    private readonly ProcessServiceClassFixture _classFixture;
     private readonly Fixture _fixture;
     private readonly ProcessServiceContext _context;
     private readonly Mock<ILogger<ProcessService>> _loggerMock;
     private readonly ProcessService _sut;
 
-    public CreateAsync()
+    public CreateAsync(ProcessServiceClassFixture classFixture)
     {
+        _classFixture = classFixture;
+        
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
@@ -32,8 +35,8 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
             new OptionsWrapper<ProcessServiceContextOptions>(
                 new ProcessServiceContextOptions()
                 {
-                    ConnectionString = ProcessServiceClassFixture.ConnectionString ??
-                                       throw new TypeInitializationException(nameof(ProcessServiceClassFixture), null)
+                    ConnectionString = _classFixture.ConnectionString ??
+                                       throw new TypeInitializationException(nameof(_classFixture), null)
                 }));
 
         _loggerMock = new Mock<ILogger<ProcessService>>();
@@ -99,7 +102,7 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         process.Id = 0;
         var result = await _sut.CreateAsync(process);
 
-        var context = new DefaultContext(ProcessServiceClassFixture.ConnectionString);
+        var context = new DefaultContext(_classFixture.ConnectionString);
 
         var savedProcess = await context.Processes.FindAsync(result.Value.Id);
 
@@ -130,13 +133,13 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
 
     public async Task DisposeAsync()
     {
-        await using var connection = new NpgsqlConnection(ProcessServiceClassFixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
         await connection.OpenAsync();
         var pgCatalogRepository = new PgCatalogRepository();
-        var exitingTables = await pgCatalogRepository.GetAllTableNamesAsync((ProcessServiceClassFixture.ConnectionString!));
+        var exitingTables = await pgCatalogRepository.GetAllTableNamesAsync((_classFixture.ConnectionString!));
         foreach (var table in exitingTables)
         {
-            using var command = new PgDdlService().GenerateTruncateTableCommand(table, connection);
+            await using var command = new PgDdlService().GenerateTruncateTableCommand(table, connection);
             await command.ExecuteNonQueryAsync();
         }
     }

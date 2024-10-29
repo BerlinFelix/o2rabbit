@@ -12,7 +12,7 @@ namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 public class ProcessServiceClassFixture : IAsyncLifetime
 {
     private PostgreSqlContainer? _container;
-    public static string? ConnectionString { get; private set; }
+    public string ConnectionString { get; private set; } = null!;
     private const string _USER = "testUser";
     private const string _PASSWORD = "password";
 
@@ -27,6 +27,7 @@ public class ProcessServiceClassFixture : IAsyncLifetime
         await _container.StartAsync();
         ConnectionString = _container.GetConnectionString();
         await using var migrationContext = new DefaultContext(ConnectionString);
+        // Do not use migrationContext.Database.MigrateAsync() when using package Npgsql. This will result in known errors
         var script = migrationContext.Database.GenerateCreateScript();
         await migrationContext.Database.ExecuteSqlRawAsync(script);
     }

@@ -18,15 +18,17 @@ namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
 public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
 {
+    private readonly ProcessServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly PgDdlService _pgDllService;
     private readonly PgCatalogRepository _pgCatalogRepository;
     private readonly ProcessService _sut;
 
-    public GetByIdAsync()
+    public GetByIdAsync(ProcessServiceClassFixture classFixture)
     {
-        _defaultContext = new DefaultContext(ProcessServiceClassFixture.ConnectionString);
+        _classFixture = classFixture;
+        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
         _pgDllService = new PgDdlService();
@@ -36,7 +38,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
             new ProcessServiceContext(
                 new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
                 {
-                    ConnectionString = ProcessServiceClassFixture.ConnectionString!
+                    ConnectionString = _classFixture.ConnectionString!
                 }));
 
         var loggerMock = new Mock<ILogger<ProcessService>>();
@@ -111,9 +113,9 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     public async Task DisposeAsync()
     {
         var existingTables =
-            await _pgCatalogRepository.GetAllTableNamesAsync(ProcessServiceClassFixture.ConnectionString!);
+            await _pgCatalogRepository.GetAllTableNamesAsync(_classFixture.ConnectionString!);
 
-        await using var connection = new NpgsqlConnection(ProcessServiceClassFixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
         await connection.OpenAsync();
         foreach (var qualifiedTableName in existingTables)
         {
