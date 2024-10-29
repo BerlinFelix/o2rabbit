@@ -1,15 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
 using FluentResults;
 using Microsoft.Extensions.Logging;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.BizLog.Services;
 
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
-internal class ProcessService: IProcessService
+internal class ProcessService : IProcessService
 {
     private readonly ProcessServiceContext _context;
     private readonly ILogger<ProcessService> _logger;
@@ -31,7 +33,8 @@ internal class ProcessService: IProcessService
 
         try
         {
-            var existingProcess = await _context.Processes.FindAsync(process.Id, cancellationToken).ConfigureAwait(false);
+            var existingProcess =
+                await _context.Processes.FindAsync(process.Id, cancellationToken).ConfigureAwait(false);
             if (existingProcess != null)
             {
                 return Result.Fail(new InvalidIdError());
@@ -49,7 +52,8 @@ internal class ProcessService: IProcessService
         }
     }
 
-    public async Task<Result<Process>> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<Result<Process>> GetByIdAsync(long id, GetByIdOptions options = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -58,12 +62,13 @@ internal class ProcessService: IProcessService
             {
                 return Result.Fail<Process>(new InvalidIdError());
             }
+
             return Result.Ok(process);
         }
         catch (Exception e)
         {
             _logger.LogError(e, e.Message);
-            throw;
+            return Result.Fail<Process>(new UnknownError());
         }
     }
 }

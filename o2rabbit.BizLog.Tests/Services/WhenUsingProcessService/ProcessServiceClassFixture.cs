@@ -27,7 +27,8 @@ public class ProcessServiceClassFixture : IAsyncLifetime
         await _container.StartAsync();
         ConnectionString = _container.GetConnectionString();
         await using var migrationContext = new DefaultContext(ConnectionString);
-        await migrationContext.Database.MigrateAsync();
+        var script = migrationContext.Database.GenerateCreateScript();
+        await migrationContext.Database.ExecuteSqlRawAsync(script);
     }
 
     public async Task DisposeAsync()

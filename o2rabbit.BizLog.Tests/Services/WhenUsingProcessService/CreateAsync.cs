@@ -6,6 +6,7 @@ using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
+using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Migrations.Context;
