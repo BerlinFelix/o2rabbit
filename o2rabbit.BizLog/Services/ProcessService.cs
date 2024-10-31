@@ -8,6 +8,7 @@ using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Services;
 
@@ -83,6 +84,28 @@ internal class ProcessService : IProcessService
         catch (Exception e)
         {
             _logger.LogError(e, e.Message);
+            return Result.Fail<Process>(new UnknownError());
+        }
+    }
+
+    public async Task<Result<Process>> UpdateAsync(Process process, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var existingProcess =
+                await _context.Processes.FindAsync(process.Id, cancellationToken).ConfigureAwait(false);
+            if (existingProcess == null)
+                return Result.Fail<Process>(new InvalidIdError());
+            _context.Update(existingProcess).CurrentValues.SetValues(process);
+            await _context.SaveChangesAsync(cancellationToken);
+            return Result.Ok(existingProcess);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            if (e is AggregateException aggregateException)
+                _logger.LogAggregateException(aggregateException);
+
             return Result.Fail<Process>(new UnknownError());
         }
     }

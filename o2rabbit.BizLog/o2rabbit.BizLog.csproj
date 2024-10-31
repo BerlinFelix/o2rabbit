@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\o2rabbit.BizLog.Abstractions\o2rabbit.BizLog.Abstractions.csproj" />
+      <ProjectReference Include="..\o2rabbit.Utilities\o2rabbit.Utilities.csproj" />
     </ItemGroup>
 
 </Project>

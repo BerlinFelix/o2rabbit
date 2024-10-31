@@ -11,4 +11,6 @@ public interface IProcessService
         CancellationToken cancellationToken = default);
 
     public Task<Result<Process>> GetByIdAsync(long id, GetByIdOptions? options = null, CancellationToken cancellationToken = default);
+    
+    public Task<Result<Process>> UpdateAsync(Process process, CancellationToken cancellationToken = default);
 }

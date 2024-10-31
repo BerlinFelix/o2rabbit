@@ -1,4 +1,5 @@
 using AutoFixture;
+using DotNet.Testcontainers.Clients;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -7,7 +8,6 @@ using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
@@ -18,7 +18,7 @@ using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
+public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
 {
     private readonly ProcessServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
@@ -26,8 +26,9 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     private readonly PgDdlService _pgDllService;
     private readonly PgCatalogRepository _pgCatalogRepository;
     private readonly ProcessService _sut;
+    private readonly ProcessServiceContext _processContext;
 
-    public GetByIdAsync(ProcessServiceClassFixture classFixture)
+    public UpdateAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
@@ -36,7 +37,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _pgDllService = new PgDdlService();
         _pgCatalogRepository = new PgCatalogRepository();
 
-        var processContext =
+        _processContext =
             new ProcessServiceContext(
                 new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
                 {
@@ -44,7 +45,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
                 }));
 
         var loggerMock = new Mock<ILogger<ProcessService>>();
-        _sut = new ProcessService(processContext, loggerMock.Object);
+        _sut = new ProcessService(_processContext, loggerMock.Object);
     }
 
     public async Task InitializeAsync()
@@ -59,17 +60,63 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
 
         await _defaultContext.SaveChangesAsync();
         
-        
         _defaultContext.Entry(existingProcess).State = EntityState.Detached;
         _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
     }
 
     [Theory]
+    [InlineData(-1)]
+    [InlineData(5)]
+    public async Task GivenProcessWithNotExistingId_ReturnsFail(long id)
+    {
+        var updatedProcess = _fixture.Create<Process>();
+        updatedProcess.Id = id;
+
+        var result = await _sut.UpdateAsync(updatedProcess);
+
+        result.IsFailed.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(5)]
+    public async Task GivenProcessWithNotExistingId_ReturnsUnknownError(long id)
+    {
+        var updatedProcess = _fixture.Create<Process>();
+        updatedProcess.Id = id;
+
+        var result = await _sut.UpdateAsync(updatedProcess);
+
+        result.Errors.Should().ContainSingle(e => e is InvalidIdError);
+    }
+
+    [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenExistingId_ReturnsIsSuccess(long id)
+    public async Task GivenProcessWithExistingId_SavesChanges(long id)
     {
-        var result = await _sut.GetByIdAsync(id);
+        var updatedProcess = _fixture.Create<Process>();
+        updatedProcess.Id = id;
+
+        await _sut.UpdateAsync(updatedProcess);
+
+        var process = await _defaultContext.Processes.FindAsync(id);
+
+        process.Should().NotBeNull();
+        process.Should().BeEquivalentTo(updatedProcess);
+    }
+    
+
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task GivenProcessWithExistingId_ReturnsOk(long id)
+    {
+        var updatedProcess = _fixture.Create<Process>();
+        updatedProcess.Id = id;
+
+        var result = await _sut.UpdateAsync(updatedProcess);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -77,76 +124,16 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenExistingId_ReturnsIsSuccessWithProcess(long id)
+    public async Task GivenProcessWithExistingId_ReturnsProcessAsValue(long id)
     {
-        var result = await _sut.GetByIdAsync(id);
+        var updatedProcess = _fixture.Create<Process>();
+        updatedProcess.Id = id;
 
-        result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Process>();
-        result.Value.Id.Should().Be(id);
+        var result = await _sut.UpdateAsync(updatedProcess);
+
+        result.Value.Should().BeEquivalentTo(updatedProcess);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenExistingIdWithChildren_ReturnsProcessWithoutChildren(long id)
-    {
-        var processWithParent = _fixture.Create<Process>();
-        processWithParent.ParentId = id;
-
-        _defaultContext.Add(processWithParent);
-        await _defaultContext.SaveChangesAsync();
-
-        var result = await _sut.GetByIdAsync(id);
-
-        result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Process>();
-        result.Value.Id.Should().Be(id);
-        result.Value.Children.Should().BeEmpty();
-    }
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenExistingIdWithChildrenAndOptionsIncludingChildren_ReturnsProcessWithChildren(long id)
-    {
-        var processWithParent = _fixture.Create<Process>();
-        processWithParent.ParentId = id;
-
-        _defaultContext.Add(processWithParent);
-        await _defaultContext.SaveChangesAsync();
-
-        var result = await _sut.GetByIdAsync(id, new GetByIdOptions(){IncludeChildren = true});
-
-        result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Process>();
-        // Note that you cannot use ...Should().BeEquivalentTo(), weil Parent-Child eine zirkulaere Referenz enthaelt.
-        result.Value.Id.Should().Be(id);
-        result.Value.Children.Should().HaveCount(1);
-        result.Value.Children.First().ParentId.Should().Be(id);
-    }
-    
-    [Theory]
-    [InlineData(3)]
-    [InlineData(4)]
-    [InlineData(-1)]
-    public async Task GivenNotExistingId_ReturnsIsFail(long id)
-    {
-        var result = await _sut.GetByIdAsync(id);
-
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(3)]
-    [InlineData(4)]
-    [InlineData(-1)]
-    public async Task GivenNotExistingId_ReturnsInvalidIdError(long id)
-    {
-        var result = await _sut.GetByIdAsync(id);
-
-        result.Errors.Should().Contain(e => e is InvalidIdError);
-    }
     public async Task DisposeAsync()
     {
         var existingTables =
