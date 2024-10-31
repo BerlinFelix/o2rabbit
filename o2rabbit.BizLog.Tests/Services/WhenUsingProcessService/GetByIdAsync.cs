@@ -5,12 +5,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
+using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
 using o2rabbit.Utilities.Postgres.Services;
 
@@ -100,16 +102,47 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     }
 
     [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task GivenExistingIdWithChildrenAndOptionsIncludingChildren_ReturnsProcessWithChildren(long id)
+    {
+        var processWithParent = _fixture.Create<Process>();
+        processWithParent.ParentId = id;
+
+        _defaultContext.Add(processWithParent);
+        await _defaultContext.SaveChangesAsync();
+
+        var result = await _sut.GetByIdAsync(id, new GetByIdOptions(){IncludeChildren = true});
+
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeOfType<Process>();
+        // Note that you cannot use ...Should().BeEquivalentTo(), weil Parent-Child eine zirkulaere Referenz enthaelt.
+        result.Value.Id.Should().Be(id);
+        result.Value.Children.Should().HaveCount(1);
+        result.Value.Children.First().ParentId.Should().Be(id);
+    }
+    
+    [Theory]
     [InlineData(3)]
     [InlineData(4)]
     [InlineData(-1)]
-    public async Task GivenExistingNotId_ReturnsIsFail(long id)
+    public async Task GivenNotExistingId_ReturnsIsFail(long id)
     {
         var result = await _sut.GetByIdAsync(id);
 
         result.IsFailed.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(-1)]
+    public async Task GivenNotExistingId_ReturnsInvalidIdError(long id)
+    {
+        var result = await _sut.GetByIdAsync(id);
+
+        result.Errors.Should().Contain(e => e is InvalidIdError);
+    }
     public async Task DisposeAsync()
     {
         var existingTables =
