@@ -109,4 +109,29 @@ internal class ProcessService : IProcessService
             return Result.Fail<Process>(new UnknownError());
         }
     }
+
+    public async Task<Result> DeleteAsync(long id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var process = await _context.Processes.FindAsync(id, cancellationToken).ConfigureAwait(false);
+            if (process == null)
+            {
+                return Result.Fail(new InvalidIdError());
+            }
+            else
+            {
+                _context.Processes.Remove(process);
+                await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return Result.Ok();
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            if (e is AggregateException aggregateException)
+                _logger.LogAggregateException(aggregateException);
+            return Result.Fail(new UnknownError());
+        }
+    }
 }

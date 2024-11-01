@@ -18,7 +18,7 @@ using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
+public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
 {
     private readonly ProcessServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
@@ -28,7 +28,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     private readonly ProcessService _sut;
     private readonly ProcessServiceContext _processContext;
 
-    public UpdateAsync(ProcessServiceClassFixture classFixture)
+    public DeleteAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
@@ -59,7 +59,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
         _defaultContext.Add(existingProcess2);
 
         await _defaultContext.SaveChangesAsync();
-        
+
         _defaultContext.Entry(existingProcess).State = EntityState.Detached;
         _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
     }
@@ -67,12 +67,9 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     [Theory]
     [InlineData(-1)]
     [InlineData(5)]
-    public async Task GivenProcessWithNotExistingId_ReturnsFail(long id)
+    public async Task GivenNotExistingId_ReturnsFail(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
-
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.DeleteAsync(id);
 
         result.IsFailed.Should().BeTrue();
     }
@@ -80,12 +77,9 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     [Theory]
     [InlineData(-1)]
     [InlineData(5)]
-    public async Task GivenProcessWithNotExistingId_ReturnsUnknownInvalidIdError(long id)
+    public async Task GivenNotExistingId_ReturnsUnknownInvalidIdError(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
-
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.DeleteAsync(id);
 
         result.Errors.Should().ContainSingle(e => e is InvalidIdError);
     }
@@ -93,45 +87,21 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenProcessWithExistingId_SavesChanges(long id)
+    public async Task GivenExistingId_ReturnsOk(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
-
-        await _sut.UpdateAsync(updatedProcess);
-
-        var process = await _defaultContext.Processes.FindAsync(id);
-
-        process.Should().NotBeNull();
-        process.Should().BeEquivalentTo(updatedProcess);
-    }
-    
-
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenProcessWithExistingId_ReturnsOk(long id)
-    {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
-
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.DeleteAsync(id);
 
         result.IsSuccess.Should().BeTrue();
     }
-
-    [Theory]
+[Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenProcessWithExistingId_ReturnsProcessAsValue(long id)
+    public async Task GivenExistingId_DeletesProcess(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        var result = await _sut.DeleteAsync(id);
 
-        var result = await _sut.UpdateAsync(updatedProcess);
-
-        result.Value.Should().BeEquivalentTo(updatedProcess);
+        var process = await _defaultContext.Processes.FindAsync(id);
+        process.Should().BeNull();
     }
 
     public async Task DisposeAsync()
