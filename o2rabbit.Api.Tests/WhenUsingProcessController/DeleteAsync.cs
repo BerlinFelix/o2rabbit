@@ -1,12 +1,9 @@
-using AutoFixture;
 using FluentAssertions;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers;
-using o2rabbit.Api.Tests.AutoFixtureCustomization;
 using o2rabbit.BizLog.Abstractions.Services;
-using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.Api.Tests.WhenUsingProcessController;
@@ -14,7 +11,6 @@ namespace o2rabbit.Api.Tests.WhenUsingProcessController;
 public class DeleteAsync
 {
     private readonly ProcessController _sut;
-    private readonly Fixture _fixture;
     private readonly Mock<IProcessService> _processServiceMock;
 
     public DeleteAsync()
@@ -23,15 +19,11 @@ public class DeleteAsync
         _processServiceMock.Setup(m => m.DeleteAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
         _sut = new ProcessController(_processServiceMock.Object);
-        _fixture = new Fixture();
-        _fixture.Customize(new IgnoreRecursion());
     }
 
     [Fact]
     public async Task WhenCalled_CallsProcessService()
     {
-        var process = _fixture.Create<Process>();
-
         await _sut.DeleteAsync(1);
 
         _processServiceMock.Verify(m => m.DeleteAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -40,7 +32,6 @@ public class DeleteAsync
     [Fact]
     public async Task WhenProcessServiceReturnsInvalidIdError_ReturnsBadRequest()
     {
-        var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m => m.DeleteAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new InvalidIdError()));
 
@@ -52,7 +43,6 @@ public class DeleteAsync
     [Fact]
     public async Task WhenProcessServiceReturnsSuccess_ReturnsOk()
     {
-        var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m => m.DeleteAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok());
 
@@ -64,7 +54,6 @@ public class DeleteAsync
     [Fact]
     public async Task WhenProcessServiceReturnsUnknownError_Returns500()
     {
-        var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m => m.DeleteAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
 
