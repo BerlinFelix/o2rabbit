@@ -6,7 +6,7 @@ using o2rabbit.Core.ResultErrors;
 namespace o2rabbit.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/processes")]
 public class ProcessController : ControllerBase
 {
     private readonly IProcessService _processService;
@@ -18,14 +18,14 @@ public class ProcessController : ControllerBase
         _processService = processService;
     }
 
-    [HttpGet("processes/{id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult<Process>> GetByIdAsync(long id)
     {
         var process = new Process { Id = id, Name = "ProcessName" };
         return Ok(process);
     }
 
-    [HttpPost("processes/")]
+    [HttpPost]
     public async Task<ActionResult<Process>> CreateAsync(Process? process,
         CancellationToken cancellationToken = default)
     {
@@ -46,7 +46,7 @@ public class ProcessController : ControllerBase
         }
     }
 
-    [HttpDelete("processes/{id}")]
+    [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(int id)
     {
         var result = await _processService.DeleteAsync(id).ConfigureAwait(false);
