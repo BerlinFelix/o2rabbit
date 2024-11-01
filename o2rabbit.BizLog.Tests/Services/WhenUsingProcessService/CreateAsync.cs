@@ -5,13 +5,12 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
-using o2rabbit.Migrations.Context;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Migrations.Context;
 using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
@@ -27,7 +26,7 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
     public CreateAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        
+
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
@@ -43,7 +42,6 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
 
         _sut = new ProcessService(_context, _loggerMock.Object);
     }
-
 
     [Fact]
     public async Task GivenNullInput_ReturnsError()
@@ -117,11 +115,11 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         var contextMock = new Mock<ProcessServiceContext>();
         contextMock.Setup(x => x.Processes).Throws<Exception>();
         var loggerMock = new Mock<ILogger<ProcessService>>();
-        
+
         var sut = new ProcessService(contextMock.Object, loggerMock.Object);
-        
+
         var result = await sut.CreateAsync(process);
-        
+
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(error => error is UnknownError);
     }
