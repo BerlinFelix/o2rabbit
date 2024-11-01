@@ -18,13 +18,14 @@ public class ProcessController : ControllerBase
         _processService = processService;
     }
 
-    [HttpGet]
+    [HttpGet("processes/{id}")]
     public async Task<ActionResult<Process>> GetByIdAsync(long id)
     {
         var process = new Process { Id = id, Name = "ProcessName" };
         return Ok(process);
     }
 
+    [HttpPost("processes/")]
     public async Task<ActionResult<Process>> CreateAsync(Process? process,
         CancellationToken cancellationToken = default)
     {
@@ -45,8 +46,22 @@ public class ProcessController : ControllerBase
         }
     }
 
-    public async Task<ActionResult> DeleteAsync(int i)
+    [HttpDelete("processes/{id}")]
+    public async Task<ActionResult> DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var result = await _processService.DeleteAsync(id).ConfigureAwait(false);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else if (result.HasError<InvalidIdError>())
+        {
+            return BadRequest(result.Errors);
+        }
+        else
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
+        }
     }
 }

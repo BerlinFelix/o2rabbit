@@ -58,7 +58,7 @@ public class DeleteAsync
 
         var response = await _sut.DeleteAsync(1);
 
-        response.Should().BeOfType<OkObjectResult>();
+        response.Should().BeOfType<OkResult>();
     }
 
     [Fact]
