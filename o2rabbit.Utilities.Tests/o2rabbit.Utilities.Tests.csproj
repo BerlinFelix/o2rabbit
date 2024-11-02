@@ -30,4 +30,10 @@
       <ProjectReference Include="..\o2rabbit.Utilities\o2rabbit.Utilities.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Reference Include="FluentValidation">
+            <HintPath>..\..\..\..\..\.nuget\packages\fluentvalidation\11.10.0\lib\net8.0\FluentValidation.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
 </Project>

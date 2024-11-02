@@ -7,6 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Reference Include="FluentValidation">
+            <HintPath>..\..\..\..\..\.nuget\packages\fluentvalidation\11.10.0\lib\net8.0\FluentValidation.dll</HintPath>
+        </Reference>
       <Reference Include="Microsoft.AspNetCore.Mvc.Core">
         <HintPath>..\..\..\..\..\..\..\usr\share\dotnet\shared\Microsoft.AspNetCore.App\8.0.10\Microsoft.AspNetCore.Mvc.Core.dll</HintPath>
       </Reference>
