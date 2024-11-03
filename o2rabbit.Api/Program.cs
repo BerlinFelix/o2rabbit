@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 
 namespace o2rabbit.Api;
 
@@ -9,12 +8,11 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        var conectionstring = builder.Configuration.GetConnectionString("Default") ??
+                              throw new NullReferenceException("Default connection string");
         // Add services to the container.
-        builder.Services.AddDbContext<ProcessServiceContext>(dbContextOptionsBuilder =>
-        {
-           dbContextOptionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("Default")); 
-        });
-        builder.Services.AddControllers();
+        builder.Services.AddBizLog((o, sp) => { o.ConnectionString = conectionstring; })
+            .AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -31,7 +29,6 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 
