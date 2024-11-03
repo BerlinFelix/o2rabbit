@@ -4,12 +4,12 @@ using Testcontainers.PostgreSql;
 
 namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgDdlService;
 
-public class PgDdlServiceClassFixture : IDisposable
+public class PgDdlServiceClassFixture : IAsyncLifetime
 {
+    private readonly PostgreSqlContainer _container;
     public static readonly QualifiedTableName TableName = new QualifiedTableName("public", "testTable");
 
-    //TODO remove static connectionstrings and replace with lifetimes
-    public static string ConnectionString { get; private set; }
+    public string ConnectionString { get; private set; }
 
     private const string _USER = "testUser";
     private const string _PASSWORD = "password";
@@ -17,30 +17,35 @@ public class PgDdlServiceClassFixture : IDisposable
 
     public PgDdlServiceClassFixture()
     {
-        var container = new PostgreSqlBuilder()
+        _container = new PostgreSqlBuilder()
             .WithDatabase("Processes")
             .WithUsername(_USER)
             .WithPassword(_PASSWORD)
             .Build();
-
-        container.StartAsync().Wait(TimeSpan.FromMinutes(1));
-
-        ConnectionString = container.GetConnectionString();
-
-        using var connection = new NpgsqlConnection(ConnectionString);
-
-        connection.Open();
-
-        using var command = new NpgsqlCommand($"create table {TableName}(Id integer)", connection);
-
-        command.ExecuteNonQuery();
-
-        using var command2 = new NpgsqlCommand($"insert into {TableName}VALUES (1),(2)", connection);
-
-        command2.ExecuteNonQuery();
     }
 
-    public void Dispose()
+    public async Task InitializeAsync()
     {
+        await _container.StartAsync();
+
+        ConnectionString = _container.GetConnectionString();
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+
+        await connection.OpenAsync();
+
+        await using var command = new NpgsqlCommand($"create table {TableName}(Id integer)", connection);
+
+        await command.ExecuteNonQueryAsync();
+
+        await using var command2 = new NpgsqlCommand($"insert into {TableName}VALUES (1),(2)", connection);
+
+        await command2.ExecuteNonQueryAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _container.StopAsync();
+        await _container.DisposeAsync();
     }
 }

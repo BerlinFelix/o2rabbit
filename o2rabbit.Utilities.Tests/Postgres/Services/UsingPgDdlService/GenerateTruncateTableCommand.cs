@@ -7,18 +7,21 @@ namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgDdlService;
 public class GenerateTruncateTableCommand : IClassFixture<PgDdlServiceClassFixture>
 {
     private readonly PgDdlService _sut;
+    private readonly string _connectionString;
 
-    public GenerateTruncateTableCommand()
+    public GenerateTruncateTableCommand(PgDdlServiceClassFixture fixture)
     {
         _sut = new PgDdlService();
+        _connectionString = fixture.ConnectionString;
     }
 
     [Fact]
     async Task GeneratesCommandThatTruncatesTable()
     {
-        await using var connection = new NpgsqlConnection(PgDdlServiceClassFixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
-        var getCountCommand = new NpgsqlCommand($"select count(*) from {PgDdlServiceClassFixture.TableName}", connection);
+        var getCountCommand =
+            new NpgsqlCommand($"select count(*) from {PgDdlServiceClassFixture.TableName}", connection);
 
         var previousCount = (long?)await getCountCommand.ExecuteScalarAsync();
         previousCount.Should().NotBeNull();
@@ -26,9 +29,9 @@ public class GenerateTruncateTableCommand : IClassFixture<PgDdlServiceClassFixtu
 
         await using var command = _sut.GenerateTruncateTableCommand("public", "testTable", connection);
         await command.ExecuteNonQueryAsync();
-        
+
         var currentCount = await getCountCommand.ExecuteScalarAsync();
-        
+
         currentCount.Should().NotBeNull();
         currentCount.Should().Be(0);
     }

@@ -35,6 +35,9 @@ public class ProcessServiceClassFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         if (_container != null)
+        {
+            await _container.StopAsync();
             await _container.DisposeAsync();
+        }
     }
 }

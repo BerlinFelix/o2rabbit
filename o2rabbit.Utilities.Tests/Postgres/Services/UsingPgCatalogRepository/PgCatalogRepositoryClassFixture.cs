@@ -3,11 +3,12 @@ using Testcontainers.PostgreSql;
 
 namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 
-public class PgCatalogRepositoryClassFixture : IDisposable
+public class PgCatalogRepositoryClassFixture : IAsyncLifetime
 {
+    private readonly PostgreSqlContainer _container;
     public static List<string> ExistingSchemas { get; } = ["testschema1", "testschema2"];
     public static List<string> ExistingTables { get; } = ["\"testschema1\".\"table1\"", "\"testschema1\".\"table2\""];
-    public static string ConnectionString { get; private set; }
+    public string ConnectionString { get; private set; }
 
     private const string _USER = "testUser";
     private const string _PASSWORD = "password";
@@ -15,34 +16,38 @@ public class PgCatalogRepositoryClassFixture : IDisposable
 
     public PgCatalogRepositoryClassFixture()
     {
-        var container = new PostgreSqlBuilder()
+        _container = new PostgreSqlBuilder()
             .WithDatabase("Processes")
             .WithUsername(_USER)
             .WithPassword(_PASSWORD)
             .Build();
+    }
 
-        container.StartAsync().Wait(TimeSpan.FromMinutes(1));
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
 
-        ConnectionString = container.GetConnectionString();
+        ConnectionString = _container.GetConnectionString();
 
-        using var connection = new NpgsqlConnection(ConnectionString);
+        await using var connection = new NpgsqlConnection(ConnectionString);
 
-        connection.Open();
+        await connection.OpenAsync();
         foreach (var schema in ExistingSchemas)
         {
-            using var command = new NpgsqlCommand($"create schema {schema}", connection);
-            command.ExecuteNonQuery();
+            await using var command = new NpgsqlCommand($"create schema {schema}", connection);
+            await command.ExecuteNonQueryAsync();
         }
 
         foreach (var table in ExistingTables)
         {
-            using var command = new NpgsqlCommand($"create table {table} (Id int not null)", connection);
-            command.ExecuteNonQuery();
+            await using var command = new NpgsqlCommand($"create table {table} (Id int not null)", connection);
+            await command.ExecuteNonQueryAsync();
         }
     }
 
-
-    public void Dispose()
+    public async Task DisposeAsync()
     {
+        await _container.StopAsync();
+        await _container.DisposeAsync();
     }
 }

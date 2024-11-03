@@ -7,18 +7,20 @@ namespace o2rabbit.Utilities.Tests.Postgres.Services.UsingPgCatalogRepository;
 public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixture>
 {
     private readonly PgCatalogRepository _sut;
+    private readonly string _connectionString;
 
-    public GetAllTableNamesAsync()
+    public GetAllTableNamesAsync(PgCatalogRepositoryClassFixture fixture)
     {
         _sut = new PgCatalogRepository();
+        _connectionString = fixture.ConnectionString;
     }
 
     [Fact]
     public async Task GivenNullSchemaInput_ReturnsAllSchemasAndTables()
     {
-        var output = await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString);
+        var output = await _sut.GetAllTableNamesAsync(_connectionString);
 
-        output.Select(tablename => tablename.ToString())
+        output.Select(tableName => tableName.ToString())
             .Intersect(PgCatalogRepositoryClassFixture.ExistingTables)
             .Should()
             .HaveCount(PgCatalogRepositoryClassFixture.ExistingTables.Count);
@@ -28,10 +30,10 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
     [Fact]
     public async Task GivenExistingSchemaInput_ReturnsAllTablesBelongingToSchema()
     {
-        var output = await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString,
+        var output = await _sut.GetAllTableNamesAsync(_connectionString,
             PgCatalogRepositoryClassFixture.ExistingSchemas[0]);
 
-        output.Select(tablename => tablename.ToString())
+        output.Select(tableName => tableName.ToString())
             .Intersect(PgCatalogRepositoryClassFixture.ExistingTables)
             .Should()
             .HaveCount(2);
@@ -40,13 +42,13 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
     [Fact]
     public async Task GivenExistingSchemaWithoutTables_ReturnsEmptyCollection()
     {
-        await using var connection = new NpgsqlConnection(PgCatalogRepositoryClassFixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         await using var command = new NpgsqlCommand("create schema schemaWithoutTables", connection);
         await connection.OpenAsync();
         await command.ExecuteNonQueryAsync();
 
         var result =
-            await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, "schemaWithoutTable");
+            await _sut.GetAllTableNamesAsync(_connectionString, "schemaWithoutTable");
 
         result.Should().BeEmpty();
     }
@@ -55,9 +57,9 @@ public class GetAllTableNamesAsync : IClassFixture<PgCatalogRepositoryClassFixtu
     public async Task GivenNotExistingSchemaInput_ReturnsNoTables()
     {
         var output =
-            await _sut.GetAllTableNamesAsync(PgCatalogRepositoryClassFixture.ConnectionString, "NotExistingSchema");
+            await _sut.GetAllTableNamesAsync(_connectionString, "NotExistingSchema");
 
-        output.Select(tablename => tablename.ToString()).Intersect(PgCatalogRepositoryClassFixture.ExistingTables)
+        output.Select(tableName => tableName.ToString()).Intersect(PgCatalogRepositoryClassFixture.ExistingTables)
             .Should()
             .HaveCount(0);
     }
