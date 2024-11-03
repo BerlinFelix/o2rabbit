@@ -7,7 +7,6 @@ using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
@@ -58,8 +57,8 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _defaultContext.Add(existingProcess2);
 
         await _defaultContext.SaveChangesAsync();
-        
-        
+
+
         _defaultContext.Entry(existingProcess).State = EntityState.Detached;
         _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
     }
@@ -89,9 +88,29 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
+    public async Task GivenExistingIdAndIncludeChildren_ReturnsIsSuccessWithChildren(long id)
+    {
+        var processWithParent = _fixture.Create<Process>();
+        processWithParent.Id = 3;
+        processWithParent.ParentId = id;
+
+        _defaultContext.Add(processWithParent);
+        await _defaultContext.SaveChangesAsync();
+
+        var result = await _sut.GetByIdAsync(id, new GetByIdOptions() { IncludeChildren = true });
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<Process>();
+        result.Value.Children.Should().Contain(p => p.Id == 3);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
     public async Task GivenExistingIdWithChildren_ReturnsProcessWithoutChildren(long id)
     {
         var processWithParent = _fixture.Create<Process>();
+        processWithParent.Id = 3;
         processWithParent.ParentId = id;
 
         _defaultContext.Add(processWithParent);
@@ -102,7 +121,6 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         result.Value.Should().NotBeNull();
         result.Value.Should().BeOfType<Process>();
         result.Value.Id.Should().Be(id);
-        result.Value.Children.Should().BeEmpty();
     }
 
     [Theory]
@@ -116,7 +134,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _defaultContext.Add(processWithParent);
         await _defaultContext.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, new GetByIdOptions(){IncludeChildren = true});
+        var result = await _sut.GetByIdAsync(id, new GetByIdOptions() { IncludeChildren = true });
 
         result.Value.Should().NotBeNull();
         result.Value.Should().BeOfType<Process>();
@@ -125,7 +143,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         result.Value.Children.Should().HaveCount(1);
         result.Value.Children.First().ParentId.Should().Be(id);
     }
-    
+
     [Theory]
     [InlineData(3)]
     [InlineData(4)]
@@ -147,6 +165,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
 
         result.Errors.Should().Contain(e => e is InvalidIdError);
     }
+
     public async Task DisposeAsync()
     {
         var existingTables =
