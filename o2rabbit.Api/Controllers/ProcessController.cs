@@ -34,7 +34,7 @@ public class ProcessController : ControllerBase
         var result = await _processService.CreateAsync(process, cancellationToken).ConfigureAwait(false);
         if (result.IsSuccess)
         {
-            return result.Value;
+            return Ok(result.Value);
         }
         else if (result.HasError<InvalidIdError>())
         {

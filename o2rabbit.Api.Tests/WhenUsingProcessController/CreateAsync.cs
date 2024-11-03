@@ -2,8 +2,6 @@ using AutoFixture;
 using FluentAssertions;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Moq;
 using o2rabbit.Api.Controllers;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
@@ -60,7 +58,21 @@ public class CreateAsync
 
         var response = await _sut.CreateAsync(process);
 
-        response.Value.Should().BeEquivalentTo(process);
+        response.Result.Should().BeOfType<OkObjectResult>();
+    }
+
+    [Fact]
+    public async Task WhenProcessServiceReturnsSuccess_ReturnsOkWithProcess()
+    {
+        var process = _fixture.Create<Process>();
+        _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(process));
+
+        var response = await _sut.CreateAsync(process);
+
+        response.Result.Should().BeOfType<OkObjectResult>();
+        var objectResult = (OkObjectResult)response.Result;
+        objectResult.Value.Should().Be(process);
     }
 
     [Fact]
@@ -73,7 +85,7 @@ public class CreateAsync
         var response = await _sut.CreateAsync(process);
 
         response.Result.Should().BeOfType<ObjectResult>();
-        
+
         var objectResult = (ObjectResult)response.Result;
         objectResult.StatusCode.Should().Be(500);
     }
