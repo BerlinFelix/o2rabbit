@@ -64,4 +64,25 @@ public class ProcessController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
         }
     }
+
+    [HttpPut()]
+    public async Task<ActionResult<Process>> UpdateAsync(Process? process,
+        CancellationToken cancellationToken = default)
+    {
+        if (process is null) return BadRequest("Process is null");
+
+        var result = await _processService.UpdateAsync(process, cancellationToken).ConfigureAwait(false);
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+        else if (result.HasError<InvalidIdError>())
+        {
+            return BadRequest(result.Errors);
+        }
+        else
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
 }
