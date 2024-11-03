@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using o2rabbit.BizLog.Extensions;
 
 namespace o2rabbit.Api;
@@ -12,7 +13,8 @@ public class Program
                               throw new NullReferenceException("Default connection string");
         // Add services to the container.
         builder.Services.AddBizLog((o, sp) => { o.ConnectionString = conectionstring; })
-            .AddControllers();
+            .AddControllers()
+            .AddJsonOptions(options => { options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
