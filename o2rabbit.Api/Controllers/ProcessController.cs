@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
@@ -19,10 +20,23 @@ public class ProcessController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Process>> GetByIdAsync(long id)
+    public async Task<ActionResult<Process>> GetByIdAsync(long id, GetByIdOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
-        var process = new Process { Id = id, Name = "ProcessName" };
-        return Ok(process);
+        var result = await _processService.GetByIdAsync(id, options, cancellationToken).ConfigureAwait(false);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+        else if (result.HasError<InvalidIdError>())
+        {
+            return BadRequest(result.Errors);
+        }
+        else
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
+        }
     }
 
     [HttpPost]
