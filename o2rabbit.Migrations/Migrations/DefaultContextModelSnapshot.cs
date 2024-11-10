@@ -22,13 +22,19 @@ namespace o2rabbit.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("o2rabbit.Core.Process", b =>
+            modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -41,19 +47,75 @@ namespace o2rabbit.Migrations.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Processes");
+                    b.ToTable("Processes", (string)null);
                 });
 
-            modelBuilder.Entity("o2rabbit.Core.Process", b =>
+            modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
                 {
-                    b.HasOne("o2rabbit.Core.Process", "Parent")
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ProcessId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("ProcessId");
+
+                    b.ToTable("Tickets", (string)null);
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
+                {
+                    b.HasOne("o2rabbit.Core.Entities.Process", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("o2rabbit.Core.Process", b =>
+            modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
+                {
+                    b.HasOne("o2rabbit.Core.Entities.Ticket", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("o2rabbit.Core.Entities.Process", "Process")
+                        .WithMany()
+                        .HasForeignKey("ProcessId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("Process");
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
+                {
+                    b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
                 {
                     b.Navigation("Children");
                 });

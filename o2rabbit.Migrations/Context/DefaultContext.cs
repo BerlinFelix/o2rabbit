@@ -48,6 +48,7 @@ public class DefaultContext : DbContext
             .HasMany(x => x.Children)
             .WithOne(x => x.Parent)
             .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
 
         modelBuilder.Entity<Ticket>()
@@ -62,6 +63,14 @@ public class DefaultContext : DbContext
             .HasMany(x => x.Children)
             .WithOne(x => x.Parent)
             .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
+        modelBuilder.Entity<Ticket>()
+            .HasOne(x => x.Process)
+            .WithMany()
+            .HasForeignKey(x => x.ProcessId)
+            .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
 
         base.OnModelCreating(modelBuilder);
