@@ -10,7 +10,7 @@ public class Ticket
 
     public long? ParentId { get; set; }
 
-    public Process? Parent { get; set; }
+    public Ticket? Parent { get; set; }
 
     public long ProcessId { get; set; }
 }
