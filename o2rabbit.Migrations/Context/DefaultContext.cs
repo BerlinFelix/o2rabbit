@@ -1,29 +1,28 @@
 using Microsoft.EntityFrameworkCore;
-using o2rabbit.Core;
 using o2rabbit.Core.Entities;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace o2rabbit.Migrations.Context;
 
-public class DefaultContext: DbContext
+public class DefaultContext : DbContext
 {
     private readonly string? _connectionString;
 
     public DefaultContext(string? connectionString)
     {
         ArgumentNullException.ThrowIfNull(connectionString);
-        
+
         _connectionString = connectionString;
     }
-    
+
     public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
     {
-        
     }
 
     public DbSet<Process> Processes { get; set; }
-    
+    public DbSet<Process> Ticket { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         // Add ConnectionString directly when unit testing.
@@ -31,15 +30,16 @@ public class DefaultContext: DbContext
         {
             optionsBuilder.UseNpgsql(_connectionString);
         }
-        
+
         base.OnConfiguring(optionsBuilder);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Process>()
+            .ToTable("Processes")
             .HasKey(x => x.Id);
-        
+
         modelBuilder.Entity<Process>()
             .Property(x => x.Id)
             .ValueGeneratedOnAdd();
@@ -49,7 +49,21 @@ public class DefaultContext: DbContext
             .WithOne(x => x.Parent)
             .HasForeignKey(x => x.ParentId)
             .IsRequired(false);
-        
+
+        modelBuilder.Entity<Ticket>()
+            .ToTable("Tickets")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Ticket>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Ticket>()
+            .HasMany(x => x.Children)
+            .WithOne(x => x.Parent)
+            .HasForeignKey(x => x.ParentId)
+            .IsRequired(false);
+
         base.OnModelCreating(modelBuilder);
     }
 }
