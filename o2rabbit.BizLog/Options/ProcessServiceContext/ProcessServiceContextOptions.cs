@@ -1,4 +1,4 @@
-namespace o2rabbit.BizLog.Options.ProcessService;
+namespace o2rabbit.BizLog.Options.ProcessServiceContext;
 
 public class ProcessServiceContextOptions
 {

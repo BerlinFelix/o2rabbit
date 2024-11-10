@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using o2rabbit.BizLog.Options;
-using o2rabbit.BizLog.Options.ProcessService;
-using o2rabbit.Core;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Context;

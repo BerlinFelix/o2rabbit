@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Options.BizLog;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 
 namespace o2rabbit.BizLog.Options.ProcessService;
 

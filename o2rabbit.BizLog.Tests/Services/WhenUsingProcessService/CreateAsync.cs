@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.ProcessService;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;

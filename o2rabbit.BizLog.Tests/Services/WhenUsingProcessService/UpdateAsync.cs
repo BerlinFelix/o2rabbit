@@ -1,14 +1,12 @@
 using AutoFixture;
-using DotNet.Testcontainers.Clients;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
-using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.ProcessService;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
@@ -59,7 +57,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
         _defaultContext.Add(existingProcess2);
 
         await _defaultContext.SaveChangesAsync();
-        
+
         _defaultContext.Entry(existingProcess).State = EntityState.Detached;
         _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
     }
@@ -105,7 +103,6 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
         process.Should().NotBeNull();
         process.Should().BeEquivalentTo(updatedProcess);
     }
-    
 
 
     [Theory]

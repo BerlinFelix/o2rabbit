@@ -1,14 +1,12 @@
 using AutoFixture;
-using DotNet.Testcontainers.Clients;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
-using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.ProcessService;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
@@ -93,7 +91,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
 
         result.IsSuccess.Should().BeTrue();
     }
-[Theory]
+
+    [Theory]
     [InlineData(1)]
     [InlineData(2)]
     public async Task GivenExistingId_DeletesProcess(long id)
