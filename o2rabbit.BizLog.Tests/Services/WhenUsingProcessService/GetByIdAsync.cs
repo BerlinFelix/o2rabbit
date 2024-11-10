@@ -97,7 +97,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _defaultContext.Add(processWithParent);
         await _defaultContext.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, new GetByIdOptions() { IncludeChildren = true });
+        var result = await _sut.GetByIdAsync(id, new GetProcessByIdOptions() { IncludeChildren = true });
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeOfType<Process>();
@@ -134,7 +134,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _defaultContext.Add(processWithParent);
         await _defaultContext.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, new GetByIdOptions() { IncludeChildren = true });
+        var result = await _sut.GetByIdAsync(id, new GetProcessByIdOptions() { IncludeChildren = true });
 
         result.Value.Should().NotBeNull();
         result.Value.Should().BeOfType<Process>();

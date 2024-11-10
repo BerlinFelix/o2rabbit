@@ -53,7 +53,7 @@ internal class ProcessService : IProcessService
         }
     }
 
-    public async Task<Result<Process>> GetByIdAsync(long id, GetByIdOptions? options = null,
+    public async Task<Result<Process>> GetByIdAsync(long id, GetProcessByIdOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         try

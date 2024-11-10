@@ -22,7 +22,7 @@ public class GetByIdAsync
     {
         _processServiceMock = new Mock<IProcessService>();
         _processServiceMock.Setup(m =>
-                m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetByIdOptions>(), It.IsAny<CancellationToken>()))
+                m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetProcessByIdOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(""));
         _sut = new ProcessController(_processServiceMock.Object);
         _fixture = new Fixture();
@@ -34,7 +34,8 @@ public class GetByIdAsync
     {
         await _sut.GetByIdAsync(1);
 
-        _processServiceMock.Verify(m => m.GetByIdAsync(1, It.IsAny<GetByIdOptions>(), It.IsAny<CancellationToken>()),
+        _processServiceMock.Verify(
+            m => m.GetByIdAsync(1, It.IsAny<GetProcessByIdOptions>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -43,7 +44,7 @@ public class GetByIdAsync
     {
         var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m =>
-                m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetByIdOptions>(), It.IsAny<CancellationToken>()))
+                m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetProcessByIdOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new InvalidIdError()));
 
         var response = await _sut.GetByIdAsync(1);
@@ -56,7 +57,7 @@ public class GetByIdAsync
     {
         var process = _fixture.Create<Process>();
         _processServiceMock.Setup(m =>
-                m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetByIdOptions>(), It.IsAny<CancellationToken>()))
+                m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetProcessByIdOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(process));
 
         var response = await _sut.GetByIdAsync(1);
