@@ -21,7 +21,7 @@ public class DefaultContext : DbContext
     }
 
     public DbSet<Process> Processes { get; set; }
-    public DbSet<Process> Tickets { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
