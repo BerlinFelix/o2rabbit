@@ -6,10 +6,9 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.ProcessServiceContext;
+using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
-using o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
@@ -17,61 +16,61 @@ using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
-public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
+public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixture>
 {
-    private readonly ProcessServiceClassFixture _classFixture;
+    private readonly TicketServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly PgDdlService _pgDllService;
     private readonly PgCatalogRepository _pgCatalogRepository;
-    private readonly ProcessService _sut;
-    private readonly ProcessServiceContext _processContext;
+    private readonly TicketService _sut;
+    private readonly TicketServiceContext _ticketContext;
 
-    public UpdateAsync(ProcessServiceClassFixture classFixture)
+    public UpdateAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
-        _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
+        _fixture.Customize(new TicketHasNoParentsAndNoChildren());
         _pgDllService = new PgDdlService();
         _pgCatalogRepository = new PgCatalogRepository();
 
-        _processContext =
-            new ProcessServiceContext(
-                new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
+        _ticketContext =
+            new TicketServiceContext(
+                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
 
-        var loggerMock = new Mock<ILogger<ProcessService>>();
-        _sut = new ProcessService(_processContext, loggerMock.Object);
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        _sut = new TicketService(_ticketContext, loggerMock.Object);
     }
 
     public async Task InitializeAsync()
     {
-        var existingProcess = _fixture.Create<Process>();
-        var existingProcess2 = _fixture.Create<Process>();
-        existingProcess.Id = 1;
-        existingProcess2.Id = 2;
+        var existingTicket = _fixture.Create<Ticket>();
+        var existingTicket2 = _fixture.Create<Ticket>();
+        existingTicket.Id = 1;
+        existingTicket2.Id = 2;
 
-        _defaultContext.Add(existingProcess);
-        _defaultContext.Add(existingProcess2);
+        _defaultContext.Add(existingTicket);
+        _defaultContext.Add(existingTicket2);
 
         await _defaultContext.SaveChangesAsync();
 
-        _defaultContext.Entry(existingProcess).State = EntityState.Detached;
-        _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
+        _defaultContext.Entry(existingTicket).State = EntityState.Detached;
+        _defaultContext.Entry(existingTicket2).State = EntityState.Detached;
     }
 
     [Theory]
     [InlineData(-1)]
     [InlineData(5)]
-    public async Task GivenProcessWithNotExistingId_ReturnsFail(long id)
+    public async Task GivenTicketWithNotExistingId_ReturnsFail(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        var updatedTicket = _fixture.Create<Ticket>();
+        updatedTicket.Id = id;
 
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.UpdateAsync(updatedTicket);
 
         result.IsFailed.Should().BeTrue();
     }
@@ -79,12 +78,12 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     [Theory]
     [InlineData(-1)]
     [InlineData(5)]
-    public async Task GivenProcessWithNotExistingId_ReturnsUnknownInvalidIdError(long id)
+    public async Task GivenTicketWithNotExistingId_ReturnsUnknownInvalidIdError(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        var updatedTicket = _fixture.Create<Ticket>();
+        updatedTicket.Id = id;
 
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.UpdateAsync(updatedTicket);
 
         result.Errors.Should().ContainSingle(e => e is InvalidIdError);
     }
@@ -92,29 +91,29 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenProcessWithExistingId_SavesChanges(long id)
+    public async Task GivenTicketWithExistingId_SavesChanges(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        var updatedTicket = _fixture.Create<Ticket>();
+        updatedTicket.Id = id;
 
-        await _sut.UpdateAsync(updatedProcess);
+        await _sut.UpdateAsync(updatedTicket);
 
-        var process = await _defaultContext.Processes.FindAsync(id);
+        var ticket = await _defaultContext.Tickets.FindAsync(id);
 
-        process.Should().NotBeNull();
-        process.Should().BeEquivalentTo(updatedProcess);
+        ticket.Should().NotBeNull();
+        ticket.Should().BeEquivalentTo(updatedTicket);
     }
 
 
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenProcessWithExistingId_ReturnsOk(long id)
+    public async Task GivenTicketWithExistingId_ReturnsOk(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        var updatedTicket = _fixture.Create<Ticket>();
+        updatedTicket.Id = id;
 
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.UpdateAsync(updatedTicket);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -122,14 +121,14 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenProcessWithExistingId_ReturnsProcessAsValue(long id)
+    public async Task GivenTicketWithExistingId_ReturnsTicketAsValue(long id)
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        var updatedTicket = _fixture.Create<Ticket>();
+        updatedTicket.Id = id;
 
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var result = await _sut.UpdateAsync(updatedTicket);
 
-        result.Value.Should().BeEquivalentTo(updatedProcess);
+        result.Value.Should().BeEquivalentTo(updatedTicket);
     }
 
     public async Task DisposeAsync()

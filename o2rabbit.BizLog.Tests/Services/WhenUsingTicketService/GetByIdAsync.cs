@@ -7,7 +7,7 @@ using Moq;
 using Npgsql;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.ProcessServiceContext;
+using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
@@ -24,43 +24,43 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     private readonly Fixture _fixture;
     private readonly PgDdlService _pgDllService;
     private readonly PgCatalogRepository _pgCatalogRepository;
-    private readonly ProcessService _sut;
+    private readonly TicketService _sut;
 
     public GetByIdAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
-        _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
+        _fixture.Customize(new TicketHasNoParentsAndNoChildren());
         _pgDllService = new PgDdlService();
         _pgCatalogRepository = new PgCatalogRepository();
 
-        var processContext =
-            new ProcessServiceContext(
-                new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
+        var ticketServiceContext =
+            new TicketServiceContext(
+                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
 
-        var loggerMock = new Mock<ILogger<ProcessService>>();
-        _sut = new ProcessService(processContext, loggerMock.Object);
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        _sut = new TicketService(ticketServiceContext, loggerMock.Object);
     }
 
     public async Task InitializeAsync()
     {
-        var existingProcess = _fixture.Create<Process>();
-        var existingProcess2 = _fixture.Create<Process>();
-        existingProcess.Id = 1;
-        existingProcess2.Id = 2;
+        var existingTicket = _fixture.Create<Ticket>();
+        var existingTicket2 = _fixture.Create<Ticket>();
+        existingTicket.Id = 1;
+        existingTicket2.Id = 2;
 
-        _defaultContext.Add(existingProcess);
-        _defaultContext.Add(existingProcess2);
+        _defaultContext.Add(existingTicket);
+        _defaultContext.Add(existingTicket2);
 
         await _defaultContext.SaveChangesAsync();
 
 
-        _defaultContext.Entry(existingProcess).State = EntityState.Detached;
-        _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
+        _defaultContext.Entry(existingTicket).State = EntityState.Detached;
+        _defaultContext.Entry(existingTicket2).State = EntityState.Detached;
     }
 
     [Theory]
@@ -76,12 +76,12 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenExistingId_ReturnsIsSuccessWithProcess(long id)
+    public async Task GivenExistingId_ReturnsIsSuccessWithTicket(long id)
     {
         var result = await _sut.GetByIdAsync(id);
 
         result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Process>();
+        result.Value.Should().BeOfType<Ticket>();
         result.Value.Id.Should().Be(id);
     }
 
@@ -90,54 +90,55 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(2)]
     public async Task GivenExistingIdAndIncludeChildren_ReturnsIsSuccessWithChildren(long id)
     {
-        var processWithParent = _fixture.Create<Process>();
-        processWithParent.Id = 3;
-        processWithParent.ParentId = id;
+        var ticketWithParent = _fixture.Create<Ticket>();
+        ticketWithParent.Id = 3;
+        ticketWithParent.ParentId = id;
 
-        _defaultContext.Add(processWithParent);
+        _defaultContext.Add(ticketWithParent);
         await _defaultContext.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, new GetProcessByIdOptions() { IncludeChildren = true });
+        var result = await _sut.GetByIdAsync(id, new GetTicketByIdOptions() { IncludeChildren = true });
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeOfType<Process>();
+        result.Value.Should().BeOfType<Ticket>();
         result.Value.Children.Should().Contain(p => p.Id == 3);
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenExistingIdWithChildren_ReturnsProcessWithoutChildren(long id)
+    public async Task GivenExistingIdWithChildren_ReturnsTicketWithoutChildren(long id)
     {
-        var processWithParent = _fixture.Create<Process>();
-        processWithParent.Id = 3;
-        processWithParent.ParentId = id;
+        var ticketWithParent = _fixture.Create<Ticket>();
+        ticketWithParent.Id = 3;
+        ticketWithParent.ParentId = id;
 
-        _defaultContext.Add(processWithParent);
+        _defaultContext.Add(ticketWithParent);
         await _defaultContext.SaveChangesAsync();
 
         var result = await _sut.GetByIdAsync(id);
 
         result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Process>();
+        result.Value.Should().BeOfType<Ticket>();
         result.Value.Id.Should().Be(id);
+        result.Value.Children.Should().BeEmpty();
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenExistingIdWithChildrenAndOptionsIncludingChildren_ReturnsProcessWithChildren(long id)
+    public async Task GivenExistingIdWithChildrenAndOptionsIncludingChildren_ReturnsTicketWithChildren(long id)
     {
-        var processWithParent = _fixture.Create<Process>();
-        processWithParent.ParentId = id;
+        var ticketWithParent = _fixture.Create<Ticket>();
+        ticketWithParent.ParentId = id;
 
-        _defaultContext.Add(processWithParent);
+        _defaultContext.Add(ticketWithParent);
         await _defaultContext.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, new GetProcessByIdOptions() { IncludeChildren = true });
+        var result = await _sut.GetByIdAsync(id, new GetTicketByIdOptions() { IncludeChildren = true });
 
         result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Process>();
+        result.Value.Should().BeOfType<Ticket>();
         // Note that you cannot use ...Should().BeEquivalentTo(), weil Parent-Child eine zirkulaere Referenz enthaelt.
         result.Value.Id.Should().Be(id);
         result.Value.Children.Should().HaveCount(1);
