@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.ProcessService;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Extensions;
@@ -97,7 +96,7 @@ internal class ProcessService : IProcessService
             if (existingProcess == null)
                 return Result.Fail<Process>(new InvalidIdError());
             _context.Update(existingProcess).CurrentValues.SetValues(process);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return Result.Ok(existingProcess);
         }
         catch (Exception e)
