@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
@@ -23,6 +24,7 @@ public static class ServiceCollectionExtensions
 
         services.AddLogging()
             .AddScoped<IProcessService, ProcessService>()
+            .AddScoped<ITicketValidator, TicketValidator>()
             .AddDbContext<ProcessServiceContext>();
 
         services.AddValidatorsFromAssemblyContaining(typeof(_FluentValidationDIRegistrationHook),
