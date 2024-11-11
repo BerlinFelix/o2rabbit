@@ -7,4 +7,8 @@ public class InvalidIdError : Error
     public InvalidIdError() : base("Provided invalid id.")
     {
     }
+
+    public InvalidIdError(string message) : base(message)
+    {
+    }
 }
