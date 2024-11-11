@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services;
@@ -48,6 +47,8 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
 
     public async Task InitializeAsync()
     {
+        await _defaultContext.Database.EnsureCreatedAsync();
+
         var existingProcess = _fixture.Create<Process>();
         var existingProcess2 = _fixture.Create<Process>();
         existingProcess.Id = 1;
@@ -133,18 +134,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
 
     public async Task DisposeAsync()
     {
-        var existingTables =
-            await _pgCatalogRepository.GetAllTableNamesAsync(_classFixture.ConnectionString!);
-
-        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
-        await connection.OpenAsync();
-        foreach (var qualifiedTableName in existingTables)
-        {
-            await using var truncateStatement =
-                _pgDllService.GenerateTruncateTableCommand(qualifiedTableName, connection);
-            await truncateStatement.ExecuteNonQueryAsync();
-        }
-
+        await _defaultContext.Database.EnsureDeletedAsync();
         await _defaultContext.DisposeAsync();
     }
 }

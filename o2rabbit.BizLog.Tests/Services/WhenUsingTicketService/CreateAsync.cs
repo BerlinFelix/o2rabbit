@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
@@ -12,7 +11,6 @@ using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
-using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
@@ -29,8 +27,8 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         _classFixture = classFixture;
 
         _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoParentsAndNoChildren());
-
+        _fixture.Customize(
+            new TicketHasNoProcessNoParentsNoChildren());
         _context = new TicketServiceContext(
             new OptionsWrapper<TicketServiceContextOptions>(
                 new TicketServiceContextOptions()
@@ -51,7 +49,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         Ticket? ticket = null;
 
         // Act
-        var result = await _sut.CreateAsync(ticket);
+        var result = await _sut.CreateAsync(ticket!);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -126,21 +124,15 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         result.Errors.Should().Contain(error => error is UnknownError);
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        return Task.CompletedTask;
+        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await migrationContext.Database.EnsureCreatedAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
-        await connection.OpenAsync();
-        var pgCatalogRepository = new PgCatalogRepository();
-        var exitingTables = await pgCatalogRepository.GetAllTableNamesAsync((_classFixture.ConnectionString!));
-        foreach (var table in exitingTables)
-        {
-            await using var command = new PgDdlService().GenerateTruncateTableCommand(table, connection);
-            await command.ExecuteNonQueryAsync();
-        }
+        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await migrationContext.Database.EnsureDeletedAsync();
     }
 }

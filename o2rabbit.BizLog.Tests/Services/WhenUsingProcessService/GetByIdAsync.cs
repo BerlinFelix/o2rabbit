@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Npgsql;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
@@ -13,7 +12,6 @@ using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
-using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
@@ -22,8 +20,6 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     private readonly ProcessServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
-    private readonly PgDdlService _pgDllService;
-    private readonly PgCatalogRepository _pgCatalogRepository;
     private readonly ProcessService _sut;
 
     public GetByIdAsync(ProcessServiceClassFixture classFixture)
@@ -32,8 +28,6 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
-        _pgDllService = new PgDdlService();
-        _pgCatalogRepository = new PgCatalogRepository();
 
         var processContext =
             new ProcessServiceContext(
@@ -48,6 +42,9 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
 
     public async Task InitializeAsync()
     {
+        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await context.Database.EnsureCreatedAsync();
+
         var existingProcess = _fixture.Create<Process>();
         var existingProcess2 = _fixture.Create<Process>();
         existingProcess.Id = 1;
@@ -168,17 +165,8 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
 
     public async Task DisposeAsync()
     {
-        var existingTables =
-            await _pgCatalogRepository.GetAllTableNamesAsync(_classFixture.ConnectionString!);
-
-        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
-        await connection.OpenAsync();
-        foreach (var qualifiedTableName in existingTables)
-        {
-            await using var truncateStatement =
-                _pgDllService.GenerateTruncateTableCommand(qualifiedTableName, connection);
-            await truncateStatement.ExecuteNonQueryAsync();
-        }
+        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await context.Database.EnsureDeletedAsync();
 
         await _defaultContext.DisposeAsync();
     }

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using o2rabbit.Migrations.Context;
 using Testcontainers.PostgreSql;
 
@@ -27,9 +26,6 @@ public class ProcessServiceClassFixture : IAsyncLifetime
         await _container.StartAsync();
         ConnectionString = _container.GetConnectionString();
         await using var migrationContext = new DefaultContext(ConnectionString);
-        // Do not use migrationContext.Database.MigrateAsync() when using package Npgsql. This will result in known errors
-        var script = migrationContext.Database.GenerateCreateScript();
-        await migrationContext.Database.ExecuteSqlRawAsync(script);
     }
 
     public async Task DisposeAsync()

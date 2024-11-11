@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services;
@@ -11,7 +10,6 @@ using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
-using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
@@ -50,7 +48,7 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         Process? process = null;
 
         // Act
-        var result = await _sut.CreateAsync(process);
+        var result = await _sut.CreateAsync(process!);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -124,21 +122,15 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         result.Errors.Should().Contain(error => error is UnknownError);
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        return Task.CompletedTask;
+        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await context.Database.EnsureCreatedAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
-        await connection.OpenAsync();
-        var pgCatalogRepository = new PgCatalogRepository();
-        var exitingTables = await pgCatalogRepository.GetAllTableNamesAsync((_classFixture.ConnectionString!));
-        foreach (var table in exitingTables)
-        {
-            await using var command = new PgDdlService().GenerateTruncateTableCommand(table, connection);
-            await command.ExecuteNonQueryAsync();
-        }
+        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await context.Database.EnsureDeletedAsync();
     }
 }

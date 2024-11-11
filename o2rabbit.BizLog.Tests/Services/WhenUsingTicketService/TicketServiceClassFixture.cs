@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using o2rabbit.Migrations.Context;
 using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
@@ -26,10 +24,6 @@ public class TicketServiceClassFixture : IAsyncLifetime
 
         await _container.StartAsync();
         ConnectionString = _container.GetConnectionString();
-        await using var migrationContext = new DefaultContext(ConnectionString);
-        // Do not use migrationContext.Database.MigrateAsync() when using package Npgsql. This will result in known errors
-        var script = migrationContext.Database.GenerateCreateScript();
-        await migrationContext.Database.ExecuteSqlRawAsync(script);
     }
 
     public async Task DisposeAsync()

@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Npgsql;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
@@ -12,7 +11,6 @@ using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
-using o2rabbit.Utilities.Postgres.Services;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
@@ -21,8 +19,6 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     private readonly TicketServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
-    private readonly PgDdlService _pgDllService;
-    private readonly PgCatalogRepository _pgCatalogRepository;
     private readonly TicketService _sut;
     private readonly TicketServiceContext _ticketContext;
 
@@ -31,9 +27,7 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoParentsAndNoChildren());
-        _pgDllService = new PgDdlService();
-        _pgCatalogRepository = new PgCatalogRepository();
+        _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
 
         _ticketContext =
             new TicketServiceContext(
@@ -48,6 +42,9 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
 
     public async Task InitializeAsync()
     {
+        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await migrationContext.Database.EnsureCreatedAsync();
+
         var existingTicket = _fixture.Create<Ticket>();
         var existingTicket2 = _fixture.Create<Ticket>();
         existingTicket.Id = 1;
@@ -105,18 +102,7 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
 
     public async Task DisposeAsync()
     {
-        var existingTables =
-            await _pgCatalogRepository.GetAllTableNamesAsync(_classFixture.ConnectionString!);
-
-        await using var connection = new NpgsqlConnection(_classFixture.ConnectionString);
-        await connection.OpenAsync();
-        foreach (var qualifiedTableName in existingTables)
-        {
-            await using var truncateStatement =
-                _pgDllService.GenerateTruncateTableCommand(qualifiedTableName, connection);
-            await truncateStatement.ExecuteNonQueryAsync();
-        }
-
-        await _defaultContext.DisposeAsync();
+        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await migrationContext.Database.EnsureDeletedAsync();
     }
 }
