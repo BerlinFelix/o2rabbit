@@ -1,7 +1,7 @@
 using AutoFixture;
 using o2rabbit.Core.Entities;
 
-namespace o2rabbit.BizLog.Tests.AutoFixtureCustomization;
+namespace o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 
 public class TicketHasNoProcessNoParentsNoChildren : ICustomization
 {

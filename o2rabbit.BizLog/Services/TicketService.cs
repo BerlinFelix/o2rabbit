@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
@@ -16,35 +17,36 @@ internal class TicketService : ITicketService
 {
     private readonly TicketServiceContext _context;
     private readonly ILogger<TicketService> _logger;
+    private readonly ITicketValidator _ticketValidator;
 
-    public TicketService(TicketServiceContext context, ILogger<TicketService> logger)
+    public TicketService(TicketServiceContext context,
+        ILogger<TicketService> logger,
+        ITicketValidator ticketValidator)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(ticketValidator);
 
         _context = context;
         _logger = logger;
+        _ticketValidator = ticketValidator;
     }
 
-    public async Task<Result<Ticket>> CreateAsync(Ticket Ticket,
+    public async Task<Result<Ticket>> CreateAsync(Ticket ticket,
         CancellationToken cancellationToken = default)
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (Ticket == null) return Result.Fail<Ticket>("Ticket is null");
-
         try
         {
-            var existingTicket =
-                await _context.Tickets.FindAsync(Ticket.Id, cancellationToken).ConfigureAwait(false);
-            if (existingTicket != null)
-            {
-                return Result.Fail(new InvalidIdError());
-            }
+            var validationResult = await _ticketValidator.IsValidNewTicketAsync(ticket, cancellationToken)
+                .ConfigureAwait(false);
 
-            await _context.Tickets.AddAsync(Ticket, cancellationToken).ConfigureAwait(false);
+            if (validationResult.IsFailed)
+                return validationResult;
+
+            await _context.Tickets.AddAsync(ticket, cancellationToken).ConfigureAwait(false);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            return Result.Ok(Ticket);
+            return Result.Ok(ticket);
         }
         catch (Exception e)
         {
@@ -58,27 +60,27 @@ internal class TicketService : ITicketService
     {
         try
         {
-            Ticket? Ticket;
+            Ticket? ticket;
             if (options != null && options.IncludeChildren)
             {
-                Ticket = await _context.Tickets
+                ticket = await _context.Tickets
                     .Include(p => p.Children)
                     .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                Ticket = await _context.Tickets
+                ticket = await _context.Tickets
                     .FindAsync(id, cancellationToken)
                     .ConfigureAwait(false);
             }
 
-            if (Ticket == null)
+            if (ticket == null)
             {
                 return Result.Fail<Ticket>(new InvalidIdError());
             }
 
-            return Result.Ok(Ticket);
+            return Result.Ok(ticket);
         }
         catch (Exception e)
         {

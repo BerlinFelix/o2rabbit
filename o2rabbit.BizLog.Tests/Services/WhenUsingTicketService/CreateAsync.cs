@@ -1,13 +1,16 @@
 using AutoFixture;
 using FluentAssertions;
+using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
+using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
+using o2rabbit.BizLog.Tests.Errors;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
@@ -21,6 +24,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     private readonly TicketServiceContext _context;
     private readonly Mock<ILogger<TicketService>> _loggerMock;
     private readonly TicketService _sut;
+    private readonly Mock<ITicketValidator> _ticketValidatorMock;
 
     public CreateAsync(TicketServiceClassFixture classFixture)
     {
@@ -39,25 +43,29 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
 
         _loggerMock = new Mock<ILogger<TicketService>>();
 
-        _sut = new TicketService(_context, _loggerMock.Object);
+        _ticketValidatorMock = new Mock<ITicketValidator>();
+        _sut = new TicketService(_context, _loggerMock.Object, _ticketValidatorMock.Object);
+    }
+
+    public async Task InitializeAsync()
+    {
+        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await migrationContext.Database.EnsureCreatedAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await migrationContext.Database.EnsureDeletedAsync();
     }
 
     [Fact]
-    public async Task GivenNullInput_ReturnsError()
+    public async Task GivenValidatorReturnsAnyError_ReturnsTheError()
     {
-        // Arrange
-        Ticket? ticket = null;
-
-        // Act
-        var result = await _sut.CreateAsync(ticket!);
-
-        // Assert
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GivenInputWithExistingId_ReturnsInvalidIdError()
-    {
+        _ticketValidatorMock.Setup(m => m.IsValidNewTicketAsync(
+                It.IsAny<Ticket>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Fail(new TestError()));
         var existing = _fixture.Create<Ticket>();
         await _context.AddAsync(existing);
         await _context.SaveChangesAsync();
@@ -68,12 +76,16 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         var result = await _sut.CreateAsync(ticket);
 
         result.IsFailed.Should().BeTrue();
-        result.Errors.Should().Contain(error => error is InvalidIdError);
+        result.Errors.Should().Contain(error => error is TestError);
     }
 
     [Fact]
-    public async Task GivenNewTicket_ReturnsOk()
+    public async Task GivenNewValidTicket_ReturnsOk()
     {
+        _ticketValidatorMock.Setup(m => m.IsValidNewTicketAsync(
+                It.IsAny<Ticket>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok());
         var ticket = _fixture.Create<Ticket>();
 
         var result = await _sut.CreateAsync(ticket);
@@ -84,6 +96,10 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewTicket_ReturnsOkWithTicketAsValue()
     {
+        _ticketValidatorMock.Setup(m => m.IsValidNewTicketAsync(
+                It.IsAny<Ticket>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok());
         var ticket = _fixture.Create<Ticket>();
 
         var result = await _sut.CreateAsync(ticket);
@@ -95,6 +111,10 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewTicket_CreatesNewTicketInDatabase()
     {
+        _ticketValidatorMock.Setup(m => m.IsValidNewTicketAsync(
+                It.IsAny<Ticket>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok());
         var ticket = _fixture.Create<Ticket>();
         ticket.Id = 0;
         var result = await _sut.CreateAsync(ticket);
@@ -116,23 +136,11 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
         var loggerMock = new Mock<ILogger<TicketService>>();
 
-        var sut = new TicketService(contextMock.Object, loggerMock.Object);
+        var sut = new TicketService(contextMock.Object, loggerMock.Object, _ticketValidatorMock.Object);
 
         var result = await sut.CreateAsync(ticket);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(error => error is UnknownError);
-    }
-
-    public async Task InitializeAsync()
-    {
-        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
-        await migrationContext.Database.EnsureCreatedAsync();
-    }
-
-    public async Task DisposeAsync()
-    {
-        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
-        await migrationContext.Database.EnsureDeletedAsync();
     }
 }
