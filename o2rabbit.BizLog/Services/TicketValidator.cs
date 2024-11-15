@@ -45,4 +45,34 @@ public class TicketValidator : ITicketValidator
 
         return Result.Ok();
     }
+
+    public async ValueTask<Result> IsValidUpdatedTicket(Ticket ticket, CancellationToken cancellationToken = default)
+    {
+        if (ticket == null)
+            return Result.Fail(new NullInputError());
+
+        var existingTicketTask =
+            _context.Tickets.FindAsync(ticket.Id, cancellationToken).AsTask();
+        var isValidProcessIdTask = Task<bool>.Run(async () =>
+        {
+            if (ticket.ProcessId.HasValue)
+            {
+                var process = await _context.Processes.FindAsync(ticket.ProcessId.Value, cancellationToken);
+                return process != null;
+            }
+
+            return true;
+        });
+
+        if (await existingTicketTask == null)
+            return Result.Fail(new InvalidIdError($"Invalid ticket id: {ticket.Id}"));
+
+        var isValidProcessId = await isValidProcessIdTask;
+        if (!isValidProcessId)
+        {
+            return Result.Fail(new InvalidIdError($"Invalid process id: {ticket.ProcessId}"));
+        }
+
+        return Result.Ok();
+    }
 }
