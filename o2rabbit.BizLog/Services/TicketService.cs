@@ -89,15 +89,15 @@ internal class TicketService : ITicketService
         }
     }
 
-    public async Task<Result<Ticket>> UpdateAsync(Ticket Ticket, CancellationToken cancellationToken = default)
+    public async Task<Result<Ticket>> UpdateAsync(Ticket ticket, CancellationToken cancellationToken = default)
     {
         try
         {
             var existingTicket =
-                await _context.Tickets.FindAsync(Ticket.Id, cancellationToken).ConfigureAwait(false);
+                await _context.Tickets.FindAsync(ticket.Id, cancellationToken).ConfigureAwait(false);
             if (existingTicket == null)
                 return Result.Fail<Ticket>(new InvalidIdError());
-            _context.Update(existingTicket).CurrentValues.SetValues(Ticket);
+            _context.Update(existingTicket).CurrentValues.SetValues(ticket);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return Result.Ok(existingTicket);
         }
