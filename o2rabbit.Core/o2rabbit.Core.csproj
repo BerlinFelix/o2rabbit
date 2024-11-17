@@ -8,6 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Reference Include="FluentValidation">
+            <HintPath>..\..\..\..\..\.nuget\packages\fluentvalidation\11.10.0\lib\net8.0\FluentValidation.dll</HintPath>
+        </Reference>
       <Reference Include="Microsoft.EntityFrameworkCore">
         <HintPath>..\..\..\..\..\.nuget\packages\microsoft.entityframeworkcore\8.0.8\lib\net8.0\Microsoft.EntityFrameworkCore.dll</HintPath>
       </Reference>

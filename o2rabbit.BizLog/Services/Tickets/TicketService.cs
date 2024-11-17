@@ -6,11 +6,12 @@ using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Models;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Extensions;
 
-namespace o2rabbit.BizLog.Services;
+namespace o2rabbit.BizLog.Services.Tickets;
 
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
 internal class TicketService : ITicketService
@@ -37,11 +38,11 @@ internal class TicketService : ITicketService
     {
         try
         {
-            var validationResult = await _ticketValidator.IsValidNewTicketAsync(ticket, cancellationToken)
+            var validationResult = await _ticketValidator.ValidateAsync(ticket, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (validationResult.IsFailed)
-                return validationResult;
+            if (!validationResult.IsValid)
+                return Result.Fail(validationResult.Errors.ToString());
 
             await _context.Tickets.AddAsync(ticket, cancellationToken).ConfigureAwait(false);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -89,15 +90,18 @@ internal class TicketService : ITicketService
         }
     }
 
-    public async Task<Result<Ticket>> UpdateAsync(Ticket ticket, CancellationToken cancellationToken = default)
+    public async Task<Result<Ticket>> UpdateAsync(Ticket update, CancellationToken cancellationToken = default)
     {
         try
         {
             var existingTicket =
-                await _context.Tickets.FindAsync(ticket.Id, cancellationToken).ConfigureAwait(false);
-            if (existingTicket == null)
+                await _context.Tickets.FindAsync(update.Id, cancellationToken).ConfigureAwait(false);
+            var ticketUpdate = new TicketUpdate(existingTicket, update);
+            var validationResult =
+                await _ticketValidator.ValidateAsync(ticketUpdate, cancellationToken).ConfigureAwait(false);
+            if (!validationResult.IsValid)
                 return Result.Fail<Ticket>(new InvalidIdError());
-            _context.Update(existingTicket).CurrentValues.SetValues(ticket);
+            _context.Update(existingTicket).CurrentValues.SetValues(update);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return Result.Ok(existingTicket);
         }

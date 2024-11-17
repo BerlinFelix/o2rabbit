@@ -12,7 +12,7 @@ public interface ITicketService
     public Task<Result<Ticket>> GetByIdAsync(long id, GetTicketByIdOptions? options = null,
         CancellationToken cancellationToken = default);
 
-    public Task<Result<Ticket>> UpdateAsync(Ticket ticket, CancellationToken cancellationToken = default);
+    public Task<Result<Ticket>> UpdateAsync(Ticket update, CancellationToken cancellationToken = default);
 
     Task<Result> DeleteAsync(long id, CancellationToken cancellationToken = default);
 
