@@ -3,22 +3,23 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
-using o2rabbit.BizLog.Services;
+using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
-using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketValidator;
 
-public class IsValidNewTicketAsync : IClassFixture<TicketValidatorClassFixture>, IAsyncLifetime
+public class ValidateNewTicket : IClassFixture<TicketValidatorClassFixture>, IAsyncLifetime
 {
     private readonly TicketValidatorClassFixture _classFixture;
     private readonly Fixture _fixture;
     private readonly TicketValidator _sut;
     private readonly TicketServiceContext _ticketContext;
+    private readonly NewTicketValidator _newTicketValidator;
+    private readonly UpdatedTicketValidator _updatedTicketValidator;
 
-    public IsValidNewTicketAsync(TicketValidatorClassFixture classFixture)
+    public ValidateNewTicket(TicketValidatorClassFixture classFixture)
     {
         _classFixture = classFixture;
         _fixture = new Fixture();
@@ -28,15 +29,9 @@ public class IsValidNewTicketAsync : IClassFixture<TicketValidatorClassFixture>,
             {
                 ConnectionString = _classFixture.ConnectionString
             }));
-        _sut = new TicketValidator(_ticketContext);
-    }
-
-    [Fact]
-    public async Task GivenNullInput_ReturnsNullInputError()
-    {
-        var result = await _sut.IsValidNewTicketAsync(null!);
-
-        result.Errors.Should().ContainSingle(e => e is NullInputError);
+        _newTicketValidator = new NewTicketValidator(_ticketContext);
+        _updatedTicketValidator = new UpdatedTicketValidator(_ticketContext);
+        _sut = new TicketValidator(_newTicketValidator, _updatedTicketValidator);
     }
 
 
@@ -51,9 +46,9 @@ public class IsValidNewTicketAsync : IClassFixture<TicketValidatorClassFixture>,
         var newTicket = _fixture.Create<Ticket>();
         newTicket.Id = existingTicket.Id;
 
-        var result = await _sut.IsValidNewTicketAsync(newTicket);
+        var result = await _sut.ValidateAsync(newTicket);
 
-        result.Errors.Should().ContainSingle(e => e is InvalidIdError);
+        result.Errors.Should().Contain(e => e.PropertyName == "Id");
     }
 
     [Fact]
@@ -64,9 +59,9 @@ public class IsValidNewTicketAsync : IClassFixture<TicketValidatorClassFixture>,
         var ticket = fixture.Create<Ticket>();
         ticket.ProcessId = 1;
 
-        var result = await _sut.IsValidNewTicketAsync(ticket);
+        var result = await _sut.ValidateAsync(ticket);
 
-        result.Errors.Should().ContainSingle(e => e is InvalidIdError);
+        result.Errors.Should().Contain(e => e.PropertyName == "ProcessId");
     }
 
     [Fact]
@@ -74,9 +69,9 @@ public class IsValidNewTicketAsync : IClassFixture<TicketValidatorClassFixture>,
     {
         var ticket = _fixture.Create<Ticket>();
 
-        var result = await _sut.IsValidNewTicketAsync(ticket);
+        var result = await _sut.ValidateAsync(ticket);
 
-        result.IsSuccess.Should().BeTrue();
+        result.IsValid.Should().BeTrue();
     }
 
     public async Task InitializeAsync()
