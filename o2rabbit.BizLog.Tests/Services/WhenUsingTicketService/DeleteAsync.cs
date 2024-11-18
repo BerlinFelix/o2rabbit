@@ -7,7 +7,7 @@ using Moq;
 using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
-using o2rabbit.BizLog.Services;
+using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;

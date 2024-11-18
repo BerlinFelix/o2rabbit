@@ -33,20 +33,19 @@ internal class TicketService : ITicketService
         _ticketValidator = ticketValidator;
     }
 
-    public async Task<Result<Ticket>> CreateAsync(Ticket ticket,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<Ticket>> CreateAsync(Ticket ticket, CancellationToken cancellationToken = default)
     {
+        if (ticket == null)
+            return Result.Fail(new NullInputError());
+
         try
         {
             var validationResult = await _ticketValidator.ValidateAsync(ticket, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (!validationResult.IsValid)
-                return Result.Fail(validationResult.Errors.ToString());
-
+            if (!validationResult.IsValid) return Result.Fail(new ValidationNotSuccessfulError(validationResult));
             await _context.Tickets.AddAsync(ticket, cancellationToken).ConfigureAwait(false);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
             return Result.Ok(ticket);
         }
         catch (Exception e)
@@ -92,18 +91,25 @@ internal class TicketService : ITicketService
 
     public async Task<Result<Ticket>> UpdateAsync(Ticket update, CancellationToken cancellationToken = default)
     {
+        if (update == null)
+            return Result.Fail<Ticket>(new NullInputError());
         try
         {
             var existingTicket =
                 await _context.Tickets.FindAsync(update.Id, cancellationToken).ConfigureAwait(false);
+
             var ticketUpdate = new TicketUpdate(existingTicket, update);
+
             var validationResult =
                 await _ticketValidator.ValidateAsync(ticketUpdate, cancellationToken).ConfigureAwait(false);
+
             if (!validationResult.IsValid)
                 return Result.Fail<Ticket>(new InvalidIdError());
-            _context.Update(existingTicket).CurrentValues.SetValues(update);
+
+            _context.Update(existingTicket!).CurrentValues.SetValues(update);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            return Result.Ok(existingTicket);
+
+            return Result.Ok(existingTicket!);
         }
         catch (Exception e)
         {
@@ -119,14 +125,14 @@ internal class TicketService : ITicketService
     {
         try
         {
-            var Ticket = await _context.Tickets.FindAsync(id, cancellationToken).ConfigureAwait(false);
-            if (Ticket == null)
+            var ticket = await _context.Tickets.FindAsync(id, cancellationToken).ConfigureAwait(false);
+            if (ticket == null)
             {
                 return Result.Fail(new InvalidIdError());
             }
             else
             {
-                _context.Tickets.Remove(Ticket);
+                _context.Tickets.Remove(ticket);
                 await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return Result.Ok();
             }
