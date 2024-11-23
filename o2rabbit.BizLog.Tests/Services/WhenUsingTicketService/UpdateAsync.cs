@@ -76,9 +76,22 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     }
 
     [Theory]
+    [InlineData(-1)]
+    [InlineData(5)]
+    public async Task GivenValidatorReturnsInvalid_ReturnsErrors(long id)
+    {
+        var updatedTicket = _fixture.Create<Ticket>();
+        updatedTicket.Id = id;
+
+        var result = await _sut.UpdateAsync(updatedTicket);
+
+        result.Errors.Should().NotBeEmpty();
+    }
+
+    [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenTicketWithExistingId_SavesChanges(long id)
+    public async Task GivenValidUpdatedTicket_SavesChanges(long id)
     {
         var updatedTicket = _fixture.Create<Ticket>();
         updatedTicket.Id = id;
@@ -95,7 +108,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenTicketWithExistingId_ReturnsOk(long id)
+    public async Task GivenValidaUpdatedTicket_ReturnsOk(long id)
     {
         var updatedTicket = _fixture.Create<Ticket>();
         updatedTicket.Id = id;
@@ -108,7 +121,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenTicketWithExistingId_ReturnsTicketAsValue(long id)
+    public async Task GivenValidUpdatedTicket_ReturnsUpdatedTicketAsValue(long id)
     {
         var updatedTicket = _fixture.Create<Ticket>();
         updatedTicket.Id = id;
