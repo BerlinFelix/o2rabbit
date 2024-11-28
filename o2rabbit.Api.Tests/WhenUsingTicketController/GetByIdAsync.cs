@@ -69,7 +69,10 @@ public class GetByIdAsync
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOkWithTicket()
     {
         var ticket = _fixture.Create<Ticket>();
-        _ticketServiceMock.Setup(m => m.GetByIdAsync(ticket.Id, null, It.IsAny<CancellationToken>()))
+        _ticketServiceMock.Setup(m =>
+                m.GetByIdAsync(ticket.Id,
+                    It.IsAny<GetTicketByIdOptions>(),
+                    It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
 
         var response = await _sut.GetByIdAsync(ticket.Id);

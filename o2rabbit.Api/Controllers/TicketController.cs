@@ -21,9 +21,14 @@ public class TicketController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Ticket>> GetByIdAsync(long id,
-        [FromBody] GetTicketByIdOptions? options = null,
+        [FromQuery] bool includeChildren = false,
         CancellationToken cancellationToken = default)
     {
+        var options = new GetTicketByIdOptions()
+        {
+            IncludeChildren = includeChildren,
+        };
+
         var result = await _ticketService.GetByIdAsync(id, options, cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccess)
