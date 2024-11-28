@@ -21,9 +21,14 @@ public class ProcessController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Process>> GetByIdAsync(long id,
-        [FromBody] GetProcessByIdOptions? options = null,
+        [FromQuery] bool includeChildren = false,
         CancellationToken cancellationToken = default)
     {
+        var options = new GetProcessByIdOptions()
+        {
+            IncludeChildren = includeChildren,
+        };
+
         var result = await _processService.GetByIdAsync(id, options, cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccess)

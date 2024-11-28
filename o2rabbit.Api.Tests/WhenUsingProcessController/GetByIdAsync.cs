@@ -69,7 +69,8 @@ public class GetByIdAsync
     public async Task WhenProcessServiceReturnsSuccess_ReturnsOkWithProcess()
     {
         var process = _fixture.Create<Process>();
-        _processServiceMock.Setup(m => m.GetByIdAsync(process.Id, null, It.IsAny<CancellationToken>()))
+        _processServiceMock.Setup(m =>
+                m.GetByIdAsync(process.Id, It.IsAny<GetProcessByIdOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(process));
 
         var response = await _sut.GetByIdAsync(process.Id);
@@ -83,7 +84,8 @@ public class GetByIdAsync
     public async Task WhenProcessServiceReturnsUnknownError_Returns500()
     {
         var process = _fixture.Create<Process>();
-        _processServiceMock.Setup(m => m.GetByIdAsync(process.Id, null, It.IsAny<CancellationToken>()))
+        _processServiceMock.Setup(m =>
+                m.GetByIdAsync(process.Id, It.IsAny<GetProcessByIdOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
 
         var response = await _sut.GetByIdAsync(process.Id);
