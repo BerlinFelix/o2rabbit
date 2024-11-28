@@ -85,11 +85,15 @@ public class TicketController : ControllerBase
         }
     }
 
-    [HttpPut()]
-    public async Task<ActionResult<Ticket>> UpdateAsync(Ticket? ticket,
+    [HttpPut("{id}")]
+    public async Task<ActionResult<Ticket>> UpdateAsync(
+        long id,
+        [FromBody] Ticket? ticket,
         CancellationToken cancellationToken = default)
     {
         if (ticket is null) return BadRequest("Ticket is null");
+
+        ticket.Id = id;
 
         var result = await _ticketService.UpdateAsync(ticket, cancellationToken).ConfigureAwait(false);
         if (result.IsSuccess)

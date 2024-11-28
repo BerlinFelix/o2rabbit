@@ -31,7 +31,7 @@ public class UpdateAsync
     public async Task WhenCalled_CallsTicketService()
     {
         var ticket = _fixture.Create<Ticket>();
-        await _sut.UpdateAsync(ticket);
+        await _sut.UpdateAsync(1, ticket);
 
         _ticketServiceMock.Verify(m => m.UpdateAsync(ticket, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -43,7 +43,7 @@ public class UpdateAsync
         _ticketServiceMock.Setup(m => m.UpdateAsync(It.IsAny<Ticket>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new InvalidIdError()));
 
-        var response = await _sut.UpdateAsync(ticket);
+        var response = await _sut.UpdateAsync(1, ticket);
 
         response.Result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -55,7 +55,7 @@ public class UpdateAsync
         _ticketServiceMock.Setup(m => m.UpdateAsync(ticket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
 
-        var response = await _sut.UpdateAsync(ticket);
+        var response = await _sut.UpdateAsync(1, ticket);
 
         response.Result.Should().BeOfType<OkObjectResult>();
     }
@@ -67,7 +67,7 @@ public class UpdateAsync
         _ticketServiceMock.Setup(m => m.UpdateAsync(ticket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
 
-        var response = await _sut.UpdateAsync(ticket);
+        var response = await _sut.UpdateAsync(ticket.Id, ticket);
 
         response.Result.Should().BeOfType<OkObjectResult>();
         var objectResult = (OkObjectResult)response.Result!;
@@ -81,9 +81,22 @@ public class UpdateAsync
         _ticketServiceMock.Setup(m => m.UpdateAsync(It.IsAny<Ticket>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
 
-        var response = await _sut.UpdateAsync(ticket);
+        var response = await _sut.UpdateAsync(ticket.Id, ticket);
 
         response.Result.Should().BeOfType<StatusCodeResult>();
         response.Result.As<StatusCodeResult>().StatusCode.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task EnsuresTicketIdIsReadFromQueryParam()
+    {
+        var ticket = _fixture.Create<Ticket>();
+        _ticketServiceMock.Setup(m => m.UpdateAsync(It.IsAny<Ticket>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(ticket));
+
+        var queryParamId = ticket.Id + 1;
+        await _sut.UpdateAsync(queryParamId, ticket);
+
+        ticket.Id.Should().Be(queryParamId);
     }
 }
