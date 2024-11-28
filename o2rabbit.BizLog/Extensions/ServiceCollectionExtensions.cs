@@ -7,6 +7,7 @@ using o2rabbit.BizLog.Models;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
 using o2rabbit.BizLog.Options.ProcessService;
+using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.Core.Entities;
@@ -18,22 +19,41 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddBizLog(this IServiceCollection services,
         Action<BizLogOptions, IServiceProvider> action)
     {
+        #region shared
+
         services.AddOptions()
             .AddOptions<BizLogOptions>()
             .Configure<IServiceProvider>(action);
-
-        services.ConfigureOptions<ProcessServiceContextOptionsConfigurator>()
-            .ConfigureOptions<ProcessServiceContextOptionsConfigurator>();
-
-        services.AddLogging()
-            .AddScoped<IProcessService, ProcessService>()
-            .AddScoped<ITicketValidator, TicketValidator>()
-            .AddScoped<IValidator<TicketUpdate>, UpdatedTicketValidator>()
-            .AddScoped<IValidator<Ticket>, NewTicketValidator>()
-            .AddDbContext<ProcessServiceContext>();
+        services.AddLogging();
 
         services.AddValidatorsFromAssemblyContaining(typeof(_FluentValidationDIRegistrationHook),
             ServiceLifetime.Scoped, includeInternalTypes: true);
+
+        #endregion
+
+        #region processes
+
+        services
+            .AddScoped<IProcessService, ProcessService>()
+            .AddDbContext<ProcessServiceContext>();
+        services.ConfigureOptions<ProcessServiceContextOptionsConfigurator>()
+            .ConfigureOptions<ProcessServiceContextOptionsConfigurator>();
+
+        #endregion
+
+        #region tickets
+
+        services
+            .AddScoped<ITicketService, TicketService>()
+            .AddScoped<ITicketValidator, TicketValidator>()
+            .AddScoped<IValidator<TicketUpdate>, UpdatedTicketValidator>()
+            .AddScoped<IValidator<Ticket>, NewTicketValidator>()
+            .AddDbContext<TicketServiceContext>();
+
+        services.ConfigureOptions<TicketServiceContextOptionsConfigurator>();
+
+        #endregion
+
         return services;
     }
 }
