@@ -40,9 +40,9 @@ public class ValidateUpdatedTicket : IClassFixture<TicketValidatorClassFixture>,
     public async Task GivenExistingTicket_ReturnOk()
     {
         var existingTicket = _fixture.Create<Ticket>();
-        var _context = new DefaultContext(_classFixture.ConnectionString);
-        _context.Tickets.Add(existingTicket);
-        await _context.SaveChangesAsync();
+        var context = new DefaultContext(_classFixture.ConnectionString);
+        context.Tickets.Add(existingTicket);
+        await context.SaveChangesAsync();
 
         var updatedTicket = _fixture.Create<Ticket>();
         updatedTicket.Id = existingTicket.Id;
@@ -59,9 +59,9 @@ public class ValidateUpdatedTicket : IClassFixture<TicketValidatorClassFixture>,
     public async Task GivenTwoDifferentTicketIds_ReturnInvalid()
     {
         var existingTicket = _fixture.Create<Ticket>();
-        var _context = new DefaultContext(_classFixture.ConnectionString);
-        _context.Tickets.Add(existingTicket);
-        await _context.SaveChangesAsync();
+        var context = new DefaultContext(_classFixture.ConnectionString);
+        context.Tickets.Add(existingTicket);
+        await context.SaveChangesAsync();
 
         var newTicket = _fixture.Create<Ticket>();
         newTicket.Id = existingTicket.Id + 1;
@@ -77,9 +77,9 @@ public class ValidateUpdatedTicket : IClassFixture<TicketValidatorClassFixture>,
     public async Task GivenUpdateWithNotExistingProcessId_ReturnInvalid()
     {
         var existingTicket = _fixture.Create<Ticket>();
-        var _context = new DefaultContext(_classFixture.ConnectionString);
-        _context.Tickets.Add(existingTicket);
-        await _context.SaveChangesAsync();
+        var context = new DefaultContext(_classFixture.ConnectionString);
+        context.Tickets.Add(existingTicket);
+        await context.SaveChangesAsync();
 
         var updatedTicket = existingTicket.DeepClone();
         updatedTicket.ProcessId = 11;
@@ -88,6 +88,26 @@ public class ValidateUpdatedTicket : IClassFixture<TicketValidatorClassFixture>,
         var result = await _sut.ValidateAsync(update);
 
         result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GivenUpdateWithChildren_ReturnsInvalid()
+    {
+        var existingTicket = _fixture.Create<Ticket>();
+        var context = new DefaultContext(_classFixture.ConnectionString);
+        context.Tickets.Add(existingTicket);
+        await context.SaveChangesAsync();
+
+        var updatedTicket = existingTicket.DeepClone();
+        var child = _fixture.Create<Ticket>();
+        updatedTicket.Children.Add(child);
+        var update = new TicketUpdate(existingTicket, updatedTicket);
+
+        var result = await _sut.ValidateAsync(update);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should()
+            .Contain(e => e.PropertyName == $"{nameof(TicketUpdate.Update)}.{nameof(Ticket.Children)}");
     }
 
     public async Task InitializeAsync()
