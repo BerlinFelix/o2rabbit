@@ -74,6 +74,19 @@ public class ValidateNewTicket : IClassFixture<TicketValidatorClassFixture>, IAs
         result.IsValid.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task GivenTicketWithChildren_ReturnsInvalid()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasChildren());
+        var newTicket = fixture.Create<Ticket>();
+
+        var result = await _sut.ValidateAsync(newTicket);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(Ticket.Children));
+    }
+
     public async Task InitializeAsync()
     {
         await using var defaultContext = new DefaultContext(_classFixture.ConnectionString);

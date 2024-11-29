@@ -31,5 +31,6 @@ public class NewTicketValidator : AbstractValidator<Ticket>
 
             return await _context.Processes.FindAsync(id).ConfigureAwait(false) != null;
         });
+        RuleFor(t => t.Children).Empty();
     }
 }

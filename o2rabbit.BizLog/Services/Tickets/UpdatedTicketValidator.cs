@@ -11,9 +11,9 @@ public class UpdatedTicketValidator : AbstractValidator<TicketUpdate>
         ArgumentNullException.ThrowIfNull(context);
 
         RuleFor(u => u.Old).NotNull();
-        RuleFor(u => u.Update).NotNull();
-        RuleFor(u => u).Must(u => u.Old.Id == u.Update.Id);
-        RuleFor(u => u.Update.ProcessId).MustAsync(async (id, c) =>
+        RuleFor(u => u.New).NotNull();
+        RuleFor(u => u.Old).Must((update, old) => old.Id == update.New.Id);
+        RuleFor(u => u.New.ProcessId).MustAsync(async (id, c) =>
         {
             if (!id.HasValue)
             {

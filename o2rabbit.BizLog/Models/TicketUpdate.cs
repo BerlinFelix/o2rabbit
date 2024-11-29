@@ -4,12 +4,12 @@ namespace o2rabbit.BizLog.Models;
 
 public class TicketUpdate
 {
-    public Ticket? Update { get; }
+    public Ticket? New { get; }
     public Ticket? Old { get; }
 
-    public TicketUpdate(Ticket? old, Ticket? update)
+    public TicketUpdate(Ticket? old, Ticket? @new)
     {
         Old = old;
-        Update = update;
+        New = @new;
     }
 }
