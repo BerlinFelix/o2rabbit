@@ -88,7 +88,7 @@ public class TicketController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<Ticket>> UpdateAsync(
         long id,
-        [FromBody] Ticket? ticket,
+        [FromBody] UpdatedTicketDto? ticket,
         CancellationToken cancellationToken = default)
     {
         if (ticket is null) return BadRequest("Ticket is null");

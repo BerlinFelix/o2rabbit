@@ -1,12 +1,12 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Models;
 using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
-public class UpdatedTicketValidator : AbstractValidator<TicketUpdate>
+public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketDto>
 {
     private readonly TicketServiceContext _context;
 
@@ -15,26 +15,27 @@ public class UpdatedTicketValidator : AbstractValidator<TicketUpdate>
         _context = context;
         ArgumentNullException.ThrowIfNull(context);
 
-        RuleFor(u => u.Old).NotNull();
-        RuleFor(u => u.Update).NotNull();
-        RuleFor(u => u.Old).Must((update, old) => old.Id == update.Update.Id);
-        RuleFor(u => u.Update.ProcessId).MustAsync(async (id, c) =>
+        RuleFor(u => u.ParentId).MustAsync(async (id, c) =>
         {
             if (!id.HasValue)
             {
                 return true;
             }
 
-            return await context.Processes.FindAsync(id, c).ConfigureAwait(false) != null;
+            return await context.Tickets.FindAsync(id, c).ConfigureAwait(false) != null;
         });
-        // Update regarding children must be done with different endpoint
-        RuleFor(u => u.Update.Children).Must(children => !children.Any());
-        RuleFor(u => u.Update.ProcessId).MustAsync(async (id, c) =>
+        RuleFor(u => u.ProcessId).MustAsync(async (id, c) =>
         {
             if (!id.HasValue)
                 return true;
             var processExists = await context.Processes.FindAsync(id, c).ConfigureAwait(false) != null;
             return processExists;
+        });
+        RuleFor(u => u.Name).NotEmpty();
+        RuleFor(u => u.Id).MustAsync(async (id, c) =>
+        {
+            var ticketExists = await context.Tickets.FindAsync(id, c).ConfigureAwait(false) != null;
+            return ticketExists;
         });
     }
 
@@ -48,6 +49,7 @@ public class UpdatedTicketValidator : AbstractValidator<TicketUpdate>
     private async Task<bool> ContainsInHirarchyAsync(Ticket ticket, long id,
         CancellationToken cancellationToken = default)
     {
+        // TODO
         if (ticket.Id == id)
             return true;
 

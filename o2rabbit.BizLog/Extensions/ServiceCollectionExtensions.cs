@@ -4,7 +4,6 @@ using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Models;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
 using o2rabbit.BizLog.Options.ProcessService;
@@ -46,7 +45,7 @@ public static class ServiceCollectionExtensions
         services
             .AddScoped<ITicketService, TicketService>()
             .AddScoped<ITicketValidator, TicketValidator>()
-            .AddScoped<IValidator<TicketUpdate>, UpdatedTicketValidator>()
+            .AddScoped<IValidator<UpdatedTicketDto>, UpdatedTicketValidator>()
             .AddScoped<IValidator<NewTicketDto>, NewTicketValidator>()
             .AddDbContext<TicketServiceContext>();
 

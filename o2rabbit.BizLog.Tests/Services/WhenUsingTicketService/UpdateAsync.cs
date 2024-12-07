@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
+using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.UpdatedTicketDto;
 using o2rabbit.Core.Entities;
 using o2rabbit.Migrations.Context;
 
@@ -26,7 +28,12 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+        _fixture.Customize(
+            new CompositeCustomization(
+                new TicketHasNoProcessNoParentsNoChildren(),
+                new UpdatedTicketHasNoParentAndNoProcess()
+            )
+        );
 
         _ticketContext =
             new TicketServiceContext(
@@ -36,8 +43,6 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
                 }));
 
         var loggerMock = new Mock<ILogger<TicketService>>();
-        // Note that FluentValidation strongly suggests not to mock its validators.
-        // Instead one should actual validation
         var ticketValidator = new TicketValidator(new NewTicketValidator(_ticketContext),
             new UpdatedTicketValidator(_ticketContext));
         _sut = new TicketService(_ticketContext, loggerMock.Object, ticketValidator);
@@ -67,7 +72,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(5)]
     public async Task GivenValidatorReturnsInvalid_ReturnsFail(long id)
     {
-        var updatedTicket = _fixture.Create<Ticket>();
+        var updatedTicket = _fixture.Create<UpdatedTicketDto>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
@@ -80,7 +85,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(5)]
     public async Task GivenValidatorReturnsInvalid_ReturnsErrors(long id)
     {
-        var updatedTicket = _fixture.Create<Ticket>();
+        var updatedTicket = _fixture.Create<UpdatedTicketDto>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
@@ -93,7 +98,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_SavesChanges(long id)
     {
-        var updatedTicket = _fixture.Create<Ticket>();
+        var updatedTicket = _fixture.Create<UpdatedTicketDto>();
         updatedTicket.Id = id;
 
         await _sut.UpdateAsync(updatedTicket);
@@ -108,9 +113,9 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task GivenValidaUpdatedTicket_ReturnsOk(long id)
+    public async Task GivenValidUpdatedTicket_ReturnsOk(long id)
     {
-        var updatedTicket = _fixture.Create<Ticket>();
+        var updatedTicket = _fixture.Create<UpdatedTicketDto>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
@@ -123,7 +128,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_ReturnsUpdatedTicketAsValue(long id)
     {
-        var updatedTicket = _fixture.Create<Ticket>();
+        var updatedTicket = _fixture.Create<UpdatedTicketDto>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
