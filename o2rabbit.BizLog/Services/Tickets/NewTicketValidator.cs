@@ -1,10 +1,10 @@
 using FluentValidation;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Context;
-using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
-public class NewTicketValidator : AbstractValidator<Ticket>
+public class NewTicketValidator : AbstractValidator<NewTicketDto>
 {
     private readonly TicketServiceContext _context;
 
@@ -15,13 +15,15 @@ public class NewTicketValidator : AbstractValidator<Ticket>
         _context = context;
 
         RuleFor(t => t).NotNull();
-        RuleFor(t => t.Id).GreaterThanOrEqualTo(0);
-        RuleFor(t => t.Id).MustAsync(async (id, c) =>
+        RuleFor(t => t.ParentId).MustAsync(async (id, c) =>
         {
-            var exitingTicket = await
-                _context.Tickets.FindAsync(id, c).ConfigureAwait(false);
-            return exitingTicket == null;
-        });
+            if (!id.HasValue)
+            {
+                return true;
+            }
+
+            return await _context.Tickets.FindAsync(id).ConfigureAwait(false) != null;
+        }).WithMessage("Parent not found");
         RuleFor(t => t.ProcessId).MustAsync(async (id, c) =>
         {
             if (!id.HasValue)
@@ -30,7 +32,7 @@ public class NewTicketValidator : AbstractValidator<Ticket>
             }
 
             return await _context.Processes.FindAsync(id).ConfigureAwait(false) != null;
-        });
-        RuleFor(t => t.Children).Empty();
+        }).WithMessage("Process not found");
+        RuleFor(t => t.Name).NotEmpty();
     }
 }

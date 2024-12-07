@@ -3,10 +3,11 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
+using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.NewTicketDtoCustomizations;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Migrations.Context;
@@ -20,14 +21,14 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     private readonly Fixture _fixture;
     private readonly TicketService _sut;
     private readonly TicketServiceContext _ticketContext;
-    private readonly TicketValidator _ticketValidator;
+    private readonly TicketValidator _validator;
 
     public CreateAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
         _defaultContext = new DefaultContext(_classFixture.ConnectionString);
         _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+        _fixture.Customize(new NewTicketHasNoProcessAndNoParent());
 
         _ticketContext =
             new TicketServiceContext(
@@ -37,11 +38,9 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
                 }));
 
         var loggerMock = new Mock<ILogger<TicketService>>();
-        // Note that FluentValidation strongly suggests not to mock its validators.
-        // Instead one should actual validation
-        _ticketValidator = new TicketValidator(new NewTicketValidator(_ticketContext),
+        _validator = new TicketValidator(new NewTicketValidator(_ticketContext),
             new UpdatedTicketValidator(_ticketContext));
-        _sut = new TicketService(_ticketContext, loggerMock.Object, _ticketValidator);
+        _sut = new TicketService(_ticketContext, loggerMock.Object, _validator);
     }
 
     public async Task InitializeAsync()
@@ -57,82 +56,65 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     }
 
     [Fact]
-    public async Task GivenValidatorReturnsInvalid_ReturnsFail()
-    {
-        var existing = _fixture.Create<Ticket>();
-        await _ticketContext.AddAsync(existing);
-        await _ticketContext.SaveChangesAsync();
-
-        var ticket = _fixture.Create<Ticket>();
-        ticket.Id = existing.Id;
-
-        var result = await _sut.CreateAsync(ticket);
-
-        result.IsFailed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GivenValidatorReturnsInvalid_ReturnsValidationError()
-    {
-        var existing = _fixture.Create<Ticket>();
-        await _ticketContext.AddAsync(existing);
-        await _ticketContext.SaveChangesAsync();
-
-        var ticket = _fixture.Create<Ticket>();
-        ticket.Id = existing.Id;
-
-        var result = await _sut.CreateAsync(ticket);
-
-        result.Errors.Should().Contain(e => e is ValidationNotSuccessfulError);
-    }
-
-    [Fact]
     public async Task GivenNewValidTicket_ReturnsOk()
     {
-        var ticket = _fixture.Create<Ticket>();
-
-        var result = await _sut.CreateAsync(ticket);
+        var newTicket = _fixture.Create<NewTicketDto>();
+        var result = await _sut.CreateAsync(newTicket);
 
         result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
+    public async Task GivenInvalidTicket_ReturnsFail()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new NewTicketHasProcess());
+        var newTicket = fixture.Create<NewTicketDto>();
+
+        var result = await _sut.CreateAsync(newTicket);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().HaveCountGreaterThan(0);
+        result.Errors.Should().Contain(e => e is ValidationNotSuccessfulError);
+    }
+
+    [Fact]
     public async Task GivenNewTicket_ReturnsOkWithTicketAsValue()
     {
-        var ticket = _fixture.Create<Ticket>();
+        var newTicket = _fixture.Create<NewTicketDto>();
 
-        var result = await _sut.CreateAsync(ticket);
+        var result = await _sut.CreateAsync(newTicket);
 
         result.Value.Should().BeOfType<Ticket>();
-        result.Value.Should().Be(ticket);
+        result.Value.Should().BeEquivalentTo(newTicket);
     }
 
     [Fact]
     public async Task GivenNewTicket_CreatesNewTicketInDatabase()
     {
-        var ticket = _fixture.Create<Ticket>();
-        ticket.Id = 0;
-        var result = await _sut.CreateAsync(ticket);
+        var newTicket = _fixture.Create<NewTicketDto>();
+
+        var result = await _sut.CreateAsync(newTicket);
 
         var context = new DefaultContext(_classFixture.ConnectionString);
 
         var saved = await context.Tickets.FindAsync(result.Value.Id);
 
         saved.Should().NotBeNull();
-        saved.Name.Should().Be(ticket.Name);
+        saved.Should().BeEquivalentTo(newTicket);
     }
 
     [Fact]
     public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
-        var ticket = _fixture.Create<Ticket>();
+        var newTicket = _fixture.Create<NewTicketDto>();
         var contextMock = new Mock<TicketServiceContext>();
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
         var loggerMock = new Mock<ILogger<TicketService>>();
 
-        var sut = new TicketService(contextMock.Object, loggerMock.Object, _ticketValidator);
+        var sut = new TicketService(contextMock.Object, loggerMock.Object, _validator);
 
-        var result = await sut.CreateAsync(ticket);
+        var result = await sut.CreateAsync(newTicket);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(error => error is UnknownError);

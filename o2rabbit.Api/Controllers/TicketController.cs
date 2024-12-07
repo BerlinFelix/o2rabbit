@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
@@ -46,12 +47,12 @@ public class TicketController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Ticket>> CreateAsync(Ticket? ticket,
+    public async Task<ActionResult<Ticket>> CreateAsync(NewTicketDto? newTicket,
         CancellationToken cancellationToken = default)
     {
-        if (ticket is null) return BadRequest("Ticket is null");
+        if (newTicket is null) return BadRequest("Ticket is null");
 
-        var result = await _ticketService.CreateAsync(ticket, cancellationToken).ConfigureAwait(false);
+        var result = await _ticketService.CreateAsync(newTicket, cancellationToken).ConfigureAwait(false);
         if (result.IsSuccess)
         {
             return Ok(result.Value);

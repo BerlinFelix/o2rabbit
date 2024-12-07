@@ -1,4 +1,5 @@
 using FluentResults;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.Core.Entities;
 
@@ -6,7 +7,7 @@ namespace o2rabbit.BizLog.Abstractions.Services;
 
 public interface ITicketService
 {
-    public Task<Result<Ticket>> CreateAsync(Ticket ticket,
+    public Task<Result<Ticket>> CreateAsync(NewTicketDto newTicket,
         CancellationToken cancellationToken = default);
 
     public Task<Result<Ticket>> GetByIdAsync(long id, GetTicketByIdOptions? options = null,

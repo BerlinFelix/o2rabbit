@@ -4,14 +4,11 @@ namespace o2rabbit.BizLog.Models;
 
 public class TicketUpdate
 {
-    public Ticket Update { get; }
-    public Ticket Old { get; }
+    public Ticket? Update { get; }
+    public Ticket? Old { get; }
 
-    public TicketUpdate(Ticket old, Ticket update)
+    public TicketUpdate(Ticket? old, Ticket? update)
     {
-        ArgumentNullException.ThrowIfNull(old);
-        ArgumentNullException.ThrowIfNull(update);
-
         Old = old;
         Update = update;
     }

@@ -14,7 +14,7 @@ using o2rabbit.Utilities.Extensions;
 namespace o2rabbit.BizLog.Services.Tickets;
 
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
-internal class TicketService : ITicketService
+internal partial class TicketService : ITicketService
 {
     private readonly TicketServiceContext _context;
     private readonly ILogger<TicketService> _logger;
@@ -33,27 +33,6 @@ internal class TicketService : ITicketService
         _ticketValidator = ticketValidator;
     }
 
-    public async Task<Result<Ticket>> CreateAsync(Ticket ticket, CancellationToken cancellationToken = default)
-    {
-        if (ticket == null)
-            return Result.Fail(new NullInputError());
-
-        try
-        {
-            var validationResult = await _ticketValidator.ValidateAsync(ticket, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (!validationResult.IsValid) return Result.Fail(new ValidationNotSuccessfulError(validationResult));
-            await _context.Tickets.AddAsync(ticket, cancellationToken).ConfigureAwait(false);
-            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            return Result.Ok(ticket);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, e.Message);
-            return Result.Fail<Ticket>(new UnknownError());
-        }
-    }
 
     public async Task<Result<Ticket>> GetByIdAsync(long id, GetTicketByIdOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -104,7 +83,7 @@ internal class TicketService : ITicketService
                 await _ticketValidator.ValidateAsync(ticketUpdate, cancellationToken).ConfigureAwait(false);
 
             if (!validationResult.IsValid)
-                return Result.Fail<Ticket>(new InvalidIdError());
+                return Result.Fail<Ticket>(new ValidationNotSuccessfulError(validationResult));
 
             _context.Update(existingTicket!).CurrentValues.SetValues(update);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

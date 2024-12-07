@@ -29,6 +29,13 @@ public class UpdatedTicketValidator : AbstractValidator<TicketUpdate>
         });
         // Update regarding children must be done with different endpoint
         RuleFor(u => u.Update.Children).Must(children => !children.Any());
+        RuleFor(u => u.Update.ProcessId).MustAsync(async (id, c) =>
+        {
+            if (!id.HasValue)
+                return true;
+            var processExists = await context.Processes.FindAsync(id, c).ConfigureAwait(false) != null;
+            return processExists;
+        });
     }
 
     /// <summary>
