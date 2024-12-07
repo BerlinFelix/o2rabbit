@@ -1,5 +1,5 @@
 using FluentResults;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.Core.Entities;
 

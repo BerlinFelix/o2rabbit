@@ -1,4 +1,4 @@
-namespace o2rabbit.BizLog.Abstractions.Models;
+namespace o2rabbit.BizLog.Abstractions.Models.TicketModels;
 
 public class NewTicketDto
 {

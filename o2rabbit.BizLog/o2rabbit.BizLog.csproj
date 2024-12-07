@@ -24,8 +24,4 @@
       <ProjectReference Include="..\o2rabbit.Utilities\o2rabbit.Utilities.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Models\"/>
-    </ItemGroup>
-
 </Project>

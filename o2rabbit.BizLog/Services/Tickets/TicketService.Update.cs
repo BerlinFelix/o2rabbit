@@ -1,6 +1,6 @@
 using FluentResults;
 using Microsoft.Extensions.Logging;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Extensions;

@@ -1,5 +1,5 @@
 using AutoFixture;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 
 namespace o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.NewTicketDtoCustomizations;
 

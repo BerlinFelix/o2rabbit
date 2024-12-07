@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers;
 using o2rabbit.Api.Tests.AutoFixtureCustomization.Tickets.UpdatedTicketDtoCustomizations;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
@@ -58,7 +58,6 @@ public class UpdateAsync
             Id = update.Id,
             Name = update.Name,
             ParentId = update.ParentId,
-            ProcessId = update.ProcessId,
         };
         _ticketServiceMock.Setup(m => m.UpdateAsync(update, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
@@ -77,7 +76,6 @@ public class UpdateAsync
             Id = update.Id,
             Name = update.Name,
             ParentId = update.ParentId,
-            ProcessId = update.ProcessId,
         };
         _ticketServiceMock.Setup(m => m.UpdateAsync(update, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
@@ -111,7 +109,6 @@ public class UpdateAsync
             Id = update.Id,
             Name = update.Name,
             ParentId = update.ParentId,
-            ProcessId = update.ProcessId,
         };
         _ticketServiceMock.Setup(m => m.UpdateAsync(update, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));

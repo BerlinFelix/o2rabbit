@@ -1,4 +1,4 @@
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Extensions;

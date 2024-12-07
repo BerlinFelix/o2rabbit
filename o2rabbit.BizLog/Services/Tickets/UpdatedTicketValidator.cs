@@ -1,6 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Context;
 using o2rabbit.Core.Entities;
 
@@ -23,13 +23,6 @@ public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketDto>
             }
 
             return await context.Tickets.FindAsync(id, c).ConfigureAwait(false) != null;
-        });
-        RuleFor(u => u.ProcessId).MustAsync(async (id, c) =>
-        {
-            if (!id.HasValue)
-                return true;
-            var processExists = await context.Processes.FindAsync(id, c).ConfigureAwait(false) != null;
-            return processExists;
         });
         RuleFor(u => u.Name).NotEmpty();
         RuleFor(u => u.Id).MustAsync(async (id, c) =>

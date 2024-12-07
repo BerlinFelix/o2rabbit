@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;

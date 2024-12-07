@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using o2rabbit.BizLog.Abstractions;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;

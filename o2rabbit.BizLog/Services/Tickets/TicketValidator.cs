@@ -1,7 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using o2rabbit.BizLog.Abstractions;
-using o2rabbit.BizLog.Abstractions.Models;
+using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
