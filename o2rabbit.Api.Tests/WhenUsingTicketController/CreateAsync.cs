@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
+using o2rabbit.BizLog.Abstractions.Models;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
@@ -20,7 +21,7 @@ public class CreateAsync
     public CreateAsync()
     {
         _ticketServiceMock = new Mock<ITicketService>();
-        _ticketServiceMock.Setup(m => m.CreateAsync(It.IsAny<Ticket>(), It.IsAny<CancellationToken>()))
+        _ticketServiceMock.Setup(m => m.CreateAsync(It.IsAny<NewTicketDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(""));
         _sut = new TicketController(_ticketServiceMock.Object);
         _fixture = new Fixture();
@@ -30,19 +31,19 @@ public class CreateAsync
     [Fact]
     public async Task WhenCalled_CallsTicketService()
     {
-        var ticket = _fixture.Create<Ticket>();
+        var newTicket = _fixture.Create<NewTicketDto>();
 
-        await _sut.CreateAsync(ticket);
+        await _sut.CreateAsync(newTicket);
 
-        _ticketServiceMock.Verify(m => m.CreateAsync(ticket, It.IsAny<CancellationToken>()), Times.Once);
+        _ticketServiceMock.Verify(m => m.CreateAsync(newTicket, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task WhenTicketServiceReturnsInvalidIdError_ReturnsBadRequest()
+    public async Task WhenTicketServiceReturnsValidationNotSuccessfulError_ReturnsBadRequest()
     {
-        var ticket = _fixture.Create<Ticket>();
-        _ticketServiceMock.Setup(m => m.CreateAsync(It.IsAny<Ticket>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Fail(new InvalidIdError()));
+        var ticket = _fixture.Create<NewTicketDto>();
+        _ticketServiceMock.Setup(m => m.CreateAsync(ticket, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Fail(new ValidationNotSuccessfulError()));
 
         var response = await _sut.CreateAsync(ticket);
 
@@ -52,11 +53,15 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOk()
     {
-        var ticket = _fixture.Create<Ticket>();
-        _ticketServiceMock.Setup(m => m.CreateAsync(ticket, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(ticket));
+        var newTicket = _fixture.Create<NewTicketDto>();
+        _ticketServiceMock.Setup(m => m.CreateAsync(newTicket, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(new Ticket()
+            {
+                Id = 1,
+                Name = newTicket.Name
+            }));
 
-        var response = await _sut.CreateAsync(ticket);
+        var response = await _sut.CreateAsync(newTicket);
 
         response.Result.Should().BeOfType<OkObjectResult>();
     }
@@ -64,11 +69,16 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOkWithTicket()
     {
-        var ticket = _fixture.Create<Ticket>();
-        _ticketServiceMock.Setup(m => m.CreateAsync(ticket, It.IsAny<CancellationToken>()))
+        var newTicket = _fixture.Create<NewTicketDto>();
+        var ticket = new Ticket()
+        {
+            Id = 1,
+            Name = newTicket.Name
+        };
+        _ticketServiceMock.Setup(m => m.CreateAsync(newTicket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
 
-        var response = await _sut.CreateAsync(ticket);
+        var response = await _sut.CreateAsync(newTicket);
 
         response.Result.Should().BeOfType<OkObjectResult>();
         var objectResult = (OkObjectResult)response.Result;
@@ -78,11 +88,11 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsUnknownError_Returns500()
     {
-        var ticket = _fixture.Create<Ticket>();
-        _ticketServiceMock.Setup(m => m.CreateAsync(ticket, It.IsAny<CancellationToken>()))
+        var newTicket = _fixture.Create<NewTicketDto>();
+        _ticketServiceMock.Setup(m => m.CreateAsync(newTicket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
 
-        var response = await _sut.CreateAsync(ticket);
+        var response = await _sut.CreateAsync(newTicket);
 
         response.Result.Should().BeOfType<ObjectResult>();
 

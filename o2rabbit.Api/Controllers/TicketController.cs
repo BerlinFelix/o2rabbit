@@ -57,14 +57,13 @@ public class TicketController : ControllerBase
         {
             return Ok(result.Value);
         }
-        else if (result.HasError<InvalidIdError>())
+
+        if (result.HasError<ValidationNotSuccessfulError>())
         {
             return BadRequest(result.Errors);
         }
-        else
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
-        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
     }
 
     [HttpDelete("{id}")]
