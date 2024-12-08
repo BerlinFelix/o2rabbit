@@ -30,6 +30,42 @@ public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketCommand>
             var ticketExists = await context.Tickets.FindAsync(id, c).ConfigureAwait(false) != null;
             return ticketExists;
         });
+        RuleFor(u => u.ParentId).MustAsync(async (u, parentId, c) =>
+        {
+            if (!parentId.HasValue)
+                return true;
+
+            var isValid = true;
+
+            var cts = new CancellationTokenSource();
+            var children =
+                await _context.Tickets.Where(t => t.ParentId == u.Id).ToListAsync(c).ConfigureAwait(false);
+            try
+            {
+                await Parallel.ForEachAsync(
+                    children,
+                    new ParallelOptions { CancellationToken = cts.Token },
+                    async (child, innerCancellationToken) =>
+                    {
+                        if (innerCancellationToken.IsCancellationRequested)
+                            return;
+                        var childTreeContainsId =
+                            await ChildTreeContainsId(child, (long)u.ParentId, innerCancellationToken)
+                                .ConfigureAwait(false);
+                        if (childTreeContainsId)
+                        {
+                            isValid = false;
+                            cts.Cancel();
+                        }
+                    }).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                // Nothing to do
+            }
+
+            return isValid;
+        }).WithMessage(u => $"ParentId {u.ParentId} is invalid. A circular dependency would be created.");
     }
 
     /// <summary>
@@ -39,10 +75,10 @@ public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketCommand>
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<bool> ContainsInHirarchyAsync(Ticket ticket, long id,
+    private async Task<bool> ChildTreeContainsId(Ticket ticket, long id,
         CancellationToken cancellationToken = default)
     {
-        // TODO
+        // TODO performance
         if (ticket.Id == id)
             return true;
 
@@ -53,7 +89,7 @@ public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketCommand>
 
         foreach (var child in children)
         {
-            if (await ContainsInHirarchyAsync(child, id, cancellationToken).ConfigureAwait(false))
+            if (await ChildTreeContainsId(child, id, cancellationToken).ConfigureAwait(false))
             {
                 return true;
             }
