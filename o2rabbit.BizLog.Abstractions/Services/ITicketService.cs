@@ -7,13 +7,13 @@ namespace o2rabbit.BizLog.Abstractions.Services;
 
 public interface ITicketService
 {
-    public Task<Result<Ticket>> CreateAsync(NewTicketDto newTicket,
+    public Task<Result<Ticket>> CreateAsync(NewTicketCommand newTicket,
         CancellationToken cancellationToken = default);
 
     public Task<Result<Ticket>> GetByIdAsync(long id, GetTicketByIdOptions? options = null,
         CancellationToken cancellationToken = default);
 
-    public Task<Result<Ticket>> UpdateAsync(UpdatedTicketDto update, CancellationToken cancellationToken = default);
+    public Task<Result<Ticket>> UpdateAsync(UpdatedTicketCommand update, CancellationToken cancellationToken = default);
 
     Task<Result> DeleteAsync(long id, CancellationToken cancellationToken = default);
 

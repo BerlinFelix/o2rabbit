@@ -7,7 +7,7 @@ public class NewTicketHasProcess : ICustomization
 {
     public void Customize(IFixture fixture)
     {
-        fixture.Customize<NewTicketDto>(composer =>
+        fixture.Customize<NewTicketCommand>(composer =>
         {
             return composer
                 .With(x => x.ProcessId);

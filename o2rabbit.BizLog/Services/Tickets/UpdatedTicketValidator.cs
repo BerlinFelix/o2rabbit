@@ -6,7 +6,7 @@ using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
-public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketDto>
+public class UpdatedTicketValidator : AbstractValidator<UpdatedTicketCommand>
 {
     private readonly TicketServiceContext _context;
 

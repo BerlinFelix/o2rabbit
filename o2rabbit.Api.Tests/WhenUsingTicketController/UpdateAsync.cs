@@ -21,7 +21,7 @@ public class UpdateAsync
     public UpdateAsync()
     {
         _ticketServiceMock = new Mock<ITicketService>();
-        _ticketServiceMock.Setup(m => m.UpdateAsync(It.IsAny<UpdatedTicketDto>(), It.IsAny<CancellationToken>()))
+        _ticketServiceMock.Setup(m => m.UpdateAsync(It.IsAny<UpdatedTicketCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
         _sut = new TicketController(_ticketServiceMock.Object);
 
@@ -31,7 +31,7 @@ public class UpdateAsync
     [Fact]
     public async Task WhenCalled_CallsTicketService()
     {
-        var update = _fixture.Create<UpdatedTicketDto>();
+        var update = _fixture.Create<UpdatedTicketCommand>();
         await _sut.UpdateAsync(1, update);
 
         _ticketServiceMock.Verify(m => m.UpdateAsync(update, It.IsAny<CancellationToken>()), Times.Once);
@@ -40,7 +40,7 @@ public class UpdateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsValidationNotSuccessfulError_ReturnsBadRequest()
     {
-        var update = _fixture.Create<UpdatedTicketDto>();
+        var update = _fixture.Create<UpdatedTicketCommand>();
         _ticketServiceMock.Setup(m => m.UpdateAsync(update, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new ValidationNotSuccessfulError()));
 
@@ -52,7 +52,7 @@ public class UpdateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOk()
     {
-        var update = _fixture.Create<UpdatedTicketDto>();
+        var update = _fixture.Create<UpdatedTicketCommand>();
         var ticket = new Ticket()
         {
             Id = update.Id,
@@ -70,7 +70,7 @@ public class UpdateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOkWithTicket()
     {
-        var update = _fixture.Create<UpdatedTicketDto>();
+        var update = _fixture.Create<UpdatedTicketCommand>();
         var ticket = new Ticket()
         {
             Id = update.Id,
@@ -90,7 +90,7 @@ public class UpdateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsUnknownError_Returns500()
     {
-        var update = _fixture.Create<UpdatedTicketDto>();
+        var update = _fixture.Create<UpdatedTicketCommand>();
         _ticketServiceMock.Setup(m => m.UpdateAsync(update, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
 
@@ -103,7 +103,7 @@ public class UpdateAsync
     [Fact]
     public async Task EnsuresTicketIdIsReadFromQueryParam()
     {
-        var update = _fixture.Create<UpdatedTicketDto>();
+        var update = _fixture.Create<UpdatedTicketCommand>();
         var ticket = new Ticket()
         {
             Id = update.Id,

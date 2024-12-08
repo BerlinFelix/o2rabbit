@@ -58,7 +58,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewValidTicket_ReturnsOk()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
         var result = await _sut.CreateAsync(newTicket);
 
         result.IsSuccess.Should().BeTrue();
@@ -69,7 +69,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     {
         var fixture = new Fixture();
         fixture.Customize(new NewTicketHasProcess());
-        var newTicket = fixture.Create<NewTicketDto>();
+        var newTicket = fixture.Create<NewTicketCommand>();
 
         var result = await _sut.CreateAsync(newTicket);
 
@@ -81,7 +81,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewTicket_ReturnsOkWithTicketAsValue()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
 
         var result = await _sut.CreateAsync(newTicket);
 
@@ -92,7 +92,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewTicket_CreatesNewTicketInDatabase()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
 
         var result = await _sut.CreateAsync(newTicket);
 
@@ -107,7 +107,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
         var contextMock = new Mock<TicketServiceContext>();
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
         var loggerMock = new Mock<ILogger<TicketService>>();

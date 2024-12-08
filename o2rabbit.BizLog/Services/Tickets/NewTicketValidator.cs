@@ -4,7 +4,7 @@ using o2rabbit.BizLog.Context;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
-public class NewTicketValidator : AbstractValidator<NewTicketDto>
+public class NewTicketValidator : AbstractValidator<NewTicketCommand>
 {
     private readonly TicketServiceContext _context;
 

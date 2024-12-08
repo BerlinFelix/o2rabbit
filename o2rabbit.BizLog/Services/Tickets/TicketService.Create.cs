@@ -9,7 +9,8 @@ namespace o2rabbit.BizLog.Services.Tickets;
 
 internal partial class TicketService
 {
-    public async Task<Result<Ticket>> CreateAsync(NewTicketDto newTicket, CancellationToken cancellationToken = default)
+    public async Task<Result<Ticket>> CreateAsync(NewTicketCommand newTicket,
+        CancellationToken cancellationToken = default)
     {
         if (newTicket == null)
             return Result.Fail(new NullInputError());

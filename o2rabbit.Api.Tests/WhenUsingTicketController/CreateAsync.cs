@@ -21,7 +21,7 @@ public class CreateAsync
     public CreateAsync()
     {
         _ticketServiceMock = new Mock<ITicketService>();
-        _ticketServiceMock.Setup(m => m.CreateAsync(It.IsAny<NewTicketDto>(), It.IsAny<CancellationToken>()))
+        _ticketServiceMock.Setup(m => m.CreateAsync(It.IsAny<NewTicketCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(""));
         _sut = new TicketController(_ticketServiceMock.Object);
         _fixture = new Fixture();
@@ -31,7 +31,7 @@ public class CreateAsync
     [Fact]
     public async Task WhenCalled_CallsTicketService()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
 
         await _sut.CreateAsync(newTicket);
 
@@ -41,7 +41,7 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsValidationNotSuccessfulError_ReturnsBadRequest()
     {
-        var ticket = _fixture.Create<NewTicketDto>();
+        var ticket = _fixture.Create<NewTicketCommand>();
         _ticketServiceMock.Setup(m => m.CreateAsync(ticket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new ValidationNotSuccessfulError()));
 
@@ -53,7 +53,7 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOk()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
         _ticketServiceMock.Setup(m => m.CreateAsync(newTicket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(new Ticket()
             {
@@ -69,7 +69,7 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsSuccess_ReturnsOkWithTicket()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
         var ticket = new Ticket()
         {
             Id = 1,
@@ -88,7 +88,7 @@ public class CreateAsync
     [Fact]
     public async Task WhenTicketServiceReturnsUnknownError_Returns500()
     {
-        var newTicket = _fixture.Create<NewTicketDto>();
+        var newTicket = _fixture.Create<NewTicketCommand>();
         _ticketServiceMock.Setup(m => m.CreateAsync(newTicket, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
 

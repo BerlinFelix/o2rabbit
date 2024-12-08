@@ -46,7 +46,7 @@ public class TicketController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Ticket>> CreateAsync(NewTicketDto? newTicket,
+    public async Task<ActionResult<Ticket>> CreateAsync(NewTicketCommand? newTicket,
         CancellationToken cancellationToken = default)
     {
         if (newTicket is null) return BadRequest("Ticket is null");
@@ -87,7 +87,7 @@ public class TicketController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<Ticket>> UpdateAsync(
         long id,
-        [FromBody] UpdatedTicketDto? ticket,
+        [FromBody] UpdatedTicketCommand? ticket,
         CancellationToken cancellationToken = default)
     {
         if (ticket is null) return BadRequest("Ticket is null");

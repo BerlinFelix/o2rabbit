@@ -7,7 +7,7 @@ public class UpdatedTicketHasNoParentAndNoProcess : ICustomization
 {
     public void Customize(IFixture fixture)
     {
-        fixture.Customize<UpdatedTicketDto>(composer =>
+        fixture.Customize<UpdatedTicketCommand>(composer =>
         {
             return composer
                 .Without(x => x.ParentId);

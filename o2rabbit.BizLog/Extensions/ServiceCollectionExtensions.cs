@@ -45,8 +45,8 @@ public static class ServiceCollectionExtensions
         services
             .AddScoped<ITicketService, TicketService>()
             .AddScoped<ITicketValidator, TicketValidator>()
-            .AddScoped<IValidator<UpdatedTicketDto>, UpdatedTicketValidator>()
-            .AddScoped<IValidator<NewTicketDto>, NewTicketValidator>()
+            .AddScoped<IValidator<UpdatedTicketCommand>, UpdatedTicketValidator>()
+            .AddScoped<IValidator<NewTicketCommand>, NewTicketValidator>()
             .AddDbContext<TicketServiceContext>();
 
         services.ConfigureOptions<TicketServiceContextOptionsConfigurator>();

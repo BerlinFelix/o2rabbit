@@ -7,11 +7,11 @@ namespace o2rabbit.BizLog.Services.Tickets;
 
 public class TicketValidator : ITicketValidator
 {
-    private readonly IValidator<NewTicketDto> _newTicketValidator;
-    private readonly IValidator<UpdatedTicketDto> _ticketUpdateValidator;
+    private readonly IValidator<NewTicketCommand> _newTicketValidator;
+    private readonly IValidator<UpdatedTicketCommand> _ticketUpdateValidator;
 
-    public TicketValidator(IValidator<NewTicketDto> newTicketValidator,
-        IValidator<UpdatedTicketDto> ticketUpdateValidator)
+    public TicketValidator(IValidator<NewTicketCommand> newTicketValidator,
+        IValidator<UpdatedTicketCommand> ticketUpdateValidator)
     {
         ArgumentNullException.ThrowIfNull(newTicketValidator);
         ArgumentNullException.ThrowIfNull(ticketUpdateValidator);
@@ -20,10 +20,11 @@ public class TicketValidator : ITicketValidator
         _ticketUpdateValidator = ticketUpdateValidator;
     }
 
-    public Task<ValidationResult> ValidateAsync(NewTicketDto newTicket, CancellationToken cancellationToken = default)
+    public Task<ValidationResult> ValidateAsync(NewTicketCommand newTicket,
+        CancellationToken cancellationToken = default)
         => _newTicketValidator.ValidateAsync(newTicket, cancellationToken);
 
-    public Task<ValidationResult> ValidateAsync(UpdatedTicketDto update,
+    public Task<ValidationResult> ValidateAsync(UpdatedTicketCommand update,
         CancellationToken cancellationToken = default)
         => _ticketUpdateValidator.ValidateAsync(update, cancellationToken);
 }

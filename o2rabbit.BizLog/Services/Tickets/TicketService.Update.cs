@@ -9,7 +9,7 @@ namespace o2rabbit.BizLog.Services.Tickets;
 
 internal partial class TicketService
 {
-    public async Task<Result<Ticket>> UpdateAsync(UpdatedTicketDto update,
+    public async Task<Result<Ticket>> UpdateAsync(UpdatedTicketCommand update,
         CancellationToken cancellationToken = default)
     {
         if (update == null)

@@ -7,7 +7,7 @@ public class NewTicketHasNoProcessAndNoParent : ICustomization
 {
     public void Customize(IFixture fixture)
     {
-        fixture.Customize<NewTicketDto>(composer =>
+        fixture.Customize<NewTicketCommand>(composer =>
         {
             return composer
                 .Without(x => x.ProcessId)
