@@ -11,5 +11,6 @@ internal static class TicketExtensions
             Id = 0,
             Name = dto.Name,
             ProcessId = dto.ProcessId,
+            ParentId = dto.ParentId,
         };
 }
