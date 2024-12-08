@@ -27,7 +27,10 @@ public class TicketServiceContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql(_options.Value.ConnectionString);
+        // TODO configure logging
+        optionsBuilder.UseNpgsql(_options.Value.ConnectionString)
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -10,10 +10,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var conectionstring = builder.Configuration.GetConnectionString("Default") ??
-                              throw new NullReferenceException("Default connection string");
+        var connectionString = builder.Configuration.GetConnectionString("Default") ??
+                               throw new NullReferenceException("Default connection string");
         // Add services to the container.
-        builder.Services.AddBizLog((o, sp) => { o.ConnectionString = conectionstring; })
+        builder.Services.AddBizLog((o, sp) => { o.ConnectionString = connectionString; })
             .AddControllers()
             .AddJsonOptions(options =>
             {
@@ -23,6 +23,8 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Logging.AddConsole(options => { options.LogToStandardErrorThreshold = LogLevel.Information; });
 
         var app = builder.Build();
 

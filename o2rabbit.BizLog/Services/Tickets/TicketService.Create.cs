@@ -21,7 +21,7 @@ internal partial class TicketService
 
             if (!validationResult.IsValid) return Result.Fail(new ValidationNotSuccessfulError(validationResult));
             var ticket = newTicket.ToTicket();
-            await _context.Tickets.AddAsync(ticket, cancellationToken).ConfigureAwait(false);
+            _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return Result.Ok(ticket);
         }
