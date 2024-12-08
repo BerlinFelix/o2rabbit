@@ -27,4 +27,7 @@ public static class RuleBuilderExtensions
             }
         });
     }
+
+    // TODO MusConnectToDatabasAsync
+    // TODO IHierarchicalEntity MustNotHaveCircularDependency
 }
