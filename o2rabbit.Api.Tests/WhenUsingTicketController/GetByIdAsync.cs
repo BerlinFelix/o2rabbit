@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers.Tickets;
 using o2rabbit.Api.Extensions;
+using o2rabbit.Api.Models;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
+using o2rabbit.Api.Tests.AutoFixtureCustomization.Tickets;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
@@ -96,5 +98,29 @@ public class GetByIdAsync
 
         var objectResult = (ObjectResult)response.Result;
         objectResult.StatusCode.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task WhenTicketServiceReturnsTicketWithChildren_ReturnsDtoWithChidrenIds()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasChildren());
+
+        var ticket = fixture.Create<Ticket>();
+
+        var getByIdOptions = new GetTicketByIdOptions() { IncludeChildren = true };
+
+        _ticketServiceMock.Setup(m => m.GetByIdAsync(ticket.Id,
+                It.Is<GetTicketByIdOptions>(t => t.IncludeChildren),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(ticket));
+
+        var response = await _sut.GetByIdAsync(ticket.Id, true);
+
+        response.Result.Should().BeOfType<OkObjectResult>();
+        var objectResult = (OkObjectResult)response.Result;
+        objectResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
+        objectResult.Value.Should().BeOfType<DefaultTicketDto>();
+        objectResult.Value.As<DefaultTicketDto>().ChildrenIds.Should().HaveCount(ticket.Children.Count);
     }
 }
