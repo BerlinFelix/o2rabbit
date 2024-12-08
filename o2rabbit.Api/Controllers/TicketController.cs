@@ -25,7 +25,7 @@ public class TicketController : ControllerBase
         [FromQuery] bool includeChildren = false,
         CancellationToken cancellationToken = default)
     {
-        var options = new GetTicketByIdOptions()
+        var options = new GetTicketByIdOptions
         {
             IncludeChildren = includeChildren,
         };
@@ -36,14 +36,13 @@ public class TicketController : ControllerBase
         {
             return Ok(result.Value);
         }
-        else if (result.HasError<InvalidIdError>())
+
+        if (result.HasError<InvalidIdError>())
         {
             return BadRequest(result.Errors);
         }
-        else
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
-        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
     }
 
     [HttpPost]
