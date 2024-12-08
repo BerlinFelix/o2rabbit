@@ -2,7 +2,7 @@ using FluentAssertions;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using o2rabbit.Api.Controllers;
+using o2rabbit.Api.Controllers.Tickets;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.ResultErrors;
 

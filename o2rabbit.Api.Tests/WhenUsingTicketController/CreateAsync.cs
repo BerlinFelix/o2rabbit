@@ -3,7 +3,8 @@ using FluentAssertions;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using o2rabbit.Api.Controllers;
+using o2rabbit.Api.Controllers.Tickets;
+using o2rabbit.Api.Extensions;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Services;
@@ -82,7 +83,7 @@ public class CreateAsync
 
         response.Result.Should().BeOfType<OkObjectResult>();
         var objectResult = (OkObjectResult)response.Result;
-        objectResult.Value.Should().Be(ticket);
+        objectResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
     }
 
     [Fact]
