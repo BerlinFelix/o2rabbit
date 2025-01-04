@@ -20,6 +20,12 @@ public class Program
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("DefaultPolicy",
+                b => b.WithOrigins("http://localhost:5173"));
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -28,6 +34,7 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseCors("DefaultPolicy");
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
