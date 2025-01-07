@@ -60,4 +60,32 @@ public class SearchForTicketsAsync
 
         response.Result.Should().BeOfType<OkObjectResult>();
     }
+
+    [Fact]
+    public async Task GivenTicketServiceReturnsTickets_ReturnsOkResultWithTickets()
+    {
+        var searchOptions = new SearchOptions()
+        {
+            SearchText = "validSearch",
+            Page = 1,
+            PageSize = 10
+        };
+
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasNoParentsAndNoChildren());
+        var ticketServiceMock = new Mock<ITicketService>();
+        var foundTickets = fixture.CreateMany<Ticket>().ToList();
+        ticketServiceMock.Setup(m =>
+                m.SearchAsync(It.IsAny<BizLog.Abstractions.Options.SearchOptions>(),
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync(foundTickets);
+
+        var sut = new SearchController(new SearchOptionsValidator(), ticketServiceMock.Object);
+
+        var response = await sut.SearchForTicketsAsync(searchOptions);
+
+        response.Result.Should().BeOfType<OkObjectResult>();
+        var okObjectResult = response.Result as OkObjectResult;
+        okObjectResult!.Value.Should().BeEquivalentTo(foundTickets);
+    }
 }

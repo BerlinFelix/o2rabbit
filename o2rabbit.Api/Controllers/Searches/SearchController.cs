@@ -27,6 +27,7 @@ public class SearchController : ControllerBase
     public async Task<ActionResult<IEnumerable<Ticket>>> SearchForTicketsAsync([FromQuery] SearchOptions searchOptions,
         CancellationToken cancellationToken = default)
     {
+        // ReSharper disable once MethodHasAsyncOverloadWithCancellation
         if (!_optionsValidator.Validate(searchOptions).IsValid)
         {
             return BadRequest();
