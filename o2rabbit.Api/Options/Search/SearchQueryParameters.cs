@@ -1,6 +1,6 @@
 namespace o2rabbit.Api.Options.Search;
 
-public class SearchOptions
+public class SearchQueryParameters
 {
     public string SearchText { get; set; } = string.Empty;
 

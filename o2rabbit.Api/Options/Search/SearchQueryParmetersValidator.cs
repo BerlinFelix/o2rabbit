@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace o2rabbit.Api.Options.Search;
 
-public class SearchOptionsValidator : AbstractValidator<SearchOptions>
+public class SearchQueryParmetersValidator : AbstractValidator<SearchQueryParameters>
 {
-    public SearchOptionsValidator()
+    public SearchQueryParmetersValidator()
     {
         RuleFor(o => o.SearchText)
             .MinimumLength(3);
