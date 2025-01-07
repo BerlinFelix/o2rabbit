@@ -1,4 +1,4 @@
-namespace o2rabbit.Api.Options;
+namespace o2rabbit.Api.Options.Search;
 
 public class SearchOptions
 {

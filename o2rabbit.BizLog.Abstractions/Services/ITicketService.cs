@@ -19,5 +19,6 @@ public interface ITicketService
 
     Task<Result<Ticket>> CreateFromProcessAsync(Process process, CancellationToken cancellationToken = default);
 
-    public Task<Result<IEnumerable<Ticket>>> SearchAsync(SearchOptions options);
+    public Task<Result<IEnumerable<Ticket>>> SearchAsync(SearchOptions options,
+        CancellationToken cancellationToken = default);
 }
