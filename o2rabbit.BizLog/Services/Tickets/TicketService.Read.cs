@@ -42,4 +42,9 @@ internal partial class TicketService
             return Result.Fail<Ticket>(new UnknownError());
         }
     }
+
+    public async Task<Result<IEnumerable<Ticket>>> SearchAsync(SearchOptions options)
+    {
+        throw new NotImplementedException();
+    }
 }

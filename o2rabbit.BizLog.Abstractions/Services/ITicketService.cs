@@ -18,4 +18,6 @@ public interface ITicketService
     Task<Result> DeleteAsync(long id, CancellationToken cancellationToken = default);
 
     Task<Result<Ticket>> CreateFromProcessAsync(Process process, CancellationToken cancellationToken = default);
+
+    public Task<Result<IEnumerable<Ticket>>> SearchAsync(SearchOptions options);
 }
