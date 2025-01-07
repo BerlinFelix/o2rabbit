@@ -11,6 +11,7 @@ namespace o2rabbit.Api.Controllers.Searches;
 public class SearchController : ControllerBase
 {
     private readonly IValidator<SearchOptions> _optionsValidator;
+    private readonly ITicketService _ticketService;
 
     public SearchController(IValidator<SearchOptions> optionsValidator,
         ITicketService ticketService)
@@ -19,16 +20,30 @@ public class SearchController : ControllerBase
         ArgumentNullException.ThrowIfNull(optionsValidator);
 
         _optionsValidator = optionsValidator;
+        _ticketService = ticketService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Ticket>>> SearchForTicketsAsync([FromQuery] SearchOptions searchOptions)
+    public async Task<ActionResult<IEnumerable<Ticket>>> SearchForTicketsAsync([FromQuery] SearchOptions searchOptions,
+        CancellationToken cancellationToken = default)
     {
         if (!_optionsValidator.Validate(searchOptions).IsValid)
         {
             return BadRequest();
         }
 
-        throw new NotImplementedException();
+        var result = await _ticketService.SearchAsync(new BizLog.Abstractions.Options.SearchOptions()
+        {
+            SearchText = searchOptions.SearchText,
+            Page = searchOptions.Page,
+            PageSize = searchOptions.PageSize
+        }, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return StatusCode(500);
     }
 }

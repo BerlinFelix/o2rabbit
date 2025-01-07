@@ -43,7 +43,7 @@ internal partial class TicketService
         }
     }
 
-    public async Task<Result<IEnumerable<Ticket>>> SearchAsync(SearchOptions options,
+    public async Task<Result<List<Ticket>>> SearchAsync(SearchOptions options,
         CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
