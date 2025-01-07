@@ -3,11 +3,12 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers.Searches;
+using o2rabbit.Api.Extensions;
 using o2rabbit.Api.Options.Search;
 using o2rabbit.Api.Tests.AutoFixtureCustomization.Tickets;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
-using SearchOptions = o2rabbit.Api.Options.Search.SearchOptions;
 
 namespace o2rabbit.Api.Tests.WhenUsingSearchController;
 
@@ -19,7 +20,7 @@ public class SearchForTicketsAsync
     [InlineData("aaaa", 1, -1)]
     public async Task GivenInvalidSearchOptions_ReturnsBadRequest(string searchSting, int page, int pageSize)
     {
-        var searchOptions = new SearchOptions()
+        var searchOptions = new SearchQueryParameters()
         {
             SearchText = searchSting,
             Page = page,
@@ -28,7 +29,7 @@ public class SearchForTicketsAsync
         var fixture = new Fixture();
         var ticketServiceMock = fixture.Freeze<Mock<ITicketService>>();
 
-        var sut = new SearchController(new SearchOptionsValidator(), ticketServiceMock.Object);
+        var sut = new SearchController(new SearchQueryParmetersValidator(), ticketServiceMock.Object);
 
         var response = await sut.SearchForTicketsAsync(searchOptions);
 
@@ -39,7 +40,7 @@ public class SearchForTicketsAsync
     [InlineData("aaaa", 1, 10)]
     public async Task GivenValidSearchOptions_ReturnsOkResult(string searchSting, int page, int pageSize)
     {
-        var searchOptions = new SearchOptions()
+        var searchOptions = new SearchQueryParameters()
         {
             SearchText = searchSting,
             Page = page,
@@ -50,11 +51,11 @@ public class SearchForTicketsAsync
         fixture.Customize(new TicketHasNoParentsAndNoChildren());
         var ticketServiceMock = new Mock<ITicketService>();
         ticketServiceMock.Setup(m =>
-                m.SearchAsync(It.IsAny<BizLog.Abstractions.Options.SearchOptions>(),
+                m.SearchAsync(It.IsAny<SearchOptions>(),
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync(fixture.CreateMany<Ticket>().ToList());
 
-        var sut = new SearchController(new SearchOptionsValidator(), ticketServiceMock.Object);
+        var sut = new SearchController(new SearchQueryParmetersValidator(), ticketServiceMock.Object);
 
         var response = await sut.SearchForTicketsAsync(searchOptions);
 
@@ -64,7 +65,7 @@ public class SearchForTicketsAsync
     [Fact]
     public async Task GivenTicketServiceReturnsTickets_ReturnsOkResultWithTickets()
     {
-        var searchOptions = new SearchOptions()
+        var searchOptions = new SearchQueryParameters()
         {
             SearchText = "validSearch",
             Page = 1,
@@ -75,17 +76,18 @@ public class SearchForTicketsAsync
         fixture.Customize(new TicketHasNoParentsAndNoChildren());
         var ticketServiceMock = new Mock<ITicketService>();
         var foundTickets = fixture.CreateMany<Ticket>().ToList();
+        var expected = foundTickets.Select(t => t.ToDefaultDto());
         ticketServiceMock.Setup(m =>
-                m.SearchAsync(It.IsAny<BizLog.Abstractions.Options.SearchOptions>(),
+                m.SearchAsync(It.IsAny<SearchOptions>(),
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync(foundTickets);
 
-        var sut = new SearchController(new SearchOptionsValidator(), ticketServiceMock.Object);
+        var sut = new SearchController(new SearchQueryParmetersValidator(), ticketServiceMock.Object);
 
         var response = await sut.SearchForTicketsAsync(searchOptions);
 
         response.Result.Should().BeOfType<OkObjectResult>();
         var okObjectResult = response.Result as OkObjectResult;
-        okObjectResult!.Value.Should().BeEquivalentTo(foundTickets);
+        okObjectResult!.Value.Should().BeEquivalentTo(expected);
     }
 }

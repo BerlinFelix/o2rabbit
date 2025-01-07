@@ -1,8 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using o2rabbit.Api.Extensions;
+using o2rabbit.Api.Models;
 using o2rabbit.Api.Options.Search;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
-using o2rabbit.Core.Entities;
 
 namespace o2rabbit.Api.Controllers.Searches;
 
@@ -10,10 +12,10 @@ namespace o2rabbit.Api.Controllers.Searches;
 [Route("api/search")]
 public class SearchController : ControllerBase
 {
-    private readonly IValidator<SearchOptions> _optionsValidator;
+    private readonly IValidator<SearchQueryParameters> _optionsValidator;
     private readonly ITicketService _ticketService;
 
-    public SearchController(IValidator<SearchOptions> optionsValidator,
+    public SearchController(IValidator<SearchQueryParameters> optionsValidator,
         ITicketService ticketService)
     {
         ArgumentNullException.ThrowIfNull(optionsValidator);
@@ -24,25 +26,27 @@ public class SearchController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Ticket>>> SearchForTicketsAsync([FromQuery] SearchOptions searchOptions,
+    public async Task<ActionResult<IEnumerable<DefaultTicketDto>>> SearchForTicketsAsync(
+        [FromQuery] SearchQueryParameters searchQueryParameters,
         CancellationToken cancellationToken = default)
     {
         // ReSharper disable once MethodHasAsyncOverloadWithCancellation
-        if (!_optionsValidator.Validate(searchOptions).IsValid)
+        if (!_optionsValidator.Validate(searchQueryParameters).IsValid)
         {
             return BadRequest();
         }
 
-        var result = await _ticketService.SearchAsync(new BizLog.Abstractions.Options.SearchOptions()
+        var result = await _ticketService.SearchAsync(new SearchOptions()
         {
-            SearchText = searchOptions.SearchText,
-            Page = searchOptions.Page,
-            PageSize = searchOptions.PageSize
-        }, cancellationToken);
+            SearchText = searchQueryParameters.SearchText,
+            Page = searchQueryParameters.Page,
+            PageSize = searchQueryParameters.PageSize
+        }, cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            return Ok(result.Value);
+            var dtos = result.Value.Select(t => t.ToDefaultDto());
+            return Ok(dtos);
         }
 
         return StatusCode(500);
