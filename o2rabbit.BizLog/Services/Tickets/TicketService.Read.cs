@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
@@ -51,6 +52,22 @@ internal partial class TicketService
             return Result.Fail(new InvalidInputError());
         }
 
-        throw new NotImplementedException();
+        try
+        {
+            var results = await _context.Tickets
+                .Where(t => t.Name.Contains(options.SearchText))
+                .Skip((options.Page - 1) * options.PageSize)
+                .Take(options.PageSize)
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            return results;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            if (e is AggregateException aggregateException)
+                _logger.LogAggregateException(aggregateException);
+            return Result.Fail(new UnknownError());
+        }
     }
 }
