@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
@@ -45,7 +46,8 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
         var loggerMock = new Mock<ILogger<TicketService>>();
         var ticketValidator = new TicketValidator(new NewTicketValidator(_ticketContext),
             new UpdatedTicketValidator(_ticketContext));
-        _sut = new TicketService(_ticketContext, loggerMock.Object, ticketValidator);
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        _sut = new TicketService(_ticketContext, loggerMock.Object, ticketValidator, searchOptionsValidatorMock.Object);
     }
 
     public async Task InitializeAsync()

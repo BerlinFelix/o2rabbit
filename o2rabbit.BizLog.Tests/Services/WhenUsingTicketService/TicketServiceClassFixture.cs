@@ -3,10 +3,6 @@ using Testcontainers.PostgreSql;
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-/// <summary>
-/// Provides a container with all migrations added from Defaultcontext.
-/// Initialization and disposal are async by implementing <see cref="IAsyncLifetime"/>.
-/// </summary>
 public class TicketServiceClassFixture : IAsyncLifetime
 {
     private PostgreSqlContainer? _container;

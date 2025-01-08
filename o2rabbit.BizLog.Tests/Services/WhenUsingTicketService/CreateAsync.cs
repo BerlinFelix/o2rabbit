@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
@@ -40,7 +41,8 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         var loggerMock = new Mock<ILogger<TicketService>>();
         _validator = new TicketValidator(new NewTicketValidator(_ticketContext),
             new UpdatedTicketValidator(_ticketContext));
-        _sut = new TicketService(_ticketContext, loggerMock.Object, _validator);
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        _sut = new TicketService(_ticketContext, loggerMock.Object, _validator, searchOptionsValidatorMock.Object);
     }
 
     public async Task InitializeAsync()
@@ -112,7 +114,9 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
         var loggerMock = new Mock<ILogger<TicketService>>();
 
-        var sut = new TicketService(contextMock.Object, loggerMock.Object, _validator);
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(contextMock.Object, loggerMock.Object, _validator,
+            searchOptionsValidatorMock.Object);
 
         var result = await sut.CreateAsync(newTicket);
 

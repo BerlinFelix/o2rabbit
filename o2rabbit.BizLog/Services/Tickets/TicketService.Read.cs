@@ -46,6 +46,11 @@ internal partial class TicketService
     public async Task<Result<List<Ticket>>> SearchAsync(SearchOptions options,
         CancellationToken cancellationToken = default)
     {
+        if (_searchOptionsValidator.Validate(null, options).Failed)
+        {
+            return Result.Fail(new InvalidInputError());
+        }
+
         throw new NotImplementedException();
     }
 }

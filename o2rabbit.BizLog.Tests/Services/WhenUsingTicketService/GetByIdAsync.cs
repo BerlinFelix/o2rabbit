@@ -40,7 +40,9 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
 
         var loggerMock = new Mock<ILogger<TicketService>>();
         _ticketValidatorMock = new Mock<ITicketValidator>();
-        _sut = new TicketService(ticketServiceContext, loggerMock.Object, _ticketValidatorMock.Object);
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        _sut = new TicketService(ticketServiceContext, loggerMock.Object, _ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
     }
 
     public async Task InitializeAsync()

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions;
+using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
@@ -40,7 +41,9 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
 
         var loggerMock = new Mock<ILogger<TicketService>>();
         _ticketValidatorMock = new Mock<ITicketValidator>();
-        _sut = new TicketService(_ticketContext, loggerMock.Object, _ticketValidatorMock.Object);
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        _sut = new TicketService(_ticketContext, loggerMock.Object, _ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
     }
 
     public async Task InitializeAsync()
