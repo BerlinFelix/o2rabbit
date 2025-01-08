@@ -56,6 +56,7 @@ internal partial class TicketService
         {
             var results = await _context.Tickets
                 .Where(t => t.Name.Contains(options.SearchText))
+                .OrderBy(t => t.Id)
                 .Skip((options.Page - 1) * options.PageSize)
                 .Take(options.PageSize)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);

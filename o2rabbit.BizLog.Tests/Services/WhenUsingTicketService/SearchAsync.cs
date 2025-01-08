@@ -57,20 +57,8 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
     [Fact]
     public async Task GivenResponseFromContext_ReturnsSuccess()
     {
-        var ticketContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
-                {
-                    ConnectionString = _classFixture.ConnectionString
-                }));
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        var validator = new TicketValidator(new NewTicketValidator(ticketContext),
-            new UpdatedTicketValidator(ticketContext));
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        searchOptionsValidatorMock.Setup(m => m.Validate(null, It.IsAny<SearchOptions>()))
-            .Returns(ValidateOptionsResult.Success);
-        var sut = new TicketService(ticketContext, loggerMock.Object, validator, searchOptionsValidatorMock.Object);
-        await SetUpAsync();
+        var sut = SetupDefaultSut();
+        await SetUpDatabaseAsync();
 
         var searchOptions = new SearchOptions()
         {
@@ -85,7 +73,83 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
         await TearDownAsync();
     }
 
-    private async Task SetUpAsync()
+
+    [Fact]
+    public async Task GivenResponseContainingTicketsFromContext_ReturnsTickets()
+    {
+        var sut = SetupDefaultSut();
+        await SetUpDatabaseAsync();
+
+        var searchOptions = new SearchOptions()
+        {
+            SearchText = "existingTicketName",
+            Page = 1,
+            PageSize = 10
+        };
+        var result = await sut.SearchAsync(searchOptions);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeEmpty();
+        await TearDownAsync();
+    }
+
+    [Fact]
+    public async Task GivenResponseContainingTicketsFromContext_ReturnsAtMostPageSizeTickets()
+    {
+        var sut = SetupDefaultSut();
+        await SetUpDatabaseAsync();
+
+        var searchOptions = new SearchOptions()
+        {
+            SearchText = "existingTicketName",
+            Page = 1,
+            PageSize = 5
+        };
+        var result = await sut.SearchAsync(searchOptions);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Count().Should().BeLessThanOrEqualTo(searchOptions.PageSize);
+        await TearDownAsync();
+    }
+
+    [Fact]
+    public async Task GivenRequestedPage_ReturnsCorrectPage()
+    {
+        var sut = SetupDefaultSut();
+        await SetUpDatabaseAsync();
+
+        var searchOptions = new SearchOptions()
+        {
+            SearchText = "existingTicketName",
+            Page = 2,
+            PageSize = 5
+        };
+        var result = await sut.SearchAsync(searchOptions);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().OnlyContain(t => t.Id <= 10 && t.Id >= 6);
+        await TearDownAsync();
+    }
+
+    private TicketService SetupDefaultSut()
+    {
+        var ticketContext =
+            new TicketServiceContext(
+                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+                {
+                    ConnectionString = _classFixture.ConnectionString
+                }));
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var validator = new TicketValidator(new NewTicketValidator(ticketContext),
+            new UpdatedTicketValidator(ticketContext));
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        searchOptionsValidatorMock.Setup(m => m.Validate(null, It.IsAny<SearchOptions>()))
+            .Returns(ValidateOptionsResult.Success);
+        var sut = new TicketService(ticketContext, loggerMock.Object, validator, searchOptionsValidatorMock.Object);
+        return sut;
+    }
+
+    private async Task SetUpDatabaseAsync()
     {
         await using var initializationContext = new DefaultContext(_classFixture.ConnectionString);
         await initializationContext.Database.EnsureCreatedAsync();
