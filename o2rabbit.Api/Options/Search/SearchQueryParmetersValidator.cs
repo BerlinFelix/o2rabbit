@@ -15,4 +15,13 @@ public class SearchQueryParmetersValidator : AbstractValidator<SearchQueryParame
         RuleFor(o => o.PageSize)
             .GreaterThanOrEqualTo(1);
     }
+
+    // public ValidateOptionsResult Validate(string? name, SearchQueryParameters options)
+    // {
+    //     var validationResult = this.Validate(options);
+    //
+    //     return validationResult.IsValid
+    //         ? ValidateOptionsResult.Success
+    //         : ValidateOptionsResult.Fail(validationResult.ToString());
+    // }
 }

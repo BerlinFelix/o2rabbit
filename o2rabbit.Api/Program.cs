@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FluentValidation;
+using o2rabbit.Api.Options;
 using o2rabbit.BizLog.Extensions;
 
 namespace o2rabbit.Api;
@@ -20,6 +22,8 @@ public class Program
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
+        builder.Services.AddValidatorsFromAssemblyContaining(typeof(_FluentValidationRegistrationHook),
+            includeInternalTypes: true);
 
         builder.Services.AddCors(options =>
         {

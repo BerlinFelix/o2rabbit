@@ -7,6 +7,7 @@ using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
 using o2rabbit.BizLog.Options.ProcessService;
+using o2rabbit.BizLog.Options.Search;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Services.Tickets;
@@ -50,6 +51,12 @@ public static class ServiceCollectionExtensions
             .AddDbContext<TicketServiceContext>();
 
         services.ConfigureOptions<TicketServiceContextOptionsConfigurator>();
+
+        #endregion
+
+        #region search
+
+        services.ConfigureOptions<SearchOptionsValidator>();
 
         #endregion
 
