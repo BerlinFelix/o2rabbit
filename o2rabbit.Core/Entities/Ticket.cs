@@ -15,4 +15,6 @@ public class Ticket
     public long? ProcessId { get; set; }
 
     public Process? Process { get; set; }
+
+    public List<Comment> Comments { get; } = [];
 }

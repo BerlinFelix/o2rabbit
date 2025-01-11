@@ -4,6 +4,7 @@ using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Extensions;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
@@ -29,7 +30,9 @@ internal partial class TicketService
         catch (Exception e)
         {
             _logger.LogError(e, e.Message);
-            return Result.Fail<Ticket>(new UnknownError());
+            if (e is AggregateException aggregateException)
+                _logger.LogAggregateException(aggregateException);
+            return Result.Fail(new UnknownError());
         }
     }
 }

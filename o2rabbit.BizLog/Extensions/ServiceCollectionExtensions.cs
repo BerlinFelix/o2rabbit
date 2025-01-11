@@ -1,12 +1,12 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
-using o2rabbit.BizLog.Options.ProcessService;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.Search;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
@@ -46,7 +46,7 @@ public static class ServiceCollectionExtensions
         services
             .AddScoped<ITicketService, TicketService>()
             .AddScoped<ITicketValidator, TicketValidator>()
-            .AddScoped<IValidator<UpdatedTicketCommand>, UpdatedTicketValidator>()
+            .AddScoped<IValidator<UpdateTicketCommand>, UpdatedTicketValidator>()
             .AddScoped<IValidator<NewTicketCommand>, NewTicketValidator>()
             .AddDbContext<TicketServiceContext>();
 

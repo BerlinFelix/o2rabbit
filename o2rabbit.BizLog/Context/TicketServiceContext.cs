@@ -25,6 +25,8 @@ public class TicketServiceContext : DbContext
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
+    public virtual DbSet<Comment> Comments { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         // TODO configure logging
@@ -62,6 +64,20 @@ public class TicketServiceContext : DbContext
             .WithOne(x => x.Parent)
             .HasForeignKey(x => x.ParentId)
             .IsRequired(false);
+
+        modelBuilder.Entity<Comment>()
+            .ToTable("Comments")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Comment>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.Ticket)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(x => x.TicketId)
+            .IsRequired(true);
 
         base.OnModelCreating(modelBuilder);
     }

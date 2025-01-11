@@ -2,15 +2,15 @@ using FluentValidation;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Options.BizLog;
 
-namespace o2rabbit.BizLog.Options.ProcessServiceContext;
+namespace o2rabbit.BizLog.Options.CommentServiceContext;
 
-internal class ProcessServiceContextOptionsConfigurator : IConfigureOptions<ProcessServiceContextOptions>,
-    IValidateOptions<ProcessServiceContextOptions>
+internal class CommentServiceContextOptionsConfigurator : IConfigureOptions<CommentServiceContextOptions>,
+    IValidateOptions<CommentServiceContextOptions>
 {
-    private readonly IValidator<ProcessServiceContextOptions> _validator;
+    private readonly IValidator<CommentServiceContextOptions> _validator;
     private readonly BizLogOptions _bizLogOptions;
 
-    public ProcessServiceContextOptionsConfigurator(IValidator<ProcessServiceContextOptions> validator,
+    public CommentServiceContextOptionsConfigurator(IValidator<CommentServiceContextOptions> validator,
         IOptions<BizLogOptions> bizLogOptions)
     {
         ArgumentNullException.ThrowIfNull(validator);
@@ -20,12 +20,12 @@ internal class ProcessServiceContextOptionsConfigurator : IConfigureOptions<Proc
         _bizLogOptions = bizLogOptions.Value;
     }
 
-    public void Configure(ProcessServiceContextOptions options)
+    public void Configure(CommentServiceContextOptions options)
     {
         options.ConnectionString = _bizLogOptions.ConnectionString;
     }
 
-    public ValidateOptionsResult Validate(string? name, ProcessServiceContextOptions options)
+    public ValidateOptionsResult Validate(string? name, CommentServiceContextOptions options)
     {
         var result = _validator.Validate(options);
 

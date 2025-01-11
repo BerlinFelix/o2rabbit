@@ -74,7 +74,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(5)]
     public async Task GivenValidatorReturnsInvalid_ReturnsFail(long id)
     {
-        var updatedTicket = _fixture.Create<UpdatedTicketCommand>();
+        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
@@ -87,7 +87,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(5)]
     public async Task GivenValidatorReturnsInvalid_ReturnsErrors(long id)
     {
-        var updatedTicket = _fixture.Create<UpdatedTicketCommand>();
+        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
@@ -100,7 +100,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_SavesChanges(long id)
     {
-        var updatedTicket = _fixture.Create<UpdatedTicketCommand>();
+        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
         updatedTicket.Id = id;
 
         await _sut.UpdateAsync(updatedTicket);
@@ -117,7 +117,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_ReturnsOk(long id)
     {
-        var updatedTicket = _fixture.Create<UpdatedTicketCommand>();
+        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);
@@ -130,7 +130,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_ReturnsUpdatedTicketAsValue(long id)
     {
-        var updatedTicket = _fixture.Create<UpdatedTicketCommand>();
+        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
         updatedTicket.Id = id;
 
         var result = await _sut.UpdateAsync(updatedTicket);

@@ -1,17 +1,17 @@
 using FluentValidation;
 using FluentValidation.Results;
-using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
+using o2rabbit.BizLog.InternalAbstractions;
 
 namespace o2rabbit.BizLog.Services.Tickets;
 
 public class TicketValidator : ITicketValidator
 {
     private readonly IValidator<NewTicketCommand> _newTicketValidator;
-    private readonly IValidator<UpdatedTicketCommand> _ticketUpdateValidator;
+    private readonly IValidator<UpdateTicketCommand> _ticketUpdateValidator;
 
     public TicketValidator(IValidator<NewTicketCommand> newTicketValidator,
-        IValidator<UpdatedTicketCommand> ticketUpdateValidator)
+        IValidator<UpdateTicketCommand> ticketUpdateValidator)
     {
         ArgumentNullException.ThrowIfNull(newTicketValidator);
         ArgumentNullException.ThrowIfNull(ticketUpdateValidator);
@@ -24,7 +24,7 @@ public class TicketValidator : ITicketValidator
         CancellationToken cancellationToken = default)
         => _newTicketValidator.ValidateAsync(newTicket, cancellationToken);
 
-    public Task<ValidationResult> ValidateAsync(UpdatedTicketCommand update,
+    public Task<ValidationResult> ValidateAsync(UpdateTicketCommand update,
         CancellationToken cancellationToken = default)
         => _ticketUpdateValidator.ValidateAsync(update, cancellationToken);
 }

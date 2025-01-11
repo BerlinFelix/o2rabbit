@@ -11,4 +11,6 @@ public class DefaultTicketDto
     public long? ParentId { get; set; }
 
     public long? ProcessId { get; set; }
+
+    public List<DefaultCommentDto> Comments { get; } = [];
 }

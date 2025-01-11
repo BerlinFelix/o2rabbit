@@ -11,7 +11,7 @@ public partial class TicketController
     [HttpPut("{id}")]
     public async Task<ActionResult<DefaultTicketDto>> UpdateAsync(
         long id,
-        [FromBody] UpdatedTicketCommand? ticket,
+        [FromBody] UpdateTicketCommand? ticket,
         CancellationToken cancellationToken = default)
     {
         if (ticket is null) return BadRequest("Ticket is null");

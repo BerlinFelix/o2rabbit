@@ -16,12 +16,10 @@ internal partial class TicketService
             {
                 return Result.Fail(new InvalidIdError());
             }
-            else
-            {
-                _context.Tickets.Remove(ticket);
-                await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                return Result.Ok();
-            }
+
+            _context.Tickets.Remove(ticket);
+            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return Result.Ok();
         }
         catch (Exception e)
         {

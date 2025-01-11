@@ -54,7 +54,7 @@ public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLif
         _context.Tickets.Add(parent);
         await _context.SaveChangesAsync();
 
-        var update = new UpdatedTicketCommand() { Id = parent.Id, Name = parent.Name, ParentId = child.Id };
+        var update = new UpdateTicketCommand() { Id = parent.Id, Name = parent.Name, ParentId = child.Id };
 
         var validationResult = await _sut.ValidateAsync(update);
 
@@ -74,7 +74,7 @@ public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLif
         _context.Tickets.Add(parent);
         await _context.SaveChangesAsync();
 
-        var update = new UpdatedTicketCommand() { Id = parent.Id, Name = parent.Name, ParentId = grandChild.Id };
+        var update = new UpdateTicketCommand() { Id = parent.Id, Name = parent.Name, ParentId = grandChild.Id };
 
         var validationResult = await _sut.ValidateAsync(update);
 

@@ -1,6 +1,6 @@
 namespace o2rabbit.BizLog.Abstractions.Models.TicketModels;
 
-public class UpdatedTicketCommand
+public class UpdateTicketCommand
 {
     public long Id { get; set; }
 

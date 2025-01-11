@@ -15,6 +15,8 @@ internal static class TicketExtensions
             ParentId = ticket.ParentId,
         };
 
+        dto.Comments.AddRange(ticket.Comments.Select(c => c.ToDto()));
+
         dto.ChildrenIds.AddRange(ticket.Children.Select(c => c.Id));
 
         return dto;

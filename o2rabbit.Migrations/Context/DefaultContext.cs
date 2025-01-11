@@ -22,6 +22,8 @@ public class DefaultContext : DbContext
 
     public DbSet<Process> Processes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<Comment> Comments { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -72,6 +74,20 @@ public class DefaultContext : DbContext
             .HasForeignKey(x => x.ProcessId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
+
+        modelBuilder.Entity<Comment>()
+            .ToTable("Comments")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Comment>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.Ticket)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(x => x.TicketId)
+            .IsRequired(true);
 
         base.OnModelCreating(modelBuilder);
     }

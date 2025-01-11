@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using o2rabbit.BizLog.Abstractions;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
@@ -59,7 +59,6 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
         _defaultContext.Add(existingTicket2);
 
         await _defaultContext.SaveChangesAsync();
-
 
         _defaultContext.Entry(existingTicket).State = EntityState.Detached;
         _defaultContext.Entry(existingTicket2).State = EntityState.Detached;
