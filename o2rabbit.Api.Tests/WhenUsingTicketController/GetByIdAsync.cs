@@ -6,6 +6,7 @@ using Moq;
 using o2rabbit.Api.Controllers.Tickets;
 using o2rabbit.Api.Extensions;
 using o2rabbit.Api.Models;
+using o2rabbit.Api.Parameters.Tickets;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
 using o2rabbit.Api.Tests.AutoFixtureCustomization.Tickets;
 using o2rabbit.BizLog.Abstractions.Options;
@@ -116,7 +117,11 @@ public class GetByIdAsync
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(ticket));
 
-        var response = await _sut.GetByIdAsync(ticket.Id, true);
+        var queryParameters = new GetTicketQueryParameters()
+        {
+            IncludeChildren = true
+        };
+        var response = await _sut.GetByIdAsync(ticket.Id, queryParameters);
 
         response.Result.Should().BeOfType<OkObjectResult>();
         var objectResult = (OkObjectResult)response.Result;

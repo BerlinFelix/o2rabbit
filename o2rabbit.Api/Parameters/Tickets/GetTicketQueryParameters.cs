@@ -1,6 +1,6 @@
-namespace o2rabbit.BizLog.Abstractions.Options;
+namespace o2rabbit.Api.Parameters.Tickets;
 
-public class GetTicketByIdOptions
+public class GetTicketQueryParameters
 {
     public bool IncludeChildren { get; set; }
 
