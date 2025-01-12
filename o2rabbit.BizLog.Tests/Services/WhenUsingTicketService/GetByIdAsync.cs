@@ -16,7 +16,7 @@ using o2rabbit.Migrations.Context;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
-public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixture>
+public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
@@ -45,9 +45,10 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
             searchOptionsValidatorMock.Object);
     }
 
-    public async Task InitializeAsync()
+    public async Task SetUpAsync()
     {
         await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
 
         var existingTicket = _fixture.Create<Ticket>();
@@ -69,6 +70,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(2)]
     public async Task GivenExistingId_ReturnsIsSuccess(long id)
     {
+        await SetUpAsync();
         var result = await _sut.GetByIdAsync(id);
 
         result.IsSuccess.Should().BeTrue();
@@ -79,6 +81,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(2)]
     public async Task GivenExistingId_ReturnsIsSuccessWithTicket(long id)
     {
+        await SetUpAsync();
         var result = await _sut.GetByIdAsync(id);
 
         result.Value.Should().NotBeNull();
@@ -91,6 +94,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(2)]
     public async Task GivenExistingIdAndIncludeChildren_ReturnsIsSuccessWithChildren(long id)
     {
+        await SetUpAsync();
         var ticketWithParent = _fixture.Create<Ticket>();
         ticketWithParent.Id = 3;
         ticketWithParent.ParentId = id;
@@ -110,6 +114,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(2)]
     public async Task GivenExistingIdWithChildren_ReturnsTicketWithoutChildren(long id)
     {
+        await SetUpAsync();
         var ticketWithParent = _fixture.Create<Ticket>();
         ticketWithParent.Id = 3;
         ticketWithParent.ParentId = id;
@@ -130,6 +135,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(2)]
     public async Task GivenExistingIdWithChildrenAndOptionsIncludingChildren_ReturnsTicketWithChildren(long id)
     {
+        await SetUpAsync();
         var ticketWithParent = _fixture.Create<Ticket>();
         ticketWithParent.ParentId = id;
 
@@ -152,6 +158,7 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(-1)]
     public async Task GivenNotExistingId_ReturnsIsFail(long id)
     {
+        await SetUpAsync();
         var result = await _sut.GetByIdAsync(id);
 
         result.IsFailed.Should().BeTrue();
@@ -163,15 +170,9 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixt
     [InlineData(-1)]
     public async Task GivenNotExistingId_ReturnsInvalidIdError(long id)
     {
+        await SetUpAsync();
         var result = await _sut.GetByIdAsync(id);
 
         result.Errors.Should().Contain(e => e is InvalidIdError);
-    }
-
-    public async Task DisposeAsync()
-    {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
-        await context.Database.EnsureDeletedAsync();
-        await _defaultContext.DisposeAsync();
     }
 }
