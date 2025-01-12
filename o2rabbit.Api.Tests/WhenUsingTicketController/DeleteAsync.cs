@@ -18,7 +18,8 @@ public class DeleteAsync
         _ticketServiceMock = new Mock<ITicketService>();
         _ticketServiceMock.Setup(m => m.DeleteAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
-        _sut = new TicketController(_ticketServiceMock.Object);
+        var commentServiceMock = new Mock<ICommentService>();
+        _sut = new TicketController(_ticketServiceMock.Object, commentServiceMock.Object);
     }
 
     [Fact]

@@ -27,7 +27,8 @@ public class GetByIdAsync
         _ticketServiceMock.Setup(m =>
                 m.GetByIdAsync(It.IsAny<long>(), It.IsAny<GetTicketByIdOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(""));
-        _sut = new TicketController(_ticketServiceMock.Object);
+        var commentServiceMock = new Mock<ICommentService>();
+        _sut = new TicketController(_ticketServiceMock.Object, commentServiceMock.Object);
         _fixture = new Fixture();
         _fixture.Customize(new IgnoreRecursion());
     }

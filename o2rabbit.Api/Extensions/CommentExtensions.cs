@@ -12,7 +12,8 @@ internal static class CommentExtensions
             Id = comment.Id,
             Text = comment.Text,
             Created = comment.Created,
-            LastModified = comment.LastModified
+            LastModified = comment.LastModified,
+            TicketId = comment.TicketId,
         };
     }
 }

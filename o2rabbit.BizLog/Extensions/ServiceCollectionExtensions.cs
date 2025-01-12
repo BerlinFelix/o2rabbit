@@ -1,15 +1,18 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using o2rabbit.BizLog.Abstractions.Models.CommentModels;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
+using o2rabbit.BizLog.Options.CommentServiceContext;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.Search;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services;
+using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Services.Tickets;
 
 namespace o2rabbit.BizLog.Extensions;
@@ -51,6 +54,19 @@ public static class ServiceCollectionExtensions
             .AddDbContext<TicketServiceContext>();
 
         services.ConfigureOptions<TicketServiceContextOptionsConfigurator>();
+
+        #endregion
+
+        services
+            .AddScoped<ICommentService, CommentService>()
+            .AddScoped<ICommentValidator, CommentValidator>()
+            // .AddScoped<IValidator<UpdateCommentCommand>, UpdatedCommentValidator>()
+            .AddScoped<IValidator<NewCommentCommand>, NewCommentValidator>()
+            .AddDbContext<CommentServiceContext>();
+
+        services.ConfigureOptions<CommentServiceContextOptionsConfigurator>();
+
+        #region comments
 
         #endregion
 

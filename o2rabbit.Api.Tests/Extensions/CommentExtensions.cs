@@ -24,7 +24,6 @@ public class CommentExtensions
         var dto = comment.ToDto();
 
         dto.Should().BeEquivalentTo(comment, config => config
-            .Excluding(x => x.Ticket)
-            .Excluding(x => x.TicketId));
+            .Excluding(x => x.Ticket));
     }
 }

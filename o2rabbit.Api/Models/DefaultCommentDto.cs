@@ -9,4 +9,6 @@ public class DefaultCommentDto
     public DateTime Created { get; set; } = DateTime.MinValue;
 
     public DateTime LastModified { get; set; } = DateTime.MinValue;
+
+    public long TicketId { get; set; }
 }

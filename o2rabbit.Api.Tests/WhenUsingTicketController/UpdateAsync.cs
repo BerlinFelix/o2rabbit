@@ -24,7 +24,8 @@ public class UpdateAsync
         _ticketServiceMock = new Mock<ITicketService>();
         _ticketServiceMock.Setup(m => m.UpdateAsync(It.IsAny<UpdateTicketCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
-        _sut = new TicketController(_ticketServiceMock.Object);
+        var commentServiceMock = new Mock<ICommentService>();
+        _sut = new TicketController(_ticketServiceMock.Object, commentServiceMock.Object);
 
         _fixture = new Fixture().Customize(new UpdatedTicketHasNoParentAndNoProcess());
     }
