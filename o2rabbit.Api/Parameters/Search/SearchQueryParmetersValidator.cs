@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace o2rabbit.Api.Options.Search;
+namespace o2rabbit.Api.Parameters.Search;
 
 public class SearchQueryParmetersValidator : AbstractValidator<SearchQueryParameters>
 {

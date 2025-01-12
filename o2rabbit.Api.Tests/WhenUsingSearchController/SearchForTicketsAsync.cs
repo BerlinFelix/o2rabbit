@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers.Searches;
 using o2rabbit.Api.Extensions;
-using o2rabbit.Api.Options.Search;
+using o2rabbit.Api.Parameters.Search;
 using o2rabbit.Api.Tests.AutoFixtureCustomization.Tickets;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;

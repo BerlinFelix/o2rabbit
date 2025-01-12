@@ -1,4 +1,4 @@
-namespace o2rabbit.Api.Options.Search;
+namespace o2rabbit.Api.Parameters.Search;
 
 public class SearchQueryParameters
 {

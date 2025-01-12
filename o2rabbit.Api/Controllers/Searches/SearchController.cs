@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using o2rabbit.Api.Extensions;
 using o2rabbit.Api.Models;
-using o2rabbit.Api.Options.Search;
+using o2rabbit.Api.Parameters.Search;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Abstractions.Services;
 
