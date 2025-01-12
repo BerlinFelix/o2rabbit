@@ -1,6 +1,6 @@
-namespace o2rabbit.Api.Options;
+namespace o2rabbit.Api.Parameters;
 
-public class LoginContent
+public class LoginParameters
 {
     public string UserName { get; set; } = string.Empty;
 

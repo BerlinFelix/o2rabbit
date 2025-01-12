@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using o2rabbit.Api.Models;
-using o2rabbit.Api.Options;
+using o2rabbit.Api.Parameters;
 
 namespace o2rabbit.Api.Controllers.Auth;
 
@@ -13,11 +13,11 @@ namespace o2rabbit.Api.Controllers.Auth;
 public class AuthController : ControllerBase
 {
     [HttpPost("login")]
-    public async Task<ActionResult<TokenDto>> GetToken([FromBody] LoginContent loginContent,
+    public async Task<ActionResult<TokenDto>> GetToken([FromBody] LoginParameters loginParameters,
         CancellationToken cancelationToken = default)
     {
         //TODO
-        if (loginContent.UserName != "user" || loginContent.Password != "password")
+        if (loginParameters.UserName != "user" || loginParameters.Password != "password")
         {
             return Unauthorized("Invalid username or password");
         }
@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
         // TODO
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, loginContent.UserName),
+            new Claim(JwtRegisteredClaimNames.Sub, loginParameters.UserName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

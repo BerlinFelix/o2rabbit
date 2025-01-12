@@ -23,8 +23,4 @@
       <ProjectReference Include="..\o2rabbit.Migrations\o2rabbit.Migrations.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Parameters\"/>
-    </ItemGroup>
-
 </Project>
