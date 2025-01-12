@@ -208,6 +208,37 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         result.Value.Comments.First().Text.Should().Be(comment.Text);
     }
 
+    [Fact]
+    public async Task GivenComments_ReturnsNoCommentsWhenNotRequested()
+    {
+        await SetUpAsync();
+        var fixture = new Fixture();
+        fixture.Customize(
+            new TicketHasNoProcessNoParentsNoChildren());
+        var ticketServiceContext =
+            GetTicketServiceContext();
+
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(ticketServiceContext, loggerMock.Object, ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+
+        var comment = fixture.Create<Comment>();
+        comment.TicketId = 1;
+        comment.Ticket = null;
+        comment.Created = DateTime.UtcNow;
+        comment.LastModified = DateTime.UtcNow;
+        var context = GetTicketServiceContext();
+        context.Add(comment);
+        await context.SaveChangesAsync();
+
+        var result = await sut.GetByIdAsync(1, new GetTicketByIdOptions() { IncludeComments = false });
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Comments.Should().BeEmpty();
+    }
+
     private TicketServiceContext GetTicketServiceContext()
     {
         return new TicketServiceContext(

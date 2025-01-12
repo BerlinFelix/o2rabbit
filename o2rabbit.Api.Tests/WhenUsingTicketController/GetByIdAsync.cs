@@ -110,8 +110,6 @@ public class GetByIdAsync
 
         var ticket = fixture.Create<Ticket>();
 
-        var getByIdOptions = new GetTicketByIdOptions() { IncludeChildren = true };
-
         _ticketServiceMock.Setup(m => m.GetByIdAsync(ticket.Id,
                 It.Is<GetTicketByIdOptions>(t => t.IncludeChildren),
                 It.IsAny<CancellationToken>()))
@@ -124,9 +122,41 @@ public class GetByIdAsync
         var response = await _sut.GetByIdAsync(ticket.Id, queryParameters);
 
         response.Result.Should().BeOfType<OkObjectResult>();
-        var objectResult = (OkObjectResult)response.Result;
-        objectResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
-        objectResult.Value.Should().BeOfType<DefaultTicketDto>();
-        objectResult.Value.As<DefaultTicketDto>().ChildrenIds.Should().HaveCount(ticket.Children.Count);
+        var okResult = (OkObjectResult)response.Result;
+        okResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
+        okResult.Value.Should().BeOfType<DefaultTicketDto>();
+        okResult.Value.As<DefaultTicketDto>().ChildrenIds.Should().HaveCount(ticket.Children.Count);
+    }
+
+    [Fact]
+    public async Task WhenTicketServiceReturnsTicketWithComments_ReturnsDtoWithComments()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasNoParentsAndNoChildren());
+
+        var ticket = fixture.Create<Ticket>();
+        var comments = fixture.CreateMany<Comment>();
+        foreach (var comment in comments)
+        {
+            comment.TicketId = ticket.Id;
+        }
+
+        ticket.Comments.AddRange(comments);
+        _ticketServiceMock.Setup(m => m.GetByIdAsync(ticket.Id,
+                It.Is<GetTicketByIdOptions>(t => t.IncludeComments),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(ticket));
+
+        var queryParameters = new GetTicketQueryParameters()
+        {
+            IncludeComments = true
+        };
+        var response = await _sut.GetByIdAsync(ticket.Id, queryParameters);
+
+        response.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)response.Result;
+        okResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
+        okResult.Value.Should().BeOfType<DefaultTicketDto>();
+        okResult.Value.As<DefaultTicketDto>().Comments.Should().HaveCount(ticket.Comments.Count);
     }
 }
