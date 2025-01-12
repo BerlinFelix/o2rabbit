@@ -16,19 +16,20 @@ internal partial class TicketService
         try
         {
             Ticket? ticket;
+            var query = _context.Tickets.AsQueryable();
             if (options != null && options.IncludeChildren)
             {
-                ticket = await _context.Tickets
-                    .Include(p => p.Children)
-                    .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
-                    .ConfigureAwait(false);
+                query = query
+                    .Include(p => p.Children);
             }
-            else
+
+            if (options != null && options.IncludeComments)
             {
-                ticket = await _context.Tickets
-                    .FindAsync(id, cancellationToken)
-                    .ConfigureAwait(false);
+                query = query.Include(p => p.Comments);
             }
+
+            ticket = await query.FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+                .ConfigureAwait(false);
 
             if (ticket == null)
             {

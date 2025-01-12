@@ -175,4 +175,64 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
 
         result.Errors.Should().Contain(e => e is InvalidIdError);
     }
+
+    [Fact]
+    public async Task GivenComments_ReturnsCommentsWhenRequested()
+    {
+        await SetUpAsync();
+        var fixture = new Fixture();
+        fixture.Customize(
+            new TicketHasNoProcessNoParentsNoChildren());
+        var ticketServiceContext =
+            GetTicketServiceContext();
+
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(ticketServiceContext, loggerMock.Object, ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+
+        var comment = fixture.Create<Comment>();
+        comment.TicketId = 1;
+        comment.Ticket = null;
+        comment.Created = DateTime.UtcNow;
+        comment.LastModified = DateTime.UtcNow;
+        var context = GetTicketServiceContext();
+        context.Add(comment);
+        await context.SaveChangesAsync();
+
+        var result = await sut.GetByIdAsync(1, new GetTicketByIdOptions() { IncludeComments = true });
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Comments.Should().HaveCount(1);
+        result.Value.Comments.First().Text.Should().Be(comment.Text);
+    }
+
+    private TicketServiceContext GetTicketServiceContext()
+    {
+        return new TicketServiceContext(
+            new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+            {
+                ConnectionString = _classFixture.ConnectionString!
+            }));
+    }
+
+    private TicketService SetUpDefaultTicketService()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+
+        var ticketServiceContext =
+            new TicketServiceContext(
+                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+                {
+                    ConnectionString = _classFixture.ConnectionString!
+                }));
+
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        return new TicketService(ticketServiceContext, loggerMock.Object, _ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+    }
 }
