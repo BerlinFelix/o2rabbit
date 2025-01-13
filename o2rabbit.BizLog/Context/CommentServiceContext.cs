@@ -30,6 +30,28 @@ public class CommentServiceContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Ticket>()
+            .ToTable("Tickets")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Ticket>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Ticket>()
+            .HasMany(x => x.Children)
+            .WithOne(x => x.Parent)
+            .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
+        modelBuilder.Entity<Ticket>()
+            .HasOne(x => x.Process)
+            .WithMany()
+            .HasForeignKey(x => x.ProcessId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
         modelBuilder.Entity<Comment>()
             .ToTable("Comments")
             .HasKey(x => x.Id);
@@ -41,13 +63,8 @@ public class CommentServiceContext : DbContext
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.Ticket)
             .WithMany(t => t.Comments)
-            .HasForeignKey(x => x.Id)
+            .HasForeignKey(x => x.TicketId)
             .IsRequired(true);
-
-        modelBuilder.Entity<Ticket>()
-            .ToTable("Tickets")
-            .HasKey(x => x.Id);
-
         base.OnModelCreating(modelBuilder);
     }
 }
