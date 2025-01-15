@@ -4,7 +4,7 @@ public class Comment
 {
     public long Id { get; set; }
 
-    public required string Text { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
 
     public DateTime Created { get; set; } = DateTime.MinValue;
 
@@ -12,5 +12,5 @@ public class Comment
 
     public Ticket? Ticket { get; set; }
 
-    public required long TicketId { get; set; }
+    public long TicketId { get; set; }
 }
