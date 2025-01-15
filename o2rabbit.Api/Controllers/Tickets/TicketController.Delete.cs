@@ -6,7 +6,7 @@ namespace o2rabbit.Api.Controllers.Tickets;
 public partial class TicketController
 {
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(int id)
+    public async Task<ActionResult> DeleteAsync(long id)
     {
         var result = await _ticketService.DeleteAsync(id).ConfigureAwait(false);
 
@@ -14,13 +14,12 @@ public partial class TicketController
         {
             return Ok();
         }
-        else if (result.HasError<InvalidIdError>())
+
+        if (result.HasError<InvalidIdError>())
         {
             return BadRequest(result.Errors);
         }
-        else
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
-        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
     }
 }
