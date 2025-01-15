@@ -35,7 +35,8 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
                     ConnectionString = _classFixture.ConnectionString
                 }));
 
-        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext));
+        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext),
+            new UpdatedCommentValidator(commentServiceContext));
 
         var newCommentCommand = new NewCommentCommand
         {
@@ -62,7 +63,8 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
                     ConnectionString = _classFixture.ConnectionString
                 }));
 
-        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext));
+        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext),
+            new UpdatedCommentValidator(commentServiceContext));
 
         var newCommentCommand = new NewCommentCommand
         {
@@ -89,7 +91,8 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
                     ConnectionString = _classFixture.ConnectionString
                 }));
 
-        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext));
+        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext),
+            new UpdatedCommentValidator(commentServiceContext));
 
         var newCommentCommand = new NewCommentCommand
         {
@@ -102,7 +105,7 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
         validationResult.IsValid.Should().BeTrue();
     }
 
-    public async Task SetUpAsync()
+    private async Task SetUpAsync()
     {
         await using var context = new DefaultContext(_classFixture.ConnectionString);
         await context.Database.EnsureDeletedAsync();

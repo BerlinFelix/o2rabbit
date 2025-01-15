@@ -113,7 +113,8 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
     {
         var commentServiceContext = CreateCommentServiceContext();
 
-        var validator = new CommentValidator(new NewCommentValidator(commentServiceContext));
+        var validator = new CommentValidator(new NewCommentValidator(commentServiceContext),
+            new UpdatedCommentValidator(commentServiceContext));
         var loggerMock = new Mock<ILogger<CommentService>>();
 
         var sut = new CommentService(commentServiceContext, loggerMock.Object, validator);
