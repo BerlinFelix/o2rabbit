@@ -6,7 +6,7 @@ public class DefaultTicketDto
 
     public required string Name { get; set; }
 
-    public List<long> ChildrenIds { get; } = [];
+    public List<ChildTicketDto> Children { get; } = [];
 
     public long? ParentId { get; set; }
 

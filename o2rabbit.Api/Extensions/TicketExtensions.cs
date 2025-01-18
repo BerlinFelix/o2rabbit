@@ -17,8 +17,17 @@ internal static class TicketExtensions
 
         dto.Comments.AddRange(ticket.Comments.Select(c => c.ToDto()));
 
-        dto.ChildrenIds.AddRange(ticket.Children.Select(c => c.Id));
+        dto.Children.AddRange(ticket.Children.Select(c => c.ToChildDto()));
 
         return dto;
+    }
+
+    public static ChildTicketDto ToChildDto(this Ticket ticket)
+    {
+        return new ChildTicketDto()
+        {
+            Id = ticket.Id,
+            Name = ticket.Name,
+        };
     }
 }

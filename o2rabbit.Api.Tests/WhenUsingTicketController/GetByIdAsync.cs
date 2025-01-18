@@ -125,7 +125,7 @@ public class GetByIdAsync
         var okResult = (OkObjectResult)response.Result;
         okResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
         okResult.Value.Should().BeOfType<DefaultTicketDto>();
-        okResult.Value.As<DefaultTicketDto>().ChildrenIds.Should().HaveCount(ticket.Children.Count);
+        okResult.Value.As<DefaultTicketDto>().Children.Should().HaveCount(ticket.Children.Count);
     }
 
     [Fact]

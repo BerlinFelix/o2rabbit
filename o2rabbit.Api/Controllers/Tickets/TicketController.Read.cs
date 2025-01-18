@@ -18,7 +18,7 @@ public partial class TicketController
         {
             IncludeChildren = queryParameters?.IncludeChildren ?? false,
             IncludeComments = queryParameters?.IncludeComments ?? false,
-            IncludeParents = queryParameters?.IncludeParents ?? false,
+            IncludeParents = queryParameters?.IncludeParent ?? false,
         };
 
         var result = await _ticketService.GetByIdAsync(id, options, cancellationToken).ConfigureAwait(false);

@@ -34,7 +34,7 @@ public class TicketExtensions
 
 
     [Fact]
-    public void Ticket_ToDefaultDto_HasCorrectChildrenIds()
+    public void Ticket_ToDefaultDto_HasCorrectChildren()
     {
         var fixture = new Fixture();
         fixture.Customize(new TicketHasChildren());
@@ -42,6 +42,29 @@ public class TicketExtensions
 
         var defaultDto = ticket.ToDefaultDto();
 
-        defaultDto.ChildrenIds.Should().HaveCount(ticket.Children.Count);
+        defaultDto.Children.Should().HaveCount(ticket.Children.Count);
+    }
+
+    [Fact]
+    public void Ticket_ToChildDto_IsEquivalent()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasNoParentsAndNoChildren());
+        var ticket = _fixture.Create<Ticket>();
+
+        var dto = ticket.ToChildDto();
+
+
+        dto.Should().BeEquivalentTo(ticket, config =>
+        {
+            config.Excluding(t => t.Children)
+                .Excluding(t => t.Process)
+                .Excluding((t => t.ProcessId))
+                .Excluding(t => t.Children)
+                .Excluding(t => t.Parent)
+                .Excluding(t => t.ParentId)
+                .Excluding(t => t.Comments);
+            return config;
+        });
     }
 }
