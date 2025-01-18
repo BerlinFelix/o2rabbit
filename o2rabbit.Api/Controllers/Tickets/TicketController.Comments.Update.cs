@@ -8,7 +8,7 @@ namespace o2rabbit.Api.Controllers.Tickets;
 
 public partial class TicketController
 {
-    [HttpPut("comments/{id}")]
+    [HttpPut("{ticketId}/comments/{id}")]
     public async Task<ActionResult<DefaultCommentDto>> UpdateAsync(
         long id,
         [FromBody] UpdateCommentCommand? command,

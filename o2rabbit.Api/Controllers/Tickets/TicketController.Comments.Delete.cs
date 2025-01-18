@@ -5,7 +5,7 @@ namespace o2rabbit.Api.Controllers.Tickets;
 
 public partial class TicketController
 {
-    [HttpDelete("comments/{id}")]
+    [HttpDelete("{ticketId}/comments/{id}")]
     public async Task<ActionResult> DeleteCommentAsync(long id)
     {
         var result = await _commentService.DeleteAsync(id).ConfigureAwait(false);
