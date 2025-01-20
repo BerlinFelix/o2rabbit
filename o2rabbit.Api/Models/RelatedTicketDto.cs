@@ -1,6 +1,6 @@
 namespace o2rabbit.Api.Models;
 
-public class ChildTicketDto
+public class RelatedTicketDto
 {
     public long Id { get; set; }
 

@@ -103,7 +103,7 @@ public class GetByIdAsync
     }
 
     [Fact]
-    public async Task WhenTicketServiceReturnsTicketWithChildren_ReturnsDtoWithChidrenIds()
+    public async Task WhenTicketServiceReturnsTicketWithChildren_ReturnsDtoWithChidren()
     {
         var fixture = new Fixture();
         fixture.Customize(new TicketHasChildren());
@@ -158,5 +158,33 @@ public class GetByIdAsync
         okResult.Value.Should().BeEquivalentTo(ticket.ToDefaultDto());
         okResult.Value.Should().BeOfType<DefaultTicketDto>();
         okResult.Value.As<DefaultTicketDto>().Comments.Should().HaveCount(ticket.Comments.Count);
+    }
+
+    [Fact]
+    public async Task? WhenTicketHasParent_ReturnsParentDto()
+    {
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasChildren());
+
+        var parent = fixture.Create<Ticket>();
+        var child = parent.Children.First();
+        child.Parent = parent;
+
+        _ticketServiceMock.Setup(m => m.GetByIdAsync(child.Id,
+                It.IsAny<GetTicketByIdOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(child));
+
+        var queryParameters = new GetTicketQueryParameters()
+        {
+            IncludeParent = true
+        };
+        var response = await _sut.GetByIdAsync(child.Id, queryParameters);
+
+        response.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)response.Result;
+        okResult.Value.Should().BeEquivalentTo(child.ToDefaultDto());
+        okResult.Value.Should().BeOfType<DefaultTicketDto>();
+        okResult.Value.As<DefaultTicketDto>().Parent.Should().BeEquivalentTo(parent.ToRelatedTicketDto());
     }
 }

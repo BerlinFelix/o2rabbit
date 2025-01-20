@@ -52,7 +52,7 @@ public class TicketExtensions
         fixture.Customize(new TicketHasNoParentsAndNoChildren());
         var ticket = _fixture.Create<Ticket>();
 
-        var dto = ticket.ToChildDto();
+        var dto = ticket.ToRelatedTicketDto();
 
 
         dto.Should().BeEquivalentTo(ticket, config =>

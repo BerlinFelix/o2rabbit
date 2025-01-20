@@ -6,9 +6,9 @@ public class DefaultTicketDto
 
     public required string Name { get; set; }
 
-    public List<ChildTicketDto> Children { get; } = [];
+    public List<RelatedTicketDto> Children { get; } = [];
 
-    public long? ParentId { get; set; }
+    public RelatedTicketDto? Parent { get; set; }
 
     public long? ProcessId { get; set; }
 
