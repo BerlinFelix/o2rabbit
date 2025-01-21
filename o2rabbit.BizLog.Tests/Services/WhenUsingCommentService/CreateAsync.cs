@@ -44,7 +44,7 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
     }
 
     [Fact]
-    public async Task GivenValidCommand_ReturnsSuccessWithTicket()
+    public async Task GivenValidCommand_ReturnsSuccessWithComment()
     {
         await SetUpAsync();
         var sut = CreateDefaultSut();
@@ -59,6 +59,24 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeOfType<Comment>();
         result.Value.TicketId.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GivenValidCommand_PersistsInDb()
+    {
+        await SetUpAsync();
+        var sut = CreateDefaultSut();
+        var newCommentCommand = new NewCommentCommand()
+        {
+            Text = "comment",
+            TicketId = 1
+        };
+
+        var result = await sut.CreateAsync(newCommentCommand);
+
+        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        var comment = await context.Comments.FindAsync(result.Value.Id);
+        comment.Should().NotBeNull();
     }
 
     private CommentService CreateDefaultSut()

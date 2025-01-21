@@ -17,12 +17,22 @@ public class CommentExtensions
     }
 
     [Fact]
-    public void NewCommentCommand_ToDto_ShouldBeEquivalent()
+    public void NewCommentCommand_ToComment_ShouldBeEquivalent()
     {
         var command = _fixture.Create<NewCommentCommand>();
 
-        var ticket = command.ToComment();
+        var comment = command.ToComment();
 
-        ticket.Should().BeEquivalentTo(command);
+        comment.Should().BeEquivalentTo(command);
+    }
+
+    [Fact]
+    public void NewCommentCommand_ToComment_ReturnsCreatedEqualsLastModified()
+    {
+        var command = _fixture.Create<NewCommentCommand>();
+
+        var comment = command.ToComment();
+
+        comment.LastModified.Should().Be(comment.Created);
     }
 }
