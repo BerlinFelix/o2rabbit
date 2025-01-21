@@ -6,10 +6,11 @@ internal static class FakeCommentFactory
 {
     internal static Comment CreateComment()
     {
+        var utcNow = DateTime.UtcNow;
         return new Comment()
         {
-            Created = DateTime.UtcNow,
-            LastModified = DateTime.UtcNow,
+            Created = utcNow,
+            LastModified = utcNow,
             Id = 1,
             Text = "comment",
             TicketId = 1,

@@ -25,8 +25,7 @@ internal partial class CommentService
 
             var existing = await _context.Comments.FindAsync(update.Id).ConfigureAwait(false);
             _context.Update(existing!).CurrentValues.SetValues(update);
-            //TODO LastModified WHY TEST GREEN?
-
+            existing.LastModified = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
