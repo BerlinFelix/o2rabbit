@@ -17,6 +17,12 @@ internal partial class TicketService
         {
             Ticket? ticket;
             var query = _context.Tickets.AsQueryable();
+            if (options is { IncludeParent: true })
+            {
+                query = query
+                    .Include(p => p.Parent);
+            }
+
             if (options is { IncludeChildren: true })
             {
                 query = query

@@ -92,6 +92,27 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
+    public async Task GivenExistingIdAndIncludeParent_ReturnsIsSuccessWithParent(long id)
+    {
+        await SetUpAsync();
+        var ticketWithParent = _fixture.Create<Ticket>();
+        ticketWithParent.Id = 3;
+        ticketWithParent.ParentId = id;
+
+        _defaultContext.Add(ticketWithParent);
+        await _defaultContext.SaveChangesAsync();
+
+        var result = await _sut.GetByIdAsync(3, new GetTicketByIdOptions() { IncludeParent = true });
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<Ticket>();
+        result.Value.Parent.Should().NotBeNull();
+        result.Value.Parent.Id.Should().Be(id);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
     public async Task GivenExistingIdAndIncludeChildren_ReturnsIsSuccessWithChildren(long id)
     {
         await SetUpAsync();
