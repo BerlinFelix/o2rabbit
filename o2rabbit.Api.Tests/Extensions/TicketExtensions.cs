@@ -27,7 +27,8 @@ public class TicketExtensions
         {
             config.Excluding(t => t.Children)
                 .Excluding(t => t.Parent)
-                .Excluding(t => t.Process);
+                .Excluding(t => t.Process)
+                .Excluding(t => t.ParentId);
             return config;
         });
     }
