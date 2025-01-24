@@ -185,6 +185,6 @@ public class GetByIdAsync
         var okResult = (OkObjectResult)response.Result;
         okResult.Value.Should().BeEquivalentTo(child.ToDefaultDto());
         okResult.Value.Should().BeOfType<DefaultTicketDto>();
-        okResult.Value.As<DefaultTicketDto>().Parent.Should().BeEquivalentTo(parent.ToRelatedTicketDto());
+        okResult.Value.As<DefaultTicketDto>().Parent.Should().BeEquivalentTo(parent.ToTinyTicketDto());
     }
 }

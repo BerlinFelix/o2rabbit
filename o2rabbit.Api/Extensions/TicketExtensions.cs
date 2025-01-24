@@ -12,19 +12,19 @@ internal static class TicketExtensions
             Id = ticket.Id,
             Name = ticket.Name,
             ProcessId = ticket.ProcessId,
-            Parent = ticket.Parent?.ToRelatedTicketDto(),
+            Parent = ticket.Parent?.ToTinyTicketDto(),
         };
 
         dto.Comments.AddRange(ticket.Comments.Select(c => c.ToDto()));
 
-        dto.Children.AddRange(ticket.Children.Select(c => c.ToRelatedTicketDto()));
+        dto.Children.AddRange(ticket.Children.Select(c => c.ToTinyTicketDto()));
 
         return dto;
     }
 
-    public static RelatedTicketDto ToRelatedTicketDto(this Ticket ticket)
+    public static TinyTicketDto ToTinyTicketDto(this Ticket ticket)
     {
-        return new RelatedTicketDto()
+        return new TinyTicketDto()
         {
             Id = ticket.Id,
             Name = ticket.Name,

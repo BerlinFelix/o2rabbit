@@ -1,6 +1,6 @@
 namespace o2rabbit.Api.Models;
 
-public class RelatedTicketDto
+public class TinyTicketDto
 {
     public long Id { get; set; }
 
