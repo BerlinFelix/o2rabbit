@@ -25,7 +25,7 @@ public class SearchController : ControllerBase
         _ticketService = ticketService;
     }
 
-    [HttpGet]
+    [HttpGet("tickets/default")]
     public async Task<ActionResult<IEnumerable<DefaultTicketDto>>> SearchForTicketsAsync(
         [FromQuery] SearchQueryParameters searchQueryParameters,
         CancellationToken cancellationToken = default)
@@ -46,6 +46,33 @@ public class SearchController : ControllerBase
         if (result.IsSuccess)
         {
             var dtos = result.Value.Select(t => t.ToDefaultDto());
+            return Ok(dtos);
+        }
+
+        return StatusCode(500);
+    }
+
+    [HttpGet("tickets/tiny")]
+    public async Task<ActionResult<IEnumerable<TinyTicketDto>>> SearchForTinyTicketsAsync(
+        [FromQuery] SearchQueryParameters searchQueryParameters,
+        CancellationToken cancellationToken = default)
+    {
+        // ReSharper disable once MethodHasAsyncOverloadWithCancellation
+        if (!_optionsValidator.Validate(searchQueryParameters).IsValid)
+        {
+            return BadRequest();
+        }
+
+        var result = await _ticketService.SearchAsync(new SearchOptions()
+        {
+            SearchText = searchQueryParameters.SearchText,
+            Page = searchQueryParameters.Page,
+            PageSize = searchQueryParameters.PageSize
+        }, cancellationToken).ConfigureAwait(false);
+
+        if (result.IsSuccess)
+        {
+            var dtos = result.Value.Select(t => t.ToTinyTicketDto());
             return Ok(dtos);
         }
 
