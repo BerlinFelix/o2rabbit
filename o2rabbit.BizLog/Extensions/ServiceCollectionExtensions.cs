@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddLogging();
 
         services.AddValidatorsFromAssemblyContaining(typeof(_FluentValidationDIRegistrationHook),
-            ServiceLifetime.Scoped, includeInternalTypes: true);
+            ServiceLifetime.Transient, includeInternalTypes: true);
 
         #endregion
 
