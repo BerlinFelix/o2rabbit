@@ -32,4 +32,8 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="obj\.env" />
+    </ItemGroup>
+
 </Project>

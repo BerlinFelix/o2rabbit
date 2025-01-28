@@ -1,0 +1,12 @@
+services:
+  db:
+    container_name: o2DbServer
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_DB: ${POSTGRES_DB:-db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
