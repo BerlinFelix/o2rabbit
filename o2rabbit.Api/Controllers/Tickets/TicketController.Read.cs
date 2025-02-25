@@ -31,7 +31,7 @@ public partial class TicketController
 
         if (result.HasError<InvalidIdError>())
         {
-            return BadRequest(result.Errors);
+            return NotFound(result.Errors);
         }
 
         return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
