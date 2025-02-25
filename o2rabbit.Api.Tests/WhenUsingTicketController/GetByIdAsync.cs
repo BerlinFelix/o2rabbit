@@ -54,7 +54,7 @@ public class GetByIdAsync
 
         var response = await _sut.GetByIdAsync(1);
 
-        response.Result.Should().BeOfType<BadRequestObjectResult>();
+        response.Result.Should().BeOfType<NotFoundObjectResult>();
     }
 
     [Fact]
