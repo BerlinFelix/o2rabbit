@@ -15,15 +15,6 @@ public class NewTicketValidator : AbstractValidator<NewTicketCommand>
         _context = context;
 
         RuleFor(t => t).NotNull();
-        RuleFor(t => t.ParentId).MustAsync(async (id, c) =>
-        {
-            if (!id.HasValue)
-            {
-                return true;
-            }
-
-            return await _context.Tickets.FindAsync(id).ConfigureAwait(false) != null;
-        }).WithMessage("Parent not found");
         RuleFor(t => t.ProcessId).MustAsync(async (id, c) =>
         {
             if (!id.HasValue)
