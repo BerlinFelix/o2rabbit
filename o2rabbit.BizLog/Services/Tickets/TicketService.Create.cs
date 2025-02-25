@@ -18,6 +18,7 @@ internal partial class TicketService
 
         try
         {
+            await _context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             var validationResult = await _ticketValidator.ValidateAsync(newTicket, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -25,6 +26,7 @@ internal partial class TicketService
             var ticket = newTicket.ToTicket();
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await _context.Database.CommitTransactionAsync(cancellationToken).ConfigureAwait(false);
             return Result.Ok(ticket);
         }
         catch (Exception e)
