@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using o2rabbit.Api.Extensions;
 using o2rabbit.Api.Models;
@@ -9,6 +10,7 @@ namespace o2rabbit.Api.Controllers.Tickets;
 
 public partial class TicketController
 {
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<DefaultTicketDto>> GetByIdAsync(long id,
         [FromQuery] GetTicketQueryParameters? queryParameters = null,
