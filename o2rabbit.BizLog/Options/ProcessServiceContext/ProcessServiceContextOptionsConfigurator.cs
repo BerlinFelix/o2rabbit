@@ -22,7 +22,7 @@ internal class ProcessServiceContextOptionsConfigurator : IConfigureOptions<Proc
 
     public void Configure(ProcessServiceContextOptions options)
     {
-        options.ConnectionString = _bizLogOptions.ConnectionString;
+        options.ConnectionString = _bizLogOptions.ConnectionStringMainDb;
     }
 
     public ValidateOptionsResult Validate(string? name, ProcessServiceContextOptions options)

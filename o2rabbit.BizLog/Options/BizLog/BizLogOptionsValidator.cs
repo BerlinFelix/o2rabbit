@@ -7,7 +7,7 @@ internal class BizLogOptionsOptionsValidator : AbstractValidator<BizLogOptions>
 {
     public BizLogOptionsOptionsValidator()
     {
-        RuleFor(o => o.ConnectionString)
+        RuleFor(o => o.ConnectionStringMainDb)
             .NotEmpty()
             .Must(connectionString =>
             {

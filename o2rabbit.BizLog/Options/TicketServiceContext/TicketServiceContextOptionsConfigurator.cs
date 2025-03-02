@@ -22,7 +22,7 @@ internal class TicketServiceContextOptionsConfigurator : IConfigureOptions<Ticke
 
     public void Configure(TicketServiceContextOptions options)
     {
-        options.ConnectionString = _bizLogOptions.ConnectionString;
+        options.ConnectionString = _bizLogOptions.ConnectionStringMainDb;
     }
 
     public ValidateOptionsResult Validate(string? name, TicketServiceContextOptions options)

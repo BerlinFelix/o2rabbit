@@ -16,35 +16,38 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddOptions()
-            .Configure<ApiCorsOptions>(builder.Configuration.GetSection("CorsOptions"))
-            .Configure<ConnectionStringOptions>(builder.Configuration.GetSection("ConnectionOptions"));
+            .Configure<ApiCorsOptions>(builder.Configuration.GetRequiredSection("CorsOptions"))
+            .AddOptionsWithValidateOnStart<ConnectionStringOptions>()
+            .BindConfiguration("ConnectionStringOptions");
 
-        var connectionString = builder.Configuration.GetConnectionString("Default") ??
-                               throw new NullReferenceException("Default connection string");
-        // Add services to the container.
+        builder.Services.ConfigureOptions<ConnectionStringOptionsConfigurator>();
+
         builder.Services.AddValidatorsFromAssemblyContaining(typeof(_FluentValidationRegistrationHook),
             includeInternalTypes: true);
 
         builder.Services.AddCors(options =>
-        {
-            var corsOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<ApiCorsOptions>>()
-                .Value;
-            options.AddPolicy(corsOptions.PolicyName,
-                b =>
-                {
-                    b.WithOrigins(corsOptions.Origins);
-                    if (corsOptions.Headers.Length > 0)
-                        b.WithHeaders(corsOptions.Headers);
-                    else
-                        b.AllowAnyHeader();
-                    if (corsOptions.Methods.Length > 0)
-                        b.WithMethods(corsOptions.Methods);
-                    else
-                        b.AllowAnyMethod();
-                });
-        });
-
-        builder.Services.AddBizLog((o, sp) => { o.ConnectionString = connectionString; })
+            {
+                var corsOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<ApiCorsOptions>>()
+                    .Value;
+                options.AddPolicy(corsOptions.PolicyName,
+                    b =>
+                    {
+                        b.WithOrigins(corsOptions.Origins);
+                        if (corsOptions.Headers.Length > 0)
+                            b.WithHeaders(corsOptions.Headers);
+                        else
+                            b.AllowAnyHeader();
+                        if (corsOptions.Methods.Length > 0)
+                            b.WithMethods(corsOptions.Methods);
+                        else
+                            b.AllowAnyMethod();
+                    });
+            })
+            .AddBizLog((o, sp) =>
+            {
+                var connectionStringOptions = sp.GetRequiredService<IOptions<ConnectionStringOptions>>().Value;
+                o.ConnectionStringMainDb = connectionStringOptions.ConnectionStringMainDb;
+            })
             .AddControllers()
             .AddJsonOptions(options =>
             {

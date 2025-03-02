@@ -22,7 +22,7 @@ internal class CommentServiceContextOptionsConfigurator : IConfigureOptions<Comm
 
     public void Configure(CommentServiceContextOptions options)
     {
-        options.ConnectionString = _bizLogOptions.ConnectionString;
+        options.ConnectionString = _bizLogOptions.ConnectionStringMainDb;
     }
 
     public ValidateOptionsResult Validate(string? name, CommentServiceContextOptions options)
