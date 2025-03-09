@@ -16,10 +16,6 @@ public class DefaultContext : DbContext
         _connectionString = options.Value.ConnectionString;
     }
 
-    public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
-    {
-    }
-
     public DefaultContext()
     {
     }
