@@ -1,0 +1,19 @@
+- Processes
+    - One can create ProcessExecutions from ProcessDefinitions
+    - Have "Possible Statuses"
+    - E.g. Project, Epic, Story, Task, Todo (has Statuses Done/Open)
+    - A Process has Statistics etc. and hence Dashboards
+- Tickets
+    - Can only be create from ProcessDefinitions
+    - For "non-process"-related stuff create ProcessDefinition Task, available in all Projects
+    - Have "Status"
+- Spaces
+    - Processes can be available in multiple Spaces
+    - A Ticket is assigned to a space
+    - Have no "Status"
+    - Can have SubSpaces
+- Users
+- Groups
+    - Control CRUD Access for Processes, Tickets, Spaces
+    -
+- 
