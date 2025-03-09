@@ -1,6 +1,6 @@
 namespace o2rabbit.Core.Entities;
 
-public class Comment
+public class TicketComment
 {
     public long Id { get; set; }
 

@@ -4,10 +4,10 @@ namespace o2rabbit.BizLog.Tests.FakeFactories;
 
 internal static class FakeCommentFactory
 {
-    internal static Comment CreateComment()
+    internal static TicketComment CreateComment()
     {
         var utcNow = DateTime.UtcNow;
-        return new Comment()
+        return new TicketComment()
         {
             Created = utcNow,
             LastModified = utcNow,

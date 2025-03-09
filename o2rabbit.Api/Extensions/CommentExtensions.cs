@@ -5,17 +5,17 @@ namespace o2rabbit.Api.Extensions;
 
 internal static class CommentExtensions
 {
-    internal static DefaultCommentDto ToDto(this Comment comment)
+    internal static DefaultCommentDto ToDto(this TicketComment ticketComment)
     {
         return new()
         {
-            Id = comment.Id,
-            Text = comment.Text,
-            Created = comment.Created,
-            LastModified = comment.LastModified,
-            TicketId = comment.TicketId,
-            DeletedAt = comment.DeletedAt,
-            IsPinned = comment.IsPinned,
+            Id = ticketComment.Id,
+            Text = ticketComment.Text,
+            Created = ticketComment.Created,
+            LastModified = ticketComment.LastModified,
+            TicketId = ticketComment.TicketId,
+            DeletedAt = ticketComment.DeletedAt,
+            IsPinned = ticketComment.IsPinned,
         };
     }
 }

@@ -8,7 +8,7 @@ namespace o2rabbit.BizLog.Services.Comments;
 
 internal partial class CommentService
 {
-    public async Task<Result<Comment>> DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<Result<TicketComment>> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id < 1)
             return Result.Fail(new InvalidIdError());

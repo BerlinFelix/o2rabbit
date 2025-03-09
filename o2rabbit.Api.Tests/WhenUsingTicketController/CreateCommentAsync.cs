@@ -63,7 +63,7 @@ public class CreateCommentAsync
         commentServiceMock.Setup(c => c.CreateAsync(
                 It.IsAny<NewCommentCommand>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(fixture.Create<Comment>()));
+            .ReturnsAsync(Result.Ok(fixture.Create<TicketComment>()));
         var ticketServiceMock = new Mock<ITicketService>();
 
         var sut = new TicketController(ticketServiceMock.Object, commentServiceMock.Object);

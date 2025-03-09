@@ -19,7 +19,7 @@ public class CommentExtensions
     [Fact]
     public void Comment_ToDto_ShouldBeEquivalent()
     {
-        var comment = _fixture.Create<Comment>();
+        var comment = _fixture.Create<TicketComment>();
 
         var dto = comment.ToDto();
 

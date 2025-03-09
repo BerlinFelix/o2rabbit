@@ -135,7 +135,7 @@ public class GetByIdAsync
         fixture.Customize(new TicketHasNoParentsAndNoChildren());
 
         var ticket = fixture.Create<Ticket>();
-        var comments = fixture.CreateMany<Comment>();
+        var comments = fixture.CreateMany<TicketComment>();
         foreach (var comment in comments)
         {
             comment.TicketId = ticket.Id;

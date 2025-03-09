@@ -16,5 +16,5 @@ public class Ticket
 
     public Process? Process { get; set; }
 
-    public List<Comment> Comments { get; } = [];
+    public List<TicketComment> Comments { get; } = [];
 }

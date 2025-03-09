@@ -57,7 +57,7 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
         var result = await sut.CreateAsync(newCommentCommand);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeOfType<Comment>();
+        result.Value.Should().BeOfType<TicketComment>();
         result.Value.TicketId.Should().Be(1);
     }
 

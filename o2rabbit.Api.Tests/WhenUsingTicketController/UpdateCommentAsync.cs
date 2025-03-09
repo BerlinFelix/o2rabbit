@@ -21,7 +21,7 @@ public class UpdateCommentAsync
         commentServiceMock.Setup(m => m.UpdateAsync(
                 It.IsAny<UpdateCommentCommand>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(new Comment()))
+            .ReturnsAsync(Result.Ok(new TicketComment()))
             .Verifiable();
 
         var sut = new TicketController(ticketServiceMock.Object, commentServiceMock.Object);
@@ -53,7 +53,7 @@ public class UpdateCommentAsync
     {
         var ticketServiceMock = new Mock<ITicketService>();
         var commentServiceMock = new Mock<ICommentService>();
-        var updatedComment = new Comment() { Id = 2 };
+        var updatedComment = new TicketComment() { Id = 2 };
         commentServiceMock.Setup(m => m.UpdateAsync(
                 It.IsAny<UpdateCommentCommand>(),
                 It.IsAny<CancellationToken>()))

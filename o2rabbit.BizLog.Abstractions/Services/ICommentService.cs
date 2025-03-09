@@ -6,11 +6,11 @@ namespace o2rabbit.BizLog.Abstractions.Services;
 
 public interface ICommentService
 {
-    public Task<Result<Comment>> CreateAsync(NewCommentCommand newCommentCommand,
+    public Task<Result<TicketComment>> CreateAsync(NewCommentCommand newCommentCommand,
         CancellationToken cancellationToken = default);
 
-    public Task<Result<Comment>> UpdateAsync(UpdateCommentCommand update,
+    public Task<Result<TicketComment>> UpdateAsync(UpdateCommentCommand update,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Comment>> DeleteAsync(long id, CancellationToken cancellationToken = default);
+    Task<Result<TicketComment>> DeleteAsync(long id, CancellationToken cancellationToken = default);
 }

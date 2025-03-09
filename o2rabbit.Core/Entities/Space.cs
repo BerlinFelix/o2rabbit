@@ -16,5 +16,5 @@ public class Space
 
     public List<Ticket> AssignedTickets { get; } = [];
 
-    public List<Comment> Comments { get; } = [];
+    public List<TicketComment> Comments { get; } = [];
 }

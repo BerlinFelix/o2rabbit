@@ -213,7 +213,7 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var sut = new TicketService(ticketServiceContext, loggerMock.Object, ticketValidatorMock.Object,
             searchOptionsValidatorMock.Object);
 
-        var comment = fixture.Create<Comment>();
+        var comment = fixture.Create<TicketComment>();
         comment.TicketId = 1;
         comment.Ticket = null;
         comment.Created = DateTime.UtcNow;
@@ -245,7 +245,7 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var sut = new TicketService(ticketServiceContext, loggerMock.Object, ticketValidatorMock.Object,
             searchOptionsValidatorMock.Object);
 
-        var comment = fixture.Create<Comment>();
+        var comment = fixture.Create<TicketComment>();
         comment.TicketId = 1;
         comment.Ticket = null;
         comment.Created = DateTime.UtcNow;

@@ -9,7 +9,7 @@ namespace o2rabbit.BizLog.Services.Comments;
 
 internal partial class CommentService
 {
-    public async Task<Result<Comment>> UpdateAsync(UpdateCommentCommand update,
+    public async Task<Result<TicketComment>> UpdateAsync(UpdateCommentCommand update,
         CancellationToken cancellationToken = default)
     {
         if (update == null)

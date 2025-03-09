@@ -10,7 +10,7 @@ namespace o2rabbit.BizLog.Services.Comments;
 
 internal partial class CommentService
 {
-    public async Task<Result<Comment>> CreateAsync(NewCommentCommand newCommentCommand,
+    public async Task<Result<TicketComment>> CreateAsync(NewCommentCommand newCommentCommand,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(newCommentCommand);

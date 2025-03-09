@@ -25,7 +25,7 @@ public class TicketServiceContext : DbContext
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
-    public virtual DbSet<Comment> Comments { get; set; }
+    public virtual DbSet<TicketComment> Comments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -65,21 +65,21 @@ public class TicketServiceContext : DbContext
             .HasForeignKey(x => x.ParentId)
             .IsRequired(false);
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .ToTable("Comments")
             .HasKey(x => x.Id);
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .Property(x => x.Id)
             .ValueGeneratedOnAdd();
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .HasOne(c => c.Ticket)
             .WithMany(t => t.Comments)
             .HasForeignKey(x => x.TicketId)
             .IsRequired(true);
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .Property(c => c.DeletedAt)
             .HasConversion(d => d == null ? d : d.Value.ToUniversalTime(), offset => offset);
 

@@ -22,7 +22,7 @@ public class DefaultContext : DbContext
 
     public DbSet<Process> Processes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
-    public DbSet<Comment> Comments { get; set; }
+    public DbSet<TicketComment> Comments { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -75,21 +75,21 @@ public class DefaultContext : DbContext
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .ToTable("Comments")
             .HasKey(x => x.Id);
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .Property(x => x.Id)
             .ValueGeneratedOnAdd();
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .HasOne(c => c.Ticket)
             .WithMany(t => t.Comments)
             .HasForeignKey(x => x.TicketId)
             .IsRequired(true);
 
-        modelBuilder.Entity<Comment>()
+        modelBuilder.Entity<TicketComment>()
             .Property(c => c.DeletedAt)
             .HasConversion(d => d == null ? d : d.Value.ToUniversalTime(), offset => offset);
 

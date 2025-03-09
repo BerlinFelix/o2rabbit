@@ -22,7 +22,7 @@ public class DeleteCommentAsync
         commentServiceMock.Setup(m => m.DeleteAsync(
                 It.IsAny<long>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(new Comment()))
+            .ReturnsAsync(Result.Ok(new TicketComment()))
             .Verifiable();
 
         var sut = new TicketController(ticketServiceMock.Object, commentServiceMock.Object);
@@ -41,7 +41,7 @@ public class DeleteCommentAsync
         commentServiceMock.Setup(m => m.DeleteAsync(
                 It.IsAny<long>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(new Comment()))
+            .ReturnsAsync(Result.Ok(new TicketComment()))
             .Verifiable();
 
         var sut = new TicketController(ticketServiceMock.Object, commentServiceMock.Object);

@@ -5,10 +5,10 @@ namespace o2rabbit.BizLog.Extensions;
 
 internal static class CommentExtensions
 {
-    public static Comment ToComment(this NewCommentCommand command)
+    public static TicketComment ToComment(this NewCommentCommand command)
     {
         var now = DateTime.UtcNow;
-        var comment = new Comment()
+        var comment = new TicketComment()
         {
             Id = 0,
             Text = command.Text,
