@@ -1,5 +1,6 @@
 using FluentResults;
 using Microsoft.Extensions.Logging;
+using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Extensions;
 
@@ -7,7 +8,7 @@ namespace o2rabbit.BizLog.Services.Comments;
 
 internal partial class CommentService
 {
-    public async Task<Result> DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<Result<Comment>> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         if (id < 1)
             return Result.Fail(new InvalidIdError());
@@ -23,7 +24,7 @@ internal partial class CommentService
 
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            return Result.Ok();
+            return Result.Ok(comment);
         }
         catch (Exception e)
         {

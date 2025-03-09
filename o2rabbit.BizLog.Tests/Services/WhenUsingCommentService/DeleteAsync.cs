@@ -27,6 +27,22 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
     [Theory]
     [InlineData(1)]
+    public async Task WhenSuccess_ReturnsComment(long id)
+    {
+        await SetUpAsync();
+        var sut = CreateDefaultSut();
+        var context = CreateCommentServiceContext();
+
+        var result = await sut.DeleteAsync(id);
+
+        var comment = await context.Comments.FindAsync(id);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData(1)]
     public async Task WhenCalled_SetsTextEmpty(long id)
     {
         await SetUpAsync();

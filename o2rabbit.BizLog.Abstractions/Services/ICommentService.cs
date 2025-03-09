@@ -12,5 +12,5 @@ public interface ICommentService
     public Task<Result<Comment>> UpdateAsync(UpdateCommentCommand update,
         CancellationToken cancellationToken = default);
 
-    Task<Result> DeleteAsync(long id, CancellationToken cancellationToken = default);
+    Task<Result<Comment>> DeleteAsync(long id, CancellationToken cancellationToken = default);
 }

@@ -3,8 +3,10 @@ using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using o2rabbit.Api.Controllers.Tickets;
+using o2rabbit.Api.Models;
 using o2rabbit.Api.Tests.AutoFixtureCustomization;
 using o2rabbit.BizLog.Abstractions.Services;
+using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.Api.Tests.WhenUsingTicketController;
@@ -20,7 +22,7 @@ public class DeleteCommentAsync
         commentServiceMock.Setup(m => m.DeleteAsync(
                 It.IsAny<long>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok())
+            .ReturnsAsync(Result.Ok(new Comment()))
             .Verifiable();
 
         var sut = new TicketController(ticketServiceMock.Object, commentServiceMock.Object);
@@ -39,14 +41,15 @@ public class DeleteCommentAsync
         commentServiceMock.Setup(m => m.DeleteAsync(
                 It.IsAny<long>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok())
+            .ReturnsAsync(Result.Ok(new Comment()))
             .Verifiable();
 
         var sut = new TicketController(ticketServiceMock.Object, commentServiceMock.Object);
 
         var response = await sut.DeleteCommentAsync(1);
 
-        response.Should().BeOfType<OkResult>();
+        response.Result.Should().BeOfType<OkObjectResult>();
+        response.Result.As<OkObjectResult>().Value.Should().BeOfType<DefaultCommentDto>();
     }
 
     [Fact]
@@ -65,6 +68,6 @@ public class DeleteCommentAsync
 
         var response = await sut.DeleteCommentAsync(1);
 
-        response.Should().BeOfType<BadRequestObjectResult>();
+        response.Result.Should().BeOfType<BadRequestObjectResult>();
     }
 }
