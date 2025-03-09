@@ -127,6 +127,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
         existingComment.Id = 1;
         existingComment.Created = DateTime.UtcNow;
         existingComment.LastModified = DateTime.UtcNow;
+        existingComment.DeletedAt = null;
 
         context.Add(existingComment);
         await context.SaveChangesAsync();

@@ -19,6 +19,7 @@ internal partial class CommentService
                 return Result.Fail(new InvalidIdError());
 
             comment.Text = string.Empty;
+            comment.DeletedAt = DateTimeOffset.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
