@@ -3,7 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Abstractions.Models.CommentModels;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.CommentServiceContext;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
@@ -27,9 +27,9 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
 
-        var commentServiceContext = new CommentServiceContext(
-            new OptionsWrapper<CommentServiceContextOptions>(
-                new CommentServiceContextOptions()
+        var commentServiceContext = new DefaultContext(
+            new OptionsWrapper<DefaultContextOptions>(
+                new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString
                 }));
@@ -55,9 +55,9 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
 
-        var commentServiceContext = new CommentServiceContext(
-            new OptionsWrapper<CommentServiceContextOptions>(
-                new CommentServiceContextOptions()
+        var commentServiceContext = new DefaultContext(
+            new OptionsWrapper<DefaultContextOptions>(
+                new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString
                 }));
@@ -83,9 +83,9 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
 
-        var commentServiceContext = new CommentServiceContext(
-            new OptionsWrapper<CommentServiceContextOptions>(
-                new CommentServiceContextOptions()
+        var commentServiceContext = new DefaultContext(
+            new OptionsWrapper<DefaultContextOptions>(
+                new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString
                 }));

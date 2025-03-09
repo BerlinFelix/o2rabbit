@@ -7,7 +7,6 @@ using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
-using o2rabbit.BizLog.Options.CommentServiceContext;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.Search;
 using o2rabbit.BizLog.Options.TicketServiceContext;
@@ -64,10 +63,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ICommentService, CommentService>()
             .AddScoped<ICommentValidator, CommentValidator>()
             // .AddScoped<IValidator<UpdateCommentCommand>, UpdatedCommentValidator>()
-            .AddScoped<IValidator<NewCommentCommand>, NewCommentValidator>()
-            .AddDbContext<CommentServiceContext>();
-
-        services.ConfigureOptions<CommentServiceContextOptionsConfigurator>();
+            .AddScoped<IValidator<NewCommentCommand>, NewCommentValidator>();
 
         #endregion
 

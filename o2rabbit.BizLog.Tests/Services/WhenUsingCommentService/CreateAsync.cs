@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Models.CommentModels;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.CommentServiceContext;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
@@ -80,18 +80,18 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
 
     private CommentService CreateDefaultSut()
     {
-        var commentServiceContext = new CommentServiceContext(
-            new OptionsWrapper<CommentServiceContextOptions>(
-                new CommentServiceContextOptions()
+        var defaultContext = new DefaultContext(
+            new OptionsWrapper<DefaultContextOptions>(
+                new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString
                 }));
 
-        var validator = new CommentValidator(new NewCommentValidator(commentServiceContext),
-            new UpdatedCommentValidator(commentServiceContext));
+        var validator = new CommentValidator(new NewCommentValidator(defaultContext),
+            new UpdatedCommentValidator(defaultContext));
         var loggerMock = new Mock<ILogger<CommentService>>();
 
-        var sut = new CommentService(commentServiceContext, loggerMock.Object, validator);
+        var sut = new CommentService(defaultContext, loggerMock.Object, validator);
         return sut;
     }
 

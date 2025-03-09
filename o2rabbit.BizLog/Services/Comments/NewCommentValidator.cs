@@ -6,7 +6,7 @@ namespace o2rabbit.BizLog.Services.Comments;
 
 public class NewCommentValidator : AbstractValidator<NewCommentCommand>
 {
-    public NewCommentValidator(CommentServiceContext commentServiceContext)
+    public NewCommentValidator(DefaultContext defaultContext)
     {
         RuleFor(c => c.Text)
             .NotEmpty();
@@ -15,7 +15,7 @@ public class NewCommentValidator : AbstractValidator<NewCommentCommand>
             .MustAsync(async (id, c) =>
             {
                 //TODO context is disposable. How to dispose of it?
-                var ticket = await commentServiceContext.Tickets.FindAsync(id, c).ConfigureAwait(false);
+                var ticket = await defaultContext.Tickets.FindAsync(id, c).ConfigureAwait(false);
                 var ticketExists = ticket != null;
                 return ticketExists;
             }).WithMessage("Ticket not found");

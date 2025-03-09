@@ -9,11 +9,11 @@ namespace o2rabbit.BizLog.Services.Comments;
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
 internal partial class CommentService : ICommentService
 {
-    private readonly CommentServiceContext _context;
+    private readonly DefaultContext _context;
     private readonly ILogger<CommentService> _logger;
     private readonly ICommentValidator _commentValidator;
 
-    public CommentService(CommentServiceContext context,
+    public CommentService(DefaultContext context,
         ILogger<CommentService> logger,
         ICommentValidator commentValidator)
     {

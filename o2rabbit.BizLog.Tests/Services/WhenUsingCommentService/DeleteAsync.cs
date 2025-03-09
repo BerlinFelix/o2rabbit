@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Context;
-using o2rabbit.BizLog.Options.CommentServiceContext;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
@@ -31,7 +31,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
         var sut = CreateDefaultSut();
-        var context = CreateCommentServiceContext();
+        var context = CreateDefaultContext();
 
         var result = await sut.DeleteAsync(id);
 
@@ -45,7 +45,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
     [InlineData(1)]
     public async Task WhenCommentIsAlreadyDeleted_ReturnsFalseAndComment(long id)
     {
-        await using var setupContext = CreateCommentServiceContext();
+        await using var setupContext = CreateDefaultContext();
         await setupContext.Database.EnsureDeletedAsync();
         await setupContext.Database.EnsureCreatedAsync();
 
@@ -78,7 +78,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
         var sut = CreateDefaultSut();
-        var context = CreateCommentServiceContext();
+        var context = CreateDefaultContext();
 
         var result = await sut.DeleteAsync(id);
 
@@ -94,7 +94,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
         var sut = CreateDefaultSut();
-        var context = CreateCommentServiceContext();
+        var context = CreateDefaultContext();
 
         await sut.DeleteAsync(id);
 
@@ -110,7 +110,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
     {
         await SetUpAsync();
         var sut = CreateDefaultSut();
-        var context = CreateCommentServiceContext();
+        var context = CreateDefaultContext();
 
         var result = await sut.DeleteAsync(id);
 
@@ -159,7 +159,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
     private async Task SetUpAsync()
     {
-        await using var context = CreateCommentServiceContext();
+        await using var context = CreateDefaultContext();
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
 
@@ -180,10 +180,10 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
         await context.SaveChangesAsync();
     }
 
-    private CommentServiceContext CreateCommentServiceContext()
+    private DefaultContext CreateDefaultContext()
     {
-        return new CommentServiceContext(new OptionsWrapper<CommentServiceContextOptions>(
-            new CommentServiceContextOptions()
+        return new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions()
             {
                 ConnectionString = _classFixture.ConnectionString
             }));
@@ -191,7 +191,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
     private CommentService CreateDefaultSut()
     {
-        var commentServiceContext = CreateCommentServiceContext();
+        var commentServiceContext = CreateDefaultContext();
 
         var validator = new CommentValidator(new NewCommentValidator(commentServiceContext),
             new UpdatedCommentValidator(commentServiceContext));

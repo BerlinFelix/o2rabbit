@@ -6,7 +6,7 @@ namespace o2rabbit.BizLog.Services.Comments;
 
 public class UpdatedCommentValidator : AbstractValidator<UpdateCommentCommand>
 {
-    public UpdatedCommentValidator(CommentServiceContext commentServiceContext)
+    public UpdatedCommentValidator(DefaultContext defaultContext)
     {
         RuleFor(c => c.Text)
             .NotEmpty();
@@ -14,7 +14,7 @@ public class UpdatedCommentValidator : AbstractValidator<UpdateCommentCommand>
         RuleFor(c => c.Id)
             .MustAsync(async (id, c) =>
             {
-                var comment = await commentServiceContext.Comments.FindAsync(id, c).ConfigureAwait(false);
+                var comment = await defaultContext.Comments.FindAsync(id, c).ConfigureAwait(false);
                 var commentExists = comment != null;
                 return commentExists;
             }).WithMessage("Comment not found");
