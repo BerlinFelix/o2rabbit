@@ -8,7 +8,6 @@ using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
-using o2rabbit.Migrations.Context;
 using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
@@ -17,7 +16,7 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
 {
     private readonly ProcessServiceClassFixture _classFixture;
     private readonly Fixture _fixture;
-    private readonly ProcessServiceContext _context;
+    private readonly DefaultContext _context;
     private readonly Mock<ILogger<ProcessService>> _loggerMock;
     private readonly ProcessService _sut;
 
@@ -28,9 +27,9 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
-        _context = new ProcessServiceContext(
-            new OptionsWrapper<ProcessServiceContextOptions>(
-                new ProcessServiceContextOptions()
+        _context = new DefaultContext(
+            new OptionsWrapper<DefaultContextOptions>(
+                new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString ??
                                        throw new TypeInitializationException(nameof(_classFixture), null)
@@ -110,7 +109,7 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
     public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
         var process = _fixture.Create<Process>();
-        var contextMock = new Mock<ProcessServiceContext>();
+        var contextMock = new Mock<DefaultContext>();
         contextMock.Setup(x => x.Processes).Throws<Exception>();
         var loggerMock = new Mock<ILogger<ProcessService>>();
 

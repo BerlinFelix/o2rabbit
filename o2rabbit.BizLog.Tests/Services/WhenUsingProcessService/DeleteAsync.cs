@@ -9,7 +9,6 @@ using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
-using o2rabbit.Migrations.Context;
 using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
@@ -20,7 +19,7 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly ProcessService _sut;
-    private readonly ProcessServiceContext _processContext;
+    private readonly DefaultContext _processContext;
 
     public DeleteAsync(ProcessServiceClassFixture classFixture)
     {
@@ -30,8 +29,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
         _processContext =
-            new ProcessServiceContext(
-                new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));

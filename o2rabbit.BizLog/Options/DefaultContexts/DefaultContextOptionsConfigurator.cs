@@ -4,13 +4,13 @@ using o2rabbit.BizLog.Options.BizLog;
 
 namespace o2rabbit.BizLog.Options.ProcessServiceContext;
 
-internal class ProcessServiceContextOptionsConfigurator : IConfigureOptions<ProcessServiceContextOptions>,
-    IValidateOptions<ProcessServiceContextOptions>
+internal class DefaultContextOptionsConfigurator : IConfigureOptions<DefaultContextOptions>,
+    IValidateOptions<DefaultContextOptions>
 {
-    private readonly IValidator<ProcessServiceContextOptions> _validator;
+    private readonly IValidator<DefaultContextOptions> _validator;
     private readonly BizLogOptions _bizLogOptions;
 
-    public ProcessServiceContextOptionsConfigurator(IValidator<ProcessServiceContextOptions> validator,
+    public DefaultContextOptionsConfigurator(IValidator<DefaultContextOptions> validator,
         IOptions<BizLogOptions> bizLogOptions)
     {
         ArgumentNullException.ThrowIfNull(validator);
@@ -20,12 +20,12 @@ internal class ProcessServiceContextOptionsConfigurator : IConfigureOptions<Proc
         _bizLogOptions = bizLogOptions.Value;
     }
 
-    public void Configure(ProcessServiceContextOptions options)
+    public void Configure(DefaultContextOptions options)
     {
         options.ConnectionString = _bizLogOptions.ConnectionStringMainDb;
     }
 
-    public ValidateOptionsResult Validate(string? name, ProcessServiceContextOptions options)
+    public ValidateOptionsResult Validate(string? name, DefaultContextOptions options)
     {
         var result = _validator.Validate(options);
 

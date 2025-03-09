@@ -11,4 +11,6 @@ public class Process
     public long? ParentId { get; set; }
 
     public Process? Parent { get; set; }
+
+    public List<ProcessComment> Comments { get; } = [];
 }

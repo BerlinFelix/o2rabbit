@@ -9,7 +9,6 @@ using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
-using o2rabbit.Migrations.Context;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 

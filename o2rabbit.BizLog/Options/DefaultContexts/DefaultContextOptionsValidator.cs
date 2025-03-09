@@ -3,9 +3,9 @@ using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Options.ProcessServiceContext;
 
-internal class ProcessServiceContextOptionsValidator : AbstractValidator<ProcessServiceContextOptions>
+internal class DefaultContextOptionsValidator : AbstractValidator<DefaultContextOptions>
 {
-    public ProcessServiceContextOptionsValidator()
+    public DefaultContextOptionsValidator()
     {
         RuleFor(o => o.ConnectionString).NotEmpty().MustConnectToDatabase();
     }

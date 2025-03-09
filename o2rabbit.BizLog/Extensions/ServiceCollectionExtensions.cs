@@ -32,15 +32,16 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssemblyContaining(typeof(_FluentValidationDIRegistrationHook),
             ServiceLifetime.Transient, includeInternalTypes: true);
 
+        services.AddDbContext<DefaultContext>();
+
         #endregion
 
         #region processes
 
         services
-            .AddScoped<IProcessService, ProcessService>()
-            .AddDbContext<ProcessServiceContext>();
-        services.ConfigureOptions<ProcessServiceContextOptionsConfigurator>()
-            .ConfigureOptions<ProcessServiceContextOptionsConfigurator>();
+            .AddScoped<IProcessService, ProcessService>();
+        services.ConfigureOptions<DefaultContextOptionsConfigurator>()
+            .ConfigureOptions<DefaultContextOptionsConfigurator>();
 
         #endregion
 
@@ -57,6 +58,8 @@ public static class ServiceCollectionExtensions
 
         #endregion
 
+        #region comments
+
         services
             .AddScoped<ICommentService, CommentService>()
             .AddScoped<ICommentValidator, CommentValidator>()
@@ -65,8 +68,6 @@ public static class ServiceCollectionExtensions
             .AddDbContext<CommentServiceContext>();
 
         services.ConfigureOptions<CommentServiceContextOptionsConfigurator>();
-
-        #region comments
 
         #endregion
 

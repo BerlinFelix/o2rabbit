@@ -9,7 +9,6 @@ using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
-using o2rabbit.Migrations.Context;
 using o2rabbit.Utilities.Postgres.Services;
 using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
 
@@ -23,7 +22,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     private readonly PgDdlService _pgDllService;
     private readonly PgCatalogRepository _pgCatalogRepository;
     private readonly ProcessService _sut;
-    private readonly ProcessServiceContext _processContext;
+    private readonly DefaultContext _processContext;
 
     public UpdateAsync(ProcessServiceClassFixture classFixture)
     {
@@ -35,8 +34,8 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
         _pgCatalogRepository = new PgCatalogRepository();
 
         _processContext =
-            new ProcessServiceContext(
-                new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));

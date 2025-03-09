@@ -8,10 +8,10 @@ namespace o2rabbit.BizLog.Services.Processes;
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
 internal partial class ProcessService : IProcessService
 {
-    private readonly ProcessServiceContext _context;
+    private readonly DefaultContext _context;
     private readonly ILogger<ProcessService> _logger;
 
-    public ProcessService(ProcessServiceContext context, ILogger<ProcessService> logger)
+    public ProcessService(DefaultContext context, ILogger<ProcessService> logger)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(logger);

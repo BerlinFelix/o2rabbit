@@ -7,7 +7,6 @@ using o2rabbit.BizLog.Options.CommentServiceContext;
 using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
-using o2rabbit.Migrations.Context;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
 

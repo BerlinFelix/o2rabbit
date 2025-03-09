@@ -1,4 +1,4 @@
-using o2rabbit.Migrations.Context;
+using o2rabbit.BizLog.Context;
 using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;

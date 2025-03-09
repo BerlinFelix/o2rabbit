@@ -10,7 +10,6 @@ using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
-using o2rabbit.Migrations.Context;
 using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
@@ -30,8 +29,8 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
         var processContext =
-            new ProcessServiceContext(
-                new OptionsWrapper<ProcessServiceContextOptions>(new ProcessServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
