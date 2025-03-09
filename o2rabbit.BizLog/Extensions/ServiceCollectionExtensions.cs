@@ -11,9 +11,9 @@ using o2rabbit.BizLog.Options.CommentServiceContext;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.Search;
 using o2rabbit.BizLog.Options.TicketServiceContext;
-using o2rabbit.BizLog.Services;
 using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Services.Tickets;
+using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
 
 namespace o2rabbit.BizLog.Extensions;
 
