@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using Testcontainers.PostgreSql;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
@@ -25,7 +27,8 @@ public class ProcessServiceClassFixture : IAsyncLifetime
 
         await _container.StartAsync();
         ConnectionString = _container.GetConnectionString();
-        await using var migrationContext = new DefaultContext(ConnectionString);
+        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = ConnectionString! }));
     }
 
     public async Task DisposeAsync()

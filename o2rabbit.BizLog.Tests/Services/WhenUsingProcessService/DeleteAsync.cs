@@ -24,7 +24,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     public DeleteAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
+        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
@@ -41,7 +42,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
 
     public async Task InitializeAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureCreatedAsync();
         var existingProcess = _fixture.Create<Process>();
         var existingProcess2 = _fixture.Create<Process>();
@@ -100,7 +102,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
 
     public async Task DisposeAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await _defaultContext.DisposeAsync();
     }

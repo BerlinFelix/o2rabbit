@@ -106,7 +106,8 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
 
     private async Task SetUpAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
 

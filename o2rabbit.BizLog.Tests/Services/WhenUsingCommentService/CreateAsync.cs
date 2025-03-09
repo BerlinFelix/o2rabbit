@@ -73,7 +73,8 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
 
         var result = await sut.CreateAsync(newCommentCommand);
 
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         var comment = await context.Comments.FindAsync(result.Value.Id);
         comment.Should().NotBeNull();
     }
@@ -98,7 +99,8 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
     private async Task SetUpAsync()
     {
         // Idee: schnellere Tests indem man statt pro fixture einen Container insgesamt nur einen Container nimmt. Jede Fixture erstellt daf"ur eine Db mit eigenem Namen und dann sollte der Connectionstring stimmen.
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
 

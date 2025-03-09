@@ -24,7 +24,8 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
     public GetByIdAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
+        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
 
@@ -41,7 +42,8 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
 
     public async Task InitializeAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureCreatedAsync();
 
         var existingProcess = _fixture.Create<Process>();
@@ -164,7 +166,8 @@ public class GetByIdAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFix
 
     public async Task DisposeAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
 
         await _defaultContext.DisposeAsync();

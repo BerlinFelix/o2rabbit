@@ -7,6 +7,7 @@ using Moq;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
@@ -27,7 +28,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     public DeleteAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
+        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         _fixture = new Fixture();
         _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
 
@@ -47,7 +49,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
 
     public async Task InitializeAsync()
     {
-        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await migrationContext.Database.EnsureCreatedAsync();
 
         var existingTicket = _fixture.Create<Ticket>();
@@ -107,7 +110,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
 
     public async Task DisposeAsync()
     {
-        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await migrationContext.Database.EnsureDeletedAsync();
     }
 }

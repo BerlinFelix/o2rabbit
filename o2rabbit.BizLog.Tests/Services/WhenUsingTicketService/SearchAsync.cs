@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
@@ -150,7 +151,8 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
 
     private async Task SetUpDatabaseAsync()
     {
-        await using var initializationContext = new DefaultContext(_classFixture.ConnectionString);
+        await using var initializationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await initializationContext.Database.EnsureCreatedAsync();
 
         var fixture = new Fixture();
@@ -168,7 +170,8 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
 
     private async Task TearDownAsync()
     {
-        await using var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await migrationContext.Database.EnsureDeletedAsync();
     }
 }

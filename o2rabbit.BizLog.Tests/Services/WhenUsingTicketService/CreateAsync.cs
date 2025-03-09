@@ -6,6 +6,7 @@ using Moq;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.NewTicketDtoCustomizations;
@@ -26,7 +27,8 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     public CreateAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
+        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         _fixture = new Fixture();
         _fixture.Customize(new NewTicketHasNoProcessAndNoParent());
 
@@ -46,13 +48,15 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
 
     public async Task InitializeAsync()
     {
-        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         await migrationContext.Database.EnsureCreatedAsync();
     }
 
     public async Task DisposeAsync()
     {
-        var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         await migrationContext.Database.EnsureDeletedAsync();
     }
 
@@ -97,7 +101,8 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
 
         var result = await _sut.CreateAsync(newTicket);
 
-        var context = new DefaultContext(_classFixture.ConnectionString);
+        var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
 
         var saved = await context.Tickets.FindAsync(result.Value.Id);
 

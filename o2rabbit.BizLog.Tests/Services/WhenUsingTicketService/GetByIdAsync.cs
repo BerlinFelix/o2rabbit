@@ -7,6 +7,7 @@ using Moq;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
@@ -26,7 +27,8 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public GetByIdAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
+        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         _fixture = new Fixture();
         _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
 
@@ -46,7 +48,8 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
 
     public async Task SetUpAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
 

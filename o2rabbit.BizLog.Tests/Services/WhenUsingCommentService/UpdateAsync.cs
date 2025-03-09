@@ -65,7 +65,11 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
 
         await sut.UpdateAsync(update);
 
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions()
+            {
+                ConnectionString = _classFixture.ConnectionString
+            }));
         var comment = await context.Comments.FindAsync(id);
         comment.Should().NotBeNull();
         comment.Should().BeEquivalentTo(update);
@@ -78,13 +82,17 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
         await SetupAsync();
         var sut = CreateDefaultSut();
         var update = new UpdateCommentCommand() { Id = id, Text = text };
-        await using var comparisonContext = new DefaultContext(_classFixture.ConnectionString);
+        await using var comparisonContext =
+            new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
+                { ConnectionString = _classFixture.ConnectionString }));
         var oldComment =
             await comparisonContext.Comments.FindAsync(id);
 
         await sut.UpdateAsync(update);
 
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context =
+            new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
+                { ConnectionString = _classFixture.ConnectionString }));
         var comment = await context.Comments.FindAsync(id);
         comment.Should().NotBeNull();
         comment.LastModified.Should().BeAfter(oldComment.Created);
@@ -92,7 +100,9 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
 
     private async Task SetupAsync()
     {
-        await using var setupContext = new DefaultContext(_classFixture.ConnectionString);
+        await using var setupContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString })
+        );
         await setupContext.Database.EnsureDeletedAsync();
         await setupContext.Database.EnsureCreatedAsync();
 

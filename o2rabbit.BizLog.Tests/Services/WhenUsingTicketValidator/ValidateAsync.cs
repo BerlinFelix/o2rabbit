@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
@@ -33,13 +34,15 @@ public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLif
 
     public async Task InitializeAsync()
     {
-        await using var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         await migrationContext.Database.EnsureCreatedAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await using var migrationContext = new DefaultContext(_classFixture.ConnectionString);
+        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         await migrationContext.Database.EnsureDeletedAsync();
     }
 

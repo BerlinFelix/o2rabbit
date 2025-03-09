@@ -97,7 +97,8 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
         process.Id = 0;
         var result = await _sut.CreateAsync(process);
 
-        var context = new DefaultContext(_classFixture.ConnectionString);
+        var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
 
         var savedProcess = await context.Processes.FindAsync(result.Value.Id);
 
@@ -123,13 +124,15 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>, IAsyncLife
 
     public async Task InitializeAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureCreatedAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await using var context = new DefaultContext(_classFixture.ConnectionString);
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
     }
 }

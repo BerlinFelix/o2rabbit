@@ -11,13 +11,6 @@ public class DefaultContext : DbContext
 {
     private readonly string? _connectionString;
 
-    public DefaultContext(string? connectionString)
-    {
-        ArgumentNullException.ThrowIfNull(connectionString);
-
-        _connectionString = connectionString;
-    }
-
     public DefaultContext(IOptions<DefaultContextOptions> options)
     {
         _connectionString = options.Value.ConnectionString;

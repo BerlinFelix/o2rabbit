@@ -27,7 +27,8 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixt
     public UpdateAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(_classFixture.ConnectionString);
+        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         _fixture = new Fixture();
         _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
         _pgDllService = new PgDdlService();
