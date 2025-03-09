@@ -13,4 +13,6 @@ public class DefaultCommentDto
     public long TicketId { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public bool IsPinned { get; set; }
 }

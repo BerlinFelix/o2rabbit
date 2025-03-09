@@ -14,6 +14,8 @@ internal static class CommentExtensions
             Created = comment.Created,
             LastModified = comment.LastModified,
             TicketId = comment.TicketId,
+            DeletedAt = comment.DeletedAt,
+            IsPinned = comment.IsPinned,
         };
     }
 }
