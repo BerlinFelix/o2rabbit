@@ -19,6 +19,9 @@ internal partial class CommentService
             if (comment is null)
                 return Result.Fail(new InvalidIdError());
 
+            if (comment.DeletedAt.HasValue)
+                return Result.Fail(new AlreadyDeletedError());
+
             comment.Text = string.Empty;
             comment.DeletedAt = DateTimeOffset.UtcNow;
 

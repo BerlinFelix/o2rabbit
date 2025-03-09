@@ -43,6 +43,37 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
     [Theory]
     [InlineData(1)]
+    public async Task WhenCommentIsAlreadyDeleted_ReturnsFalseAndComment(long id)
+    {
+        await using var setupContext = CreateCommentServiceContext();
+        await setupContext.Database.EnsureDeletedAsync();
+        await setupContext.Database.EnsureCreatedAsync();
+
+        var fixture = new Fixture();
+        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+
+        var existingTicket = fixture.Create<Ticket>();
+        setupContext.Add(existingTicket);
+        await setupContext.SaveChangesAsync();
+
+        var existingComment = fixture.Create<Comment>();
+        existingComment.Id = 1;
+        existingComment.Created = DateTime.UtcNow;
+        existingComment.LastModified = DateTime.UtcNow;
+        existingComment.DeletedAt = DateTime.UtcNow;
+
+        setupContext.Add(existingComment);
+        await setupContext.SaveChangesAsync();
+        var sut = CreateDefaultSut();
+
+        var result = await sut.DeleteAsync(id);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e is AlreadyDeletedError);
+    }
+
+    [Theory]
+    [InlineData(1)]
     public async Task WhenCalled_SetsTextEmpty(long id)
     {
         await SetUpAsync();
