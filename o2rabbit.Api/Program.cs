@@ -83,8 +83,8 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        app.UseAuthentication()
-            .UseAuthorization();
+        // app.UseAuthentication()
+        //     .UseAuthorization();
 
         app.MapControllers();
 

@@ -79,6 +79,10 @@ public class TicketServiceContext : DbContext
             .HasForeignKey(x => x.TicketId)
             .IsRequired(true);
 
+        modelBuilder.Entity<Comment>()
+            .Property(c => c.DeletedAt)
+            .HasConversion(d => d == null ? d : d.Value.ToUniversalTime(), offset => offset);
+
         base.OnModelCreating(modelBuilder);
     }
 }

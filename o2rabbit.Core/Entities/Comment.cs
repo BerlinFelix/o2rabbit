@@ -13,4 +13,8 @@ public class Comment
     public Ticket? Ticket { get; set; }
 
     public long TicketId { get; set; }
+
+    public bool IsPinned { get; set; }
+
+    public DateTimeOffset? DeletedAt { get; set; }
 }

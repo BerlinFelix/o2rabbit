@@ -11,4 +11,6 @@ public class DefaultCommentDto
     public DateTime LastModified { get; set; } = DateTime.MinValue;
 
     public long TicketId { get; set; }
+
+    public DateTimeOffset? DeletedAt { get; set; }
 }

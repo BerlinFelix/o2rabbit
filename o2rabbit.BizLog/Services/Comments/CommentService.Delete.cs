@@ -18,7 +18,8 @@ internal partial class CommentService
             if (comment is null)
                 return Result.Fail(new InvalidIdError());
 
-            _context.Comments.Remove(comment);
+            comment.Text = string.Empty;
+
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return Result.Ok();

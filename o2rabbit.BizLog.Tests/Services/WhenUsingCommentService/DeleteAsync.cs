@@ -27,7 +27,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
     [Theory]
     [InlineData(1)]
-    public async Task WhenIdExists_DeletesComment(long id)
+    public async Task WhenCalled_SetsTextEmpty(long id)
     {
         await SetUpAsync();
         var sut = CreateDefaultSut();
@@ -35,9 +35,41 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         var result = await sut.DeleteAsync(id);
 
-        var ticketStillExists = await context.Comments.AnyAsync(c => c.Id == id);
+        var comment = await context.Comments.FindAsync(id);
 
-        ticketStillExists.Should().BeFalse();
+        comment.Should().NotBeNull();
+        comment.Text.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    public async Task WhenCalled_SetDeletedDateAccordingly(long id)
+    {
+        await SetUpAsync();
+        var sut = CreateDefaultSut();
+        var context = CreateCommentServiceContext();
+
+        await sut.DeleteAsync(id);
+
+        var comment = await context.Comments.FindAsync(id);
+
+        comment.Should().NotBeNull();
+        comment.DeletedAt.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    public async Task WhenIdExists_DoesNotDeleteComment(long id)
+    {
+        await SetUpAsync();
+        var sut = CreateDefaultSut();
+        var context = CreateCommentServiceContext();
+
+        var result = await sut.DeleteAsync(id);
+
+        var commentStillExists = await context.Comments.AnyAsync(c => c.Id == id);
+
+        commentStillExists.Should().BeTrue();
     }
 
     [Theory]
