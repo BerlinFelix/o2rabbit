@@ -13,4 +13,6 @@ public class Process
     public Process? Parent { get; set; }
 
     public List<ProcessComment> Comments { get; } = [];
+
+    public List<Space> PossibleSpaces { get; } = [];
 }

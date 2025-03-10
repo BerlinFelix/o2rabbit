@@ -25,7 +25,7 @@ public class TicketServiceContext : DbContext
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
-    public virtual DbSet<TicketComment> Comments { get; set; }
+    public virtual DbSet<TicketComment> TicketComments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

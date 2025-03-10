@@ -25,7 +25,7 @@ internal partial class CommentService
 
             var comment = newCommentCommand.ToComment();
 
-            _context.Comments.Add(comment);
+            _context.TicketComments.Add(comment);
 
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

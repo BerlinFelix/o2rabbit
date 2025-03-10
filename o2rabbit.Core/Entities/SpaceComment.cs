@@ -10,7 +10,7 @@ public class SpaceComment
 
     public DateTime LastModified { get; set; } = DateTime.MinValue;
 
-    public SpaceComment? Space { get; set; }
+    public Space Space { get; set; }
 
     public long SpaceId { get; set; }
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.Core.Entities;
@@ -21,8 +22,11 @@ public class DefaultContext : DbContext
     }
 
     public virtual DbSet<Process> Processes { get; set; }
+    public DbSet<ProcessComment> ProcessComments { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
-    public DbSet<TicketComment> Comments { get; set; }
+    public DbSet<TicketComment> TicketComments { get; set; }
+    public DbSet<Space> Spaces { get; set; }
+    public DbSet<SpaceComment> SpaceComments { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -38,6 +42,52 @@ public class DefaultContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTimeOffset?) || property.ClrType == typeof(DateTimeOffset))
+                {
+                    property.SetValueConverter(new ValueConverter<DateTimeOffset?, DateTimeOffset?>(
+                        d => d == null ? d : d.Value.ToUniversalTime(),
+                        offset => offset
+                    ));
+                }
+            }
+        }
+
+        #region Space
+
+        modelBuilder.Entity<Space>()
+            .ToTable("Spaces")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Space>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Space>()
+            .HasMany(x => x.Comments)
+            .WithOne(x => x.Space)
+            .HasForeignKey(x => x.SpaceId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        modelBuilder.Entity<Space>()
+            .HasMany(x => x.AttachableProcesses)
+            .WithMany(x => x.PossibleSpaces);
+
+        modelBuilder.Entity<Space>()
+            .HasMany(x => x.AttachedTickets)
+            .WithOne(x => x.Space)
+            .HasForeignKey(x => x.SpaceId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        #endregion
+
+        #region Process
+
         modelBuilder.Entity<Process>()
             .ToTable("Processes")
             .HasKey(x => x.Id);
@@ -52,6 +102,10 @@ public class DefaultContext : DbContext
             .HasForeignKey(x => x.ParentId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
+
+        #endregion
+
+        #region Ticket
 
         modelBuilder.Entity<Ticket>()
             .ToTable("Tickets")
@@ -75,8 +129,50 @@ public class DefaultContext : DbContext
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
 
+        #endregion
+
+        #region SpaceComments
+
+        modelBuilder.Entity<SpaceComment>()
+            .ToTable("SpaceComments")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<SpaceComment>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<SpaceComment>()
+            .HasOne(c => c.Space)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(x => x.SpaceId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        #endregion
+
+        #region ProcessComment
+
+        modelBuilder.Entity<ProcessComment>()
+            .ToTable("ProcessComments")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<ProcessComment>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<ProcessComment>()
+            .HasOne(c => c.Process)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(x => x.ProcessId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        #endregion
+
+        #region TicketComment
+
         modelBuilder.Entity<TicketComment>()
-            .ToTable("Comments")
+            .ToTable("TicketComments")
             .HasKey(x => x.Id);
 
         modelBuilder.Entity<TicketComment>()
@@ -87,11 +183,10 @@ public class DefaultContext : DbContext
             .HasOne(c => c.Ticket)
             .WithMany(t => t.Comments)
             .HasForeignKey(x => x.TicketId)
+            .OnDelete(DeleteBehavior.Cascade)
             .IsRequired(true);
 
-        modelBuilder.Entity<TicketComment>()
-            .Property(c => c.DeletedAt)
-            .HasConversion(d => d == null ? d : d.Value.ToUniversalTime(), offset => offset);
+        #endregion
 
         base.OnModelCreating(modelBuilder);
     }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using o2rabbit.Migrations.Context;
@@ -11,9 +12,11 @@ using o2rabbit.Migrations.Context;
 namespace o2rabbit.Migrations.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    partial class DefaultContextModelSnapshot : ModelSnapshot
+    [Migration("20250310174912_ChangeTableName")]
+    partial class ChangeTableName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace o2rabbit.Migrations.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("ProcessSpace", b =>
-                {
-                    b.Property<long>("AttachableProcessesId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("PossibleSpacesId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("AttachableProcessesId", "PossibleSpacesId");
-
-                    b.HasIndex("PossibleSpacesId");
-
-                    b.ToTable("ProcessSpace");
-                });
 
             modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
                 {
@@ -90,68 +78,7 @@ namespace o2rabbit.Migrations.Migrations
 
                     b.HasIndex("ProcessId");
 
-                    b.ToTable("ProcessComments", (string)null);
-                });
-
-            modelBuilder.Entity("o2rabbit.Core.Entities.Space", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTimeOffset>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Spaces", (string)null);
-                });
-
-            modelBuilder.Entity("o2rabbit.Core.Entities.SpaceComment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsPinned")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("SpaceId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SpaceId");
-
-                    b.ToTable("SpaceComments", (string)null);
+                    b.ToTable("ProcessComment");
                 });
 
             modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
@@ -172,16 +99,11 @@ namespace o2rabbit.Migrations.Migrations
                     b.Property<long?>("ProcessId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("SpaceId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ParentId");
 
                     b.HasIndex("ProcessId");
-
-                    b.HasIndex("SpaceId");
 
                     b.ToTable("Tickets", (string)null);
                 });
@@ -220,21 +142,6 @@ namespace o2rabbit.Migrations.Migrations
                     b.ToTable("TicketComments", (string)null);
                 });
 
-            modelBuilder.Entity("ProcessSpace", b =>
-                {
-                    b.HasOne("o2rabbit.Core.Entities.Process", null)
-                        .WithMany()
-                        .HasForeignKey("AttachableProcessesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("o2rabbit.Core.Entities.Space", null)
-                        .WithMany()
-                        .HasForeignKey("PossibleSpacesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
                 {
                     b.HasOne("o2rabbit.Core.Entities.Process", "Parent")
@@ -256,17 +163,6 @@ namespace o2rabbit.Migrations.Migrations
                     b.Navigation("Process");
                 });
 
-            modelBuilder.Entity("o2rabbit.Core.Entities.SpaceComment", b =>
-                {
-                    b.HasOne("o2rabbit.Core.Entities.Space", "Space")
-                        .WithMany("Comments")
-                        .HasForeignKey("SpaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Space");
-                });
-
             modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
                 {
                     b.HasOne("o2rabbit.Core.Entities.Ticket", "Parent")
@@ -279,17 +175,9 @@ namespace o2rabbit.Migrations.Migrations
                         .HasForeignKey("ProcessId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("o2rabbit.Core.Entities.Space", "Space")
-                        .WithMany("AttachedTickets")
-                        .HasForeignKey("SpaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Parent");
 
                     b.Navigation("Process");
-
-                    b.Navigation("Space");
                 });
 
             modelBuilder.Entity("o2rabbit.Core.Entities.TicketComment", b =>
@@ -306,13 +194,6 @@ namespace o2rabbit.Migrations.Migrations
             modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
                 {
                     b.Navigation("Children");
-
-                    b.Navigation("Comments");
-                });
-
-            modelBuilder.Entity("o2rabbit.Core.Entities.Space", b =>
-                {
-                    b.Navigation("AttachedTickets");
 
                     b.Navigation("Comments");
                 });

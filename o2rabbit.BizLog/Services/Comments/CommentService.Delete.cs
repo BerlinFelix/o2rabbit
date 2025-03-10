@@ -15,7 +15,7 @@ internal partial class CommentService
 
         try
         {
-            var comment = await _context.Comments.FindAsync(id, cancellationToken).ConfigureAwait(false);
+            var comment = await _context.TicketComments.FindAsync(id, cancellationToken).ConfigureAwait(false);
             if (comment is null)
                 return Result.Fail(new InvalidIdError());
 

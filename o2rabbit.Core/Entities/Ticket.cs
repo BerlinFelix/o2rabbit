@@ -17,4 +17,8 @@ public class Ticket
     public Process? Process { get; set; }
 
     public List<TicketComment> Comments { get; } = [];
+
+    public long SpaceId { get; set; }
+
+    public Space? Space { get; set; }
 }

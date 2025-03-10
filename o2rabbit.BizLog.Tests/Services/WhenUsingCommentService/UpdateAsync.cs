@@ -70,7 +70,7 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
             {
                 ConnectionString = _classFixture.ConnectionString
             }));
-        var comment = await context.Comments.FindAsync(id);
+        var comment = await context.TicketComments.FindAsync(id);
         comment.Should().NotBeNull();
         comment.Should().BeEquivalentTo(update);
     }
@@ -86,14 +86,14 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
             new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 { ConnectionString = _classFixture.ConnectionString }));
         var oldComment =
-            await comparisonContext.Comments.FindAsync(id);
+            await comparisonContext.TicketComments.FindAsync(id);
 
         await sut.UpdateAsync(update);
 
         await using var context =
             new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 { ConnectionString = _classFixture.ConnectionString }));
-        var comment = await context.Comments.FindAsync(id);
+        var comment = await context.TicketComments.FindAsync(id);
         comment.Should().NotBeNull();
         comment.LastModified.Should().BeAfter(oldComment.Created);
     }

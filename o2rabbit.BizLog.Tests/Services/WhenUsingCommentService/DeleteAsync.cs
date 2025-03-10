@@ -35,7 +35,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         var result = await sut.DeleteAsync(id);
 
-        var comment = await context.Comments.FindAsync(id);
+        var comment = await context.TicketComments.FindAsync(id);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
@@ -82,7 +82,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         var result = await sut.DeleteAsync(id);
 
-        var comment = await context.Comments.FindAsync(id);
+        var comment = await context.TicketComments.FindAsync(id);
 
         comment.Should().NotBeNull();
         comment.Text.Should().BeEmpty();
@@ -98,7 +98,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         await sut.DeleteAsync(id);
 
-        var comment = await context.Comments.FindAsync(id);
+        var comment = await context.TicketComments.FindAsync(id);
 
         comment.Should().NotBeNull();
         comment.DeletedAt.Should().NotBeNull();
@@ -114,7 +114,7 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         var result = await sut.DeleteAsync(id);
 
-        var commentStillExists = await context.Comments.AnyAsync(c => c.Id == id);
+        var commentStillExists = await context.TicketComments.AnyAsync(c => c.Id == id);
 
         commentStillExists.Should().BeTrue();
     }

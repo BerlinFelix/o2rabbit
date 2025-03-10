@@ -75,7 +75,7 @@ public class CreateAsync : IClassFixture<CommentServiceClassFixture>
 
         await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
             DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        var comment = await context.Comments.FindAsync(result.Value.Id);
+        var comment = await context.TicketComments.FindAsync(result.Value.Id);
         comment.Should().NotBeNull();
     }
 

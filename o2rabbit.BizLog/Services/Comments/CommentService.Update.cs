@@ -23,7 +23,7 @@ internal partial class CommentService
             if (!validationResult.IsValid)
                 return Result.Fail(new ValidationNotSuccessfulError());
 
-            var existing = await _context.Comments.FindAsync(update.Id).ConfigureAwait(false);
+            var existing = await _context.TicketComments.FindAsync(update.Id).ConfigureAwait(false);
             _context.Update(existing!).CurrentValues.SetValues(update);
             existing.LastModified = DateTime.UtcNow;
 
