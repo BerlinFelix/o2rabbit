@@ -21,4 +21,10 @@ public static class LoggerExtensions
         }
     }
 
+    public static void CustomExceptionLogging(this ILogger logger, Exception e)
+    {
+        logger.LogError(e, e.Message);
+        if (e is AggregateException aggregateException)
+            logger.LogAggregateException(aggregateException);
+    }
 }

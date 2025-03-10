@@ -1,0 +1,11 @@
+using FluentResults;
+using o2rabbit.BizLog.Abstractions.Models.SpaceModels;
+using o2rabbit.Core.Entities;
+
+namespace o2rabbit.BizLog.Abstractions.Services;
+
+public interface ISpaceService
+{
+    public Task<Result<Space>> CreateAsync(NewSpaceCommand command,
+        CancellationToken cancellationToken = default);
+}
