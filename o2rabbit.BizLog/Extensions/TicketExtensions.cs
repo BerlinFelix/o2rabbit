@@ -12,5 +12,6 @@ internal static class TicketExtensions
             Name = command.Name,
             ProcessId = command.ProcessId,
             ParentId = command.ParentId,
+            SpaceId = command.SpaceId,
         };
 }

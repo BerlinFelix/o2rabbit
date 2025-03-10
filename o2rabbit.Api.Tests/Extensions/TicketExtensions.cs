@@ -19,7 +19,14 @@ public class TicketExtensions
     [Fact]
     public void Ticket_ToDefaultDto_IsEquivalent()
     {
-        var ticket = _fixture.Create<Ticket>();
+        var ticket = new Ticket()
+        {
+            Id = 1,
+            Name = "name",
+            ParentId = 1,
+            ProcessId = 1,
+            SpaceId = 1,
+        };
 
         var defaultDto = ticket.ToDefaultDto();
 
@@ -28,7 +35,9 @@ public class TicketExtensions
             config.Excluding(t => t.Children)
                 .Excluding(t => t.Parent)
                 .Excluding(t => t.Process)
-                .Excluding(t => t.ParentId);
+                .Excluding(t => t.Space)
+                .Excluding(t => t.ParentId)
+                .Excluding(t => t.SpaceId);
             return config;
         });
     }
@@ -60,11 +69,12 @@ public class TicketExtensions
         {
             config.Excluding(t => t.Children)
                 .Excluding(t => t.Process)
-                .Excluding((t => t.ProcessId))
-                .Excluding(t => t.Children)
                 .Excluding(t => t.Parent)
+                .Excluding(t => t.Comments)
+                .Excluding(t => t.Space)
                 .Excluding(t => t.ParentId)
-                .Excluding(t => t.Comments);
+                .Excluding(t => t.ProcessId)
+                .Excluding(t => t.SpaceId);
             return config;
         });
     }
