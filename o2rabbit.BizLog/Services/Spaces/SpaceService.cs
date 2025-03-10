@@ -3,7 +3,7 @@ using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
 
-namespace o2rabbit.BizLog.Services.Tickets;
+namespace o2rabbit.BizLog.Services.Spaces;
 
 internal partial class SpaceService : ISpaceService
 {

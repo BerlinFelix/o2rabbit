@@ -8,4 +8,7 @@ public interface ISpaceService
 {
     public Task<Result<Space>> CreateAsync(NewSpaceCommand command,
         CancellationToken cancellationToken = default);
+
+    public Task<Result> DeleteAsync(long id,
+        CancellationToken cancellationToken = default);
 }

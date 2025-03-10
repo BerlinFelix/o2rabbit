@@ -5,7 +5,7 @@ using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Extensions;
 
-namespace o2rabbit.BizLog.Services.Tickets;
+namespace o2rabbit.BizLog.Services.Spaces;
 
 internal partial class SpaceService
 {

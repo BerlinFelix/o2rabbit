@@ -8,7 +8,7 @@ using o2rabbit.BizLog.Abstractions.Models.SpaceModels;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Services.Tickets;
+using o2rabbit.BizLog.Services.Spaces;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
 using o2rabbit.Core.Entities;
