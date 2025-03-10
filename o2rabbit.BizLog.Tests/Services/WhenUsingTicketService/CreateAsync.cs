@@ -7,7 +7,6 @@ using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.NewTicketDtoCustomizations;
 using o2rabbit.Core.Entities;
@@ -21,7 +20,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly TicketService _sut;
-    private readonly TicketServiceContext _ticketContext;
+    private readonly DefaultContext _ticketContext;
     private readonly TicketValidator _validator;
 
     public CreateAsync(TicketServiceClassFixture classFixture)
@@ -33,8 +32,8 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         _fixture.Customize(new NewTicketHasNoProcessAndNoParent());
 
         _ticketContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
@@ -141,7 +140,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
         var newTicket = _fixture.Create<NewTicketCommand>();
-        var contextMock = new Mock<TicketServiceContext>();
+        var contextMock = new Mock<DefaultContext>();
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
         var loggerMock = new Mock<ILogger<TicketService>>();
 

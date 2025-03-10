@@ -9,7 +9,6 @@ using o2rabbit.BizLog.Options;
 using o2rabbit.BizLog.Options.BizLog;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Options.Search;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Comments;
 using o2rabbit.BizLog.Services.Tickets;
 using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
@@ -50,10 +49,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ITicketService, TicketService>()
             .AddScoped<ITicketValidator, TicketValidator>()
             .AddScoped<IValidator<UpdateTicketCommand>, UpdatedTicketValidator>()
-            .AddScoped<IValidator<NewTicketCommand>, NewTicketValidator>()
-            .AddDbContext<TicketServiceContext>();
-
-        services.ConfigureOptions<TicketServiceContextOptionsConfigurator>();
+            .AddScoped<IValidator<NewTicketCommand>, NewTicketValidator>();
 
         #endregion
 

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
@@ -15,7 +14,7 @@ namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketValidator;
 public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifetime
 {
     private readonly TicketServiceClassFixture _classFixture;
-    private readonly TicketServiceContext _context;
+    private readonly DefaultContext _context;
     private readonly TicketValidator _sut;
     private readonly Fixture _fixture;
 
@@ -24,8 +23,8 @@ public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLif
         _classFixture = classFixture;
         _fixture = new Fixture();
         _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
-        _context = new TicketServiceContext(new OptionsWrapper<TicketServiceContextOptions>(
-            new TicketServiceContextOptions() { ConnectionString = _classFixture.ConnectionString }));
+        _context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
 
         var newTicketValidator = new NewTicketValidator(_context);
         var updatedTicketValidator = new UpdatedTicketValidator(_context);

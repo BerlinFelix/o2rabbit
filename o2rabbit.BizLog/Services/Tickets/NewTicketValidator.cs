@@ -6,9 +6,9 @@ namespace o2rabbit.BizLog.Services.Tickets;
 
 public class NewTicketValidator : AbstractValidator<NewTicketCommand>
 {
-    private readonly TicketServiceContext _context;
+    private readonly DefaultContext _context;
 
-    public NewTicketValidator(TicketServiceContext context)
+    public NewTicketValidator(DefaultContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 

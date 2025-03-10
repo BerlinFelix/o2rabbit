@@ -8,7 +8,6 @@ using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
@@ -22,7 +21,7 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly TicketService _sut;
-    private readonly TicketServiceContext _ticketContext;
+    private readonly DefaultContext _ticketContext;
     private readonly Mock<ITicketValidator> _ticketValidatorMock;
 
     public DeleteAsync(TicketServiceClassFixture classFixture)
@@ -34,8 +33,8 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
         _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
 
         _ticketContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));

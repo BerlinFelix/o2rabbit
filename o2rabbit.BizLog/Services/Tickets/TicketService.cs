@@ -13,12 +13,12 @@ namespace o2rabbit.BizLog.Services.Tickets;
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
 internal partial class TicketService : ITicketService
 {
-    private readonly TicketServiceContext _context;
+    private readonly DefaultContext _context;
     private readonly ILogger<TicketService> _logger;
     private readonly ITicketValidator _ticketValidator;
     private readonly IValidateOptions<SearchOptions> _searchOptionsValidator;
 
-    public TicketService(TicketServiceContext context,
+    public TicketService(DefaultContext context,
         ILogger<TicketService> logger,
         ITicketValidator ticketValidator,
         IValidateOptions<SearchOptions> searchOptionsValidator)

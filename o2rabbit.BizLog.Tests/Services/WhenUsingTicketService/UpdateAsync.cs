@@ -8,7 +8,6 @@ using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.UpdatedTicketDto;
@@ -22,7 +21,7 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly TicketService _sut;
-    private readonly TicketServiceContext _ticketContext;
+    private readonly DefaultContext _ticketContext;
 
     public UpdateAsync(TicketServiceClassFixture classFixture)
     {
@@ -38,8 +37,8 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
         );
 
         _ticketContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));

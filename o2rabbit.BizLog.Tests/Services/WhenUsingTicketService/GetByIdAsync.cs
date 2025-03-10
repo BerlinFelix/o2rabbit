@@ -8,7 +8,6 @@ using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
@@ -32,9 +31,9 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         _fixture = new Fixture();
         _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
 
-        var ticketServiceContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+        var DefaultContext =
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
@@ -42,7 +41,7 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var loggerMock = new Mock<ILogger<TicketService>>();
         _ticketValidatorMock = new Mock<ITicketValidator>();
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        _sut = new TicketService(ticketServiceContext, loggerMock.Object, _ticketValidatorMock.Object,
+        _sut = new TicketService(DefaultContext, loggerMock.Object, _ticketValidatorMock.Object,
             searchOptionsValidatorMock.Object);
     }
 
@@ -206,13 +205,13 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var fixture = new Fixture();
         fixture.Customize(
             new TicketHasNoProcessNoParentsNoChildren());
-        var ticketServiceContext =
-            GetTicketServiceContext();
+        var DefaultContext =
+            GetDefaultContext();
 
         var loggerMock = new Mock<ILogger<TicketService>>();
         var ticketValidatorMock = new Mock<ITicketValidator>();
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        var sut = new TicketService(ticketServiceContext, loggerMock.Object, ticketValidatorMock.Object,
+        var sut = new TicketService(DefaultContext, loggerMock.Object, ticketValidatorMock.Object,
             searchOptionsValidatorMock.Object);
 
         var comment = fixture.Create<TicketComment>();
@@ -220,7 +219,7 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         comment.Ticket = null;
         comment.Created = DateTime.UtcNow;
         comment.LastModified = DateTime.UtcNow;
-        var context = GetTicketServiceContext();
+        var context = GetDefaultContext();
         context.Add(comment);
         await context.SaveChangesAsync();
 
@@ -238,13 +237,13 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var fixture = new Fixture();
         fixture.Customize(
             new TicketHasNoProcessNoParentsNoChildren());
-        var ticketServiceContext =
-            GetTicketServiceContext();
+        var DefaultContext =
+            GetDefaultContext();
 
         var loggerMock = new Mock<ILogger<TicketService>>();
         var ticketValidatorMock = new Mock<ITicketValidator>();
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        var sut = new TicketService(ticketServiceContext, loggerMock.Object, ticketValidatorMock.Object,
+        var sut = new TicketService(DefaultContext, loggerMock.Object, ticketValidatorMock.Object,
             searchOptionsValidatorMock.Object);
 
         var comment = fixture.Create<TicketComment>();
@@ -252,7 +251,7 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         comment.Ticket = null;
         comment.Created = DateTime.UtcNow;
         comment.LastModified = DateTime.UtcNow;
-        var context = GetTicketServiceContext();
+        var context = GetDefaultContext();
         context.Add(comment);
         await context.SaveChangesAsync();
 
@@ -262,10 +261,10 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         result.Value.Comments.Should().BeEmpty();
     }
 
-    private TicketServiceContext GetTicketServiceContext()
+    private DefaultContext GetDefaultContext()
     {
-        return new TicketServiceContext(
-            new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+        return new DefaultContext(
+            new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
             {
                 ConnectionString = _classFixture.ConnectionString!
             }));
@@ -276,9 +275,9 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var fixture = new Fixture();
         fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
 
-        var ticketServiceContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+        var DefaultContext =
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
@@ -286,7 +285,7 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var loggerMock = new Mock<ILogger<TicketService>>();
         var ticketValidatorMock = new Mock<ITicketValidator>();
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        return new TicketService(ticketServiceContext, loggerMock.Object, _ticketValidatorMock.Object,
+        return new TicketService(DefaultContext, loggerMock.Object, _ticketValidatorMock.Object,
             searchOptionsValidatorMock.Object);
     }
 }

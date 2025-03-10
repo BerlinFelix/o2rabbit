@@ -6,7 +6,6 @@ using Moq;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
-using o2rabbit.BizLog.Options.TicketServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
@@ -30,8 +29,8 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenInvalidSearchOptions_ReturnsFailed(string searchSting, int page, int pageSize)
     {
         var ticketContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString
                 }));
@@ -134,8 +133,8 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
     private TicketService SetupDefaultSut()
     {
         var ticketContext =
-            new TicketServiceContext(
-                new OptionsWrapper<TicketServiceContextOptions>(new TicketServiceContextOptions()
+            new DefaultContext(
+                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString
                 }));

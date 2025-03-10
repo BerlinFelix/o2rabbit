@@ -23,7 +23,7 @@ public class DefaultContext : DbContext
 
     public virtual DbSet<Process> Processes { get; set; }
     public DbSet<ProcessComment> ProcessComments { get; set; }
-    public DbSet<Ticket> Tickets { get; set; }
+    public virtual DbSet<Ticket> Tickets { get; set; }
     public DbSet<TicketComment> TicketComments { get; set; }
     public DbSet<Space> Spaces { get; set; }
     public DbSet<SpaceComment> SpaceComments { get; set; }
