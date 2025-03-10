@@ -1,4 +1,5 @@
 using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using o2rabbit.Core.ResultErrors;
 using o2rabbit.Utilities.Extensions;
@@ -11,14 +12,13 @@ internal partial class TicketService
     {
         try
         {
-            var ticket = await _context.Tickets.FindAsync(id, cancellationToken).ConfigureAwait(false);
-            if (ticket == null)
+            var deletedRows = await _context.Tickets.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (deletedRows == 0)
             {
                 return Result.Fail(new InvalidIdError());
             }
 
-            _context.Tickets.Remove(ticket);
-            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return Result.Ok();
         }
         catch (Exception e)
