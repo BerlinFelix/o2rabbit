@@ -1,4 +1,5 @@
 using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using o2rabbit.Core.ResultErrors;
 using LoggerExtensions = Microsoft.Extensions.Logging.LoggerExtensions;
 
@@ -10,17 +11,17 @@ internal partial class ProcessService
     {
         try
         {
-            var process = await _context.Processes.FindAsync(id, cancellationToken).ConfigureAwait(false);
-            if (process == null)
+            var deletedRows = await _context.Processes
+                .Where(p => p.Id == id)
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (deletedRows == 0)
             {
                 return Result.Fail(new InvalidIdError());
             }
-            else
-            {
-                _context.Processes.Remove(process);
-                await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                return Result.Ok();
-            }
+
+            return Result.Ok();
         }
         catch (Exception e)
         {
