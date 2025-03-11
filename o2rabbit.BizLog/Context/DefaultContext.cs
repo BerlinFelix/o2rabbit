@@ -42,20 +42,6 @@ public class DefaultContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            foreach (var property in entityType.GetProperties())
-            {
-                if (property.ClrType == typeof(DateTimeOffset?) || property.ClrType == typeof(DateTimeOffset))
-                {
-                    property.SetValueConverter(new ValueConverter<DateTimeOffset?, DateTimeOffset?>(
-                        d => d == null ? d : d.Value.ToUniversalTime(),
-                        offset => offset
-                    ));
-                }
-            }
-        }
-
         #region Space
 
         modelBuilder.Entity<Space>()
@@ -187,6 +173,20 @@ public class DefaultContext : DbContext
             .IsRequired(true);
 
         #endregion
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTimeOffset?) || property.ClrType == typeof(DateTimeOffset))
+                {
+                    property.SetValueConverter(new ValueConverter<DateTimeOffset?, DateTimeOffset?>(
+                        d => d == null ? d : d.Value.ToUniversalTime(),
+                        offset => offset
+                    ));
+                }
+            }
+        }
 
         base.OnModelCreating(modelBuilder);
     }

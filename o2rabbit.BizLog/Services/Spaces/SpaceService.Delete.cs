@@ -11,7 +11,7 @@ internal partial class SpaceService
     {
         try
         {
-            var deletedRows = await _context.Tickets.Where(t => t.Id == id)
+            var deletedRows = await _context.Spaces.Where(t => t.Id == id)
                 .ExecuteDeleteAsync(cancellationToken)
                 .ConfigureAwait(false);
 
