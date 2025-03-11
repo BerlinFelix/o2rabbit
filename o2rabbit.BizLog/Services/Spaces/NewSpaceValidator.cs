@@ -15,7 +15,7 @@ public class NewSpaceValidator : AbstractValidator<NewSpaceCommand>
         _context = context;
 
         RuleFor(t => t).NotNull();
-        RuleFor(t => t.Title).NotEmpty().MaximumLength(100);
+        RuleFor(t => t.Title).NotEmpty().MinimumLength(1).MaximumLength(100);
         RuleFor(t => t.Description).NotEmpty().MaximumLength(5000);
     }
 }
