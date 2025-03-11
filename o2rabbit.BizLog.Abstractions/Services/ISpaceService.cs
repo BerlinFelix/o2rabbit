@@ -15,4 +15,6 @@ public interface ISpaceService
 
     public Task<Result<Space>> GetByIdAsync(long id, GetSpaceByIdOptions? options = null,
         CancellationToken cancellationToken = default);
+
+    public Task<Result<Space>> UpdateAsync(UpdateSpaceCommand update, CancellationToken cancellationToken = default);
 }
