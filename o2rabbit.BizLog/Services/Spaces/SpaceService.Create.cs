@@ -33,7 +33,5 @@ internal partial class SpaceService
             _logger.CustomExceptionLogging(e);
             return Result.Fail(new UnknownError());
         }
-
-        return Result.Ok();
     }
 }
