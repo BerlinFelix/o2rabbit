@@ -73,6 +73,6 @@ public class CreateCommentAsync
 
         result.Result.Should().BeOfType<OkObjectResult>();
         OkObjectResult okResult = result.Result as OkObjectResult;
-        okResult.Value.Should().BeOfType<DefaultCommentDto>();
+        okResult.Value.Should().BeOfType<TicketCommentDto>();
     }
 }

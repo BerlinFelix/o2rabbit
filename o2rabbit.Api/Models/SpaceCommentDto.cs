@@ -1,6 +1,7 @@
 namespace o2rabbit.Api.Models;
 
-public class DefaultCommentDto
+public class SpaceCommentDto
+
 {
     public long Id { get; set; }
 
@@ -10,7 +11,7 @@ public class DefaultCommentDto
 
     public DateTime LastModified { get; set; } = DateTime.MinValue;
 
-    public long TicketId { get; set; }
+    public long SpaceId { get; set; }
 
     public DateTimeOffset? DeletedAt { get; set; }
 

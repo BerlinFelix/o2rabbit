@@ -65,7 +65,7 @@ public class UpdateCommentAsync
 
         result.Result.Should().BeOfType<OkObjectResult>();
         var okresult = (OkObjectResult)result.Result;
-        okresult.Value.Should().BeOfType<DefaultCommentDto>();
+        okresult.Value.Should().BeOfType<TicketCommentDto>();
         okresult.Value.Should().BeEquivalentTo(updatedComment, config =>
             config.Excluding(c => c.Ticket));
     }

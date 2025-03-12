@@ -9,7 +9,7 @@ namespace o2rabbit.Api.Controllers.Tickets;
 public partial class TicketController
 {
     [HttpPost("{id}/comments")]
-    public async Task<ActionResult<DefaultCommentDto>> CreateCommentAsync([FromBody] NewCommentCommand command,
+    public async Task<ActionResult<TicketCommentDto>> CreateCommentAsync([FromBody] NewCommentCommand command,
         CancellationToken cancellationToken = default)
     {
         if (command == null)

@@ -49,7 +49,7 @@ public class DeleteCommentAsync
         var response = await sut.DeleteCommentAsync(1);
 
         response.Result.Should().BeOfType<OkObjectResult>();
-        response.Result.As<OkObjectResult>().Value.Should().BeOfType<DefaultCommentDto>();
+        response.Result.As<OkObjectResult>().Value.Should().BeOfType<TicketCommentDto>();
     }
 
     [Fact]
