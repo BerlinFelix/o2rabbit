@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.Core.Entities;
+using o2rabbit.Core.Entities.Mappings;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
@@ -61,7 +62,11 @@ public class DefaultContext : DbContext
 
         modelBuilder.Entity<Space>()
             .HasMany(x => x.AttachableProcesses)
-            .WithMany(x => x.PossibleSpaces);
+            .WithMany(x => x.PossibleSpaces)
+            .UsingEntity<ProcessSpaceMapping>(
+                l => l.HasOne<Process>().WithMany().HasForeignKey(e => e.ProcessId).OnDelete(DeleteBehavior.SetNull),
+                r => r.HasOne<Space>().WithMany().HasForeignKey(e => e.SpaceId).OnDelete(DeleteBehavior.SetNull));
+
 
         modelBuilder.Entity<Space>()
             .HasMany(x => x.AttachedTickets)
@@ -84,7 +89,10 @@ public class DefaultContext : DbContext
 
         modelBuilder.Entity<Process>()
             .HasMany(x => x.SubProcesses)
-            .WithMany(x => x.PossibleParentProcesses);
+            .WithMany(x => x.PossibleParentProcesses)
+            .UsingEntity<ProcessProcessMapping>(
+                l => l.HasOne<Process>().WithMany().HasForeignKey(e => e.ChildId).OnDelete(DeleteBehavior.SetNull),
+                r => r.HasOne<Process>().WithMany().HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.SetNull));
 
         #endregion
 
@@ -107,7 +115,7 @@ public class DefaultContext : DbContext
 
         modelBuilder.Entity<Ticket>()
             .HasOne(x => x.Process)
-            .WithMany()
+            .WithMany(p => p.Tickets)
             .HasForeignKey(x => x.ProcessId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);

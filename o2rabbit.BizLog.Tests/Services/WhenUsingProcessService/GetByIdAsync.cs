@@ -126,7 +126,7 @@ public class GetByIdAsync : IClassFixture<ProcessServiceClassFixture>
             ProcessId = 1,
             SpaceId = 1,
         };
-        existingProcess.AttachedTickets.Add(existingTicket);
+        existingProcess.Tickets.Add(existingTicket);
         setupContext.Add(existingSpace);
         setupContext.Add(existingProcess);
         setupContext.Add(existingTicket);
@@ -137,6 +137,6 @@ public class GetByIdAsync : IClassFixture<ProcessServiceClassFixture>
         var result = await sut.GetByIdAsync(1, new GetProcessByIdOptions() { IncludeTickets = true });
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.AttachedTickets.Should().ContainSingle(p => p.Id == 1);
+        result.Value.Tickets.Should().ContainSingle(p => p.Id == 1);
     }
 }

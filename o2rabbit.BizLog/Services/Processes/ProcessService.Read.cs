@@ -23,7 +23,7 @@ internal partial class ProcessService
 
             if (options?.IncludeTickets == true)
             {
-                processes = processes.Include(p => p.AttachedTickets);
+                processes = processes.Include(p => p.Tickets);
             }
 
             if (options?.IncludeSubProcesses == true)

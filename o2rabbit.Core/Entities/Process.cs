@@ -16,5 +16,5 @@ public class Process
 
     public List<Space> PossibleSpaces { get; } = [];
 
-    public List<Ticket> AttachedTickets { get; } = [];
+    public List<Ticket> Tickets { get; } = [];
 }
