@@ -10,13 +10,5 @@ public class UpdatedCommentValidator : AbstractValidator<UpdateCommentCommand>
     {
         RuleFor(c => c.Text)
             .NotEmpty();
-
-        RuleFor(c => c.Id)
-            .MustAsync(async (id, c) =>
-            {
-                var comment = await defaultContext.TicketComments.FindAsync(id, c).ConfigureAwait(false);
-                var commentExists = comment != null;
-                return commentExists;
-            }).WithMessage("Comment not found");
     }
 }
