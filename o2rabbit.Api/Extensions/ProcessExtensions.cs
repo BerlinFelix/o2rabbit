@@ -13,4 +13,21 @@ internal static class ProcessExtensions
             Name = process.Name,
         };
     }
+
+    internal static DefaultProcessDto ToDefaultDto(this Process process)
+    {
+        var dto = new DefaultProcessDto
+        {
+            Id = process.Id,
+            Name = process.Name,
+            Description = process.Description,
+        };
+
+        dto.SubProcesses.AddRange(process.SubProcesses.Select(p => p.ToTinyDto()));
+        dto.PossibleParentProcesses.AddRange(process.PossibleParentProcesses.Select(p => p.ToTinyDto()));
+        dto.Comments.AddRange(process.Comments.Select(c => c.ToDto()));
+        dto.PossibleSpaces.AddRange(process.PossibleSpaces.Select(s => s.ToTinyDto()));
+
+        return dto;
+    }
 }

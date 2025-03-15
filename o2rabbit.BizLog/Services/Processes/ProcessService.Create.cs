@@ -1,36 +1,37 @@
 using FluentResults;
-using Microsoft.Extensions.Logging;
+using o2rabbit.BizLog.Abstractions.Models.ProcessModels;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Services.Processes;
 
 internal partial class ProcessService
 {
-    public async Task<Result<Process>> CreateAsync(Process process,
+    public async Task<Result<Process>> CreateAsync(NewProcessCommand command,
         CancellationToken cancellationToken = default)
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (process == null) return Result.Fail<Process>("Process is null");
+        if (command == null)
+            return Result.Fail(new NullInputError());
 
         try
         {
-            var existingProcess =
-                await _context.Processes.FindAsync(process.Id, cancellationToken).ConfigureAwait(false);
-            if (existingProcess != null)
+            var validationResult = _processValidator.ValidateNewProcess(command);
+            if (!validationResult.IsValid)
             {
-                return Result.Fail(new InvalidIdError());
+                return Result.Fail(new ValidationNotSuccessfulError(validationResult));
             }
 
-            await _context.Processes.AddAsync(process, cancellationToken).ConfigureAwait(false);
+            var process = command.ToProcess();
+            _context.Add(process);
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
             return Result.Ok(process);
         }
         catch (Exception e)
         {
-            LoggerExtensions.LogError(_logger, e, e.Message);
-            return Result.Fail<Process>(new UnknownError());
+            LoggerExtensions.CustomExceptionLogging(_logger, e);
+            return Result.Fail(new UnknownError());
         }
     }
 }

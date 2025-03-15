@@ -1,140 +1,119 @@
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using o2rabbit.BizLog.Abstractions.Models.ProcessModels;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
+using o2rabbit.BizLog.Services.Processes;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization;
 using o2rabbit.Core.Entities;
-using o2rabbit.Core.ResultErrors;
-using o2rabbit.Utilities.Postgres.Services;
-using ProcessService = o2rabbit.BizLog.Services.Processes.ProcessService;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingProcessService;
 
-public class UpdateAsync : IAsyncLifetime, IClassFixture<ProcessServiceClassFixture>
+public class UpdateAsync : IClassFixture<ProcessServiceClassFixture>
 {
     private readonly ProcessServiceClassFixture _classFixture;
-    private readonly DefaultContext _defaultContext;
-    private readonly Fixture _fixture;
-    private readonly PgDdlService _pgDllService;
-    private readonly PgCatalogRepository _pgCatalogRepository;
-    private readonly ProcessService _sut;
-    private readonly DefaultContext _processContext;
 
     public UpdateAsync(ProcessServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
-            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        _fixture = new Fixture();
-        _fixture.Customize(new ProcessHasNoParentsAndNoChildren());
-        _pgDllService = new PgDdlService();
-        _pgCatalogRepository = new PgCatalogRepository();
+    }
 
-        _processContext =
-            new DefaultContext(
-                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
-                {
-                    ConnectionString = _classFixture.ConnectionString!
-                }));
-
+    private ProcessService SetUpDefaultSut()
+    {
+        var validatorMock = new Mock<IProcessValidator>();
+        var okValidationResult = new ValidationResult();
+        validatorMock.Setup(m => m.ValidateUpdatedProcess(It.IsAny<UpdateProcessCommand>()))
+            .Returns(okValidationResult);
+        var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
+            { ConnectionString = _classFixture.ConnectionString }));
         var loggerMock = new Mock<ILogger<ProcessService>>();
-        _sut = new ProcessService(_processContext, loggerMock.Object);
+        var sut = new ProcessService(context, loggerMock.Object, validatorMock.Object);
+        return sut;
     }
 
-    public async Task InitializeAsync()
+    private async Task SetUpDbAsync()
     {
-        await _defaultContext.Database.EnsureCreatedAsync();
-
-        var existingProcess = _fixture.Create<Process>();
-        var existingProcess2 = _fixture.Create<Process>();
-        existingProcess.Id = 1;
-        existingProcess2.Id = 2;
-
-        _defaultContext.Add(existingProcess);
-        _defaultContext.Add(existingProcess2);
-
-        await _defaultContext.SaveChangesAsync();
-
-        _defaultContext.Entry(existingProcess).State = EntityState.Detached;
-        _defaultContext.Entry(existingProcess2).State = EntityState.Detached;
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
     }
 
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(5)]
-    public async Task GivenProcessWithNotExistingId_ReturnsFail(long id)
+    [Fact]
+    public async Task GivenInvalidCommand_ReturnsFailed()
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        await SetUpDbAsync();
 
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var command = new UpdateProcessCommand()
+        {
+            Id = 1,
+            Name = "invalid",
+            Description = ""
+        };
+        var fixture = new AutoMoqFixture();
+        var validatorMock = fixture.Freeze<Mock<IProcessValidator>>();
+        var failedValidationResult = new ValidationResult() { Errors = [new ValidationFailure("title", "error")] };
+        validatorMock.Setup(m => m.ValidateUpdatedProcess(It.IsAny<UpdateProcessCommand>()))
+            .Returns(failedValidationResult);
+        var sut = fixture.Create<ProcessService>();
+
+        var result = await sut.UpdateAsync(command);
 
         result.IsFailed.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(5)]
-    public async Task GivenProcessWithNotExistingId_ReturnsUnknownInvalidIdError(long id)
+    [Fact]
+    public async Task GivenValidCommand_ReturnsOkWithUpdatedProcess()
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        await SetUpDbAsync();
+        var existingProcess = new Process { Id = 1 };
+        await using var setupContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
+        setupContext.Add(existingProcess);
+        await setupContext.SaveChangesAsync();
+        var command = new UpdateProcessCommand()
+        {
+            Id = 1,
+            Name = "valid",
+            Description = "valid"
+        };
 
-        var result = await _sut.UpdateAsync(updatedProcess);
-
-        result.Errors.Should().ContainSingle(e => e is InvalidIdError);
-    }
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenProcessWithExistingId_SavesChanges(long id)
-    {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
-
-        await _sut.UpdateAsync(updatedProcess);
-
-        var process = await _defaultContext.Processes.FindAsync(id);
-
-        process.Should().NotBeNull();
-        process.Should().BeEquivalentTo(updatedProcess);
-    }
-
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenProcessWithExistingId_ReturnsOk(long id)
-    {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
-
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var sut = SetUpDefaultSut();
+        var result = await sut.UpdateAsync(command);
 
         result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEquivalentTo(command);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenProcessWithExistingId_ReturnsProcessAsValue(long id)
+    [Fact]
+    public async Task GivenValidCommand_UpdatesProcessInDb()
     {
-        var updatedProcess = _fixture.Create<Process>();
-        updatedProcess.Id = id;
+        await SetUpDbAsync();
+        var existingProcess = new Process { Id = 1, Name = "oldName" };
+        await using var setupContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
+        setupContext.Add(existingProcess);
+        await setupContext.SaveChangesAsync();
+        var command = new UpdateProcessCommand()
+        {
+            Id = 1,
+            Name = "valid",
+            Description = "valid"
+        };
 
-        var result = await _sut.UpdateAsync(updatedProcess);
+        var sut = SetUpDefaultSut();
+        var result = await sut.UpdateAsync(command);
 
-        result.Value.Should().BeEquivalentTo(updatedProcess);
-    }
+        await using var controlContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
 
-    public async Task DisposeAsync()
-    {
-        await _defaultContext.Database.EnsureDeletedAsync();
-        await _defaultContext.DisposeAsync();
+        var space = await controlContext.Processes.FindAsync(command.Id);
+        space.Should().NotBeNull();
+        space.Should().BeEquivalentTo(command);
     }
 }

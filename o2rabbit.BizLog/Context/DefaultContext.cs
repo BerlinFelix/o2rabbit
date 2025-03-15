@@ -83,11 +83,8 @@ public class DefaultContext : DbContext
             .ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Process>()
-            .HasMany(x => x.Children)
-            .WithOne(x => x.Parent)
-            .HasForeignKey(x => x.ParentId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
+            .HasMany(x => x.SubProcesses)
+            .WithMany(x => x.PossibleParentProcesses);
 
         #endregion
 
@@ -132,7 +129,7 @@ public class DefaultContext : DbContext
             .WithMany(t => t.Comments)
             .HasForeignKey(x => x.SpaceId)
             .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired(true);
+            .IsRequired(false);
 
         #endregion
 
@@ -151,7 +148,7 @@ public class DefaultContext : DbContext
             .WithMany(t => t.Comments)
             .HasForeignKey(x => x.ProcessId)
             .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired(true);
+            .IsRequired(false);
 
         #endregion
 
@@ -170,7 +167,7 @@ public class DefaultContext : DbContext
             .WithMany(t => t.Comments)
             .HasForeignKey(x => x.TicketId)
             .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired(true);
+            .IsRequired(false);
 
         #endregion
 

@@ -1,6 +1,6 @@
-namespace o2rabbit.BizLog.Abstractions.Options;
+namespace o2rabbit.Api.Parameters.Processes;
 
-public class GetProcessByIdOptions
+public class GetProcessByIdQueryParameters
 {
     public bool IncludeTickets { get; set; }
 

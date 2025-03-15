@@ -5,7 +5,7 @@ namespace o2rabbit.Api.Extensions;
 
 internal static class CommentExtensions
 {
-    internal static ProcessCommentDto ToDto(this ProcessCommentDto comment)
+    internal static ProcessCommentDto ToDto(this ProcessComment comment)
     {
         return new()
         {

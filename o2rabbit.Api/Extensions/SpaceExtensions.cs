@@ -5,6 +5,17 @@ namespace o2rabbit.Api.Extensions;
 
 internal static class SpaceExtensions
 {
+    internal static TinySpaceDto ToTinyDto(this Space space)
+    {
+        var dto = new TinySpaceDto()
+        {
+            Id = space.Id,
+            Title = space.Title,
+        };
+
+        return dto;
+    }
+
     internal static DefaultSpaceDto ToDefaultDto(this Space space)
     {
         var dto = new DefaultSpaceDto()

@@ -4,15 +4,17 @@ public class Process
 {
     public long Id { get; set; }
 
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public List<Process> Children { get; } = [];
+    public string Description { get; set; } = string.Empty;
 
-    public long? ParentId { get; set; }
+    public List<Process> SubProcesses { get; } = [];
 
-    public Process? Parent { get; set; }
+    public List<Process> PossibleParentProcesses { get; } = [];
 
     public List<ProcessComment> Comments { get; } = [];
 
     public List<Space> PossibleSpaces { get; } = [];
+
+    public List<Ticket> AttachedTickets { get; } = [];
 }

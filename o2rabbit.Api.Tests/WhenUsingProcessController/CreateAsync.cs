@@ -3,8 +3,9 @@ using FluentAssertions;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using o2rabbit.Api.Controllers;
-using o2rabbit.Api.Tests.AutoFixtureCustomization;
+using o2rabbit.Api.Controllers.Processes;
+using o2rabbit.Api.Extensions;
+using o2rabbit.BizLog.Abstractions.Models.ProcessModels;
 using o2rabbit.BizLog.Abstractions.Services;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
@@ -13,76 +14,71 @@ namespace o2rabbit.Api.Tests.WhenUsingProcessController;
 
 public class CreateAsync
 {
-    private readonly ProcessController _sut;
-    private readonly Fixture _fixture;
-    private readonly Mock<IProcessService> _processServiceMock;
-
-    public CreateAsync()
-    {
-        _processServiceMock = new Mock<IProcessService>();
-        _processServiceMock.Setup(m => m.CreateAsync(It.IsAny<Process>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Fail(""));
-        _sut = new ProcessController(_processServiceMock.Object);
-        _fixture = new Fixture();
-        _fixture.Customize(new IgnoreRecursion());
-    }
-
     [Fact]
     public async Task WhenCalled_CallsProcessService()
     {
-        var process = _fixture.Create<Process>();
+        var fixture = new Fixture();
+        var newProcess = fixture.Create<NewProcessCommand>();
+        var processServiceMock = new Mock<IProcessService>();
+        var foundProcess = new Process() { Id = 2 };
+        processServiceMock.Setup(m =>
+                m.CreateAsync(It.IsAny<NewProcessCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(foundProcess))
+            .Verifiable();
+        var sut = new ProcessController(processServiceMock.Object);
 
-        await _sut.CreateAsync(process);
+        await sut.CreateAsync(newProcess);
 
-        _processServiceMock.Verify(m => m.CreateAsync(process, It.IsAny<CancellationToken>()), Times.Once);
+        processServiceMock.Verify(m => m.CreateAsync(newProcess, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task WhenProcessServiceReturnsInvalidIdError_ReturnsBadRequest()
+    public async Task WhenProcessServiceReturnsValidationNotSuccessfulError_ReturnsBadRequest()
     {
-        var process = _fixture.Create<Process>();
-        _processServiceMock.Setup(m => m.CreateAsync(It.IsAny<Process>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Fail(new InvalidIdError()));
+        var fixture = new Fixture();
+        var newProcess = fixture.Create<NewProcessCommand>();
+        var processServiceMock = new Mock<IProcessService>();
+        processServiceMock.Setup(m =>
+                m.CreateAsync(It.IsAny<NewProcessCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Fail(new ValidationNotSuccessfulError()));
+        var sut = new ProcessController(processServiceMock.Object);
 
-        var response = await _sut.CreateAsync(process);
+        var response = await sut.CreateAsync(newProcess);
 
         response.Result.Should().BeOfType<BadRequestObjectResult>();
     }
 
     [Fact]
-    public async Task WhenProcessServiceReturnsSuccess_ReturnsOk()
-    {
-        var process = _fixture.Create<Process>();
-        _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(process));
-
-        var response = await _sut.CreateAsync(process);
-
-        response.Result.Should().BeOfType<OkObjectResult>();
-    }
-
-    [Fact]
     public async Task WhenProcessServiceReturnsSuccess_ReturnsOkWithProcess()
     {
-        var process = _fixture.Create<Process>();
-        _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(process));
+        var fixture = new Fixture();
+        var newProcess = fixture.Create<NewProcessCommand>();
+        var processServiceMock = new Mock<IProcessService>();
+        var foundProcess = new Process() { Id = 2 };
+        processServiceMock.Setup(m =>
+                m.CreateAsync(It.IsAny<NewProcessCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(foundProcess));
+        var sut = new ProcessController(processServiceMock.Object);
 
-        var response = await _sut.CreateAsync(process);
+        var response = await sut.CreateAsync(newProcess);
 
         response.Result.Should().BeOfType<OkObjectResult>();
         var objectResult = (OkObjectResult)response.Result;
-        objectResult.Value.Should().Be(process);
+        objectResult.Value.Should().BeEquivalentTo(foundProcess.ToDefaultDto());
     }
 
     [Fact]
     public async Task WhenProcessServiceReturnsUnknownError_Returns500()
     {
-        var process = _fixture.Create<Process>();
-        _processServiceMock.Setup(m => m.CreateAsync(process, It.IsAny<CancellationToken>()))
+        var fixture = new Fixture();
+        var newProcess = fixture.Create<NewProcessCommand>();
+        var processServiceMock = new Mock<IProcessService>();
+        processServiceMock.Setup(m =>
+                m.CreateAsync(It.IsAny<NewProcessCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail(new UnknownError()));
+        var sut = new ProcessController(processServiceMock.Object);
 
-        var response = await _sut.CreateAsync(process);
+        var response = await sut.CreateAsync(newProcess);
 
         response.Result.Should().BeOfType<ObjectResult>();
 

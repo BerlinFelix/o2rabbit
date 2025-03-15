@@ -1,9 +1,9 @@
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
+using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Services.Processes;
 
@@ -14,32 +14,41 @@ internal partial class ProcessService
     {
         try
         {
-            Process? process;
-            if (options != null && options.IncludeChildren)
+            var processes = _context.Processes.AsQueryable();
+
+            if (options?.IncludeComments == true)
             {
-                process = await EntityFrameworkQueryableExtensions
-                    .Include<Process, List<Process>>(_context.Processes, p => p.Children)
-                    .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                process = await _context.Processes
-                    .FindAsync(id, cancellationToken)
-                    .ConfigureAwait(false);
+                processes = processes.Include(p => p.Comments);
             }
 
-            if (process == null)
+            if (options?.IncludeTickets == true)
             {
-                return Result.Fail<Process>(new InvalidIdError());
+                processes = processes.Include(p => p.AttachedTickets);
             }
+
+            if (options?.IncludeSubProcesses == true)
+            {
+                processes = processes.Include(p => p.SubProcesses);
+            }
+
+            if (options?.IncludePossibleParentProcesses == true)
+            {
+                processes = processes.Include(p => p.PossibleParentProcesses);
+            }
+
+            var process = await processes
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (process == null)
+                return Result.Fail(new InvalidIdError());
 
             return Result.Ok(process);
         }
         catch (Exception e)
         {
-            LoggerExtensions.LogError(_logger, e, e.Message);
-            return Result.Fail<Process>(new UnknownError());
+            LoggerExtensions.CustomExceptionLogging(_logger, e);
+            return Result.Fail(new UnknownError());
         }
     }
 }

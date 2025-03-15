@@ -76,11 +76,8 @@ public class DefaultContext : DbContext
             .ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Process>()
-            .HasMany(x => x.Children)
-            .WithOne(x => x.Parent)
-            .HasForeignKey(x => x.ParentId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
+            .HasMany(x => x.SubProcesses)
+            .WithMany(x => x.PossibleParentProcesses);
 
         #endregion
 

@@ -1,7 +1,7 @@
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using o2rabbit.Core.ResultErrors;
-using LoggerExtensions = Microsoft.Extensions.Logging.LoggerExtensions;
+using o2rabbit.Utilities.Extensions;
 
 namespace o2rabbit.BizLog.Services.Processes;
 
@@ -11,8 +11,7 @@ internal partial class ProcessService
     {
         try
         {
-            var deletedRows = await _context.Processes
-                .Where(p => p.Id == id)
+            var deletedRows = await _context.Processes.Where(p => p.Id == id)
                 .ExecuteDeleteAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -25,9 +24,7 @@ internal partial class ProcessService
         }
         catch (Exception e)
         {
-            LoggerExtensions.LogError(_logger, e, e.Message);
-            if (e is AggregateException aggregateException)
-                Utilities.Extensions.LoggerExtensions.LogAggregateException(_logger, aggregateException);
+            LoggerExtensions.CustomExceptionLogging(_logger, e);
             return Result.Fail(new UnknownError());
         }
     }
