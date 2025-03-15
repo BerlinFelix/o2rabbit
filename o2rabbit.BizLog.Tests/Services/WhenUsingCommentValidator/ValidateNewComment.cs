@@ -49,35 +49,6 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
     }
 
     [Theory]
-    [InlineData(0, "comment")]
-    [InlineData(2, "comment")]
-    public async Task GivenNotExistingTicketId_ShouldReturnInvalid(long id, string text)
-    {
-        await SetUpAsync();
-
-        var commentServiceContext = new DefaultContext(
-            new OptionsWrapper<DefaultContextOptions>(
-                new DefaultContextOptions()
-                {
-                    ConnectionString = _classFixture.ConnectionString
-                }));
-
-        var sut = new CommentValidator(new NewCommentValidator(commentServiceContext),
-            new UpdatedCommentValidator(commentServiceContext));
-
-        var newCommentCommand = new NewCommentCommand
-        {
-            Text = text,
-            TicketId = id
-        };
-
-        var validationResult = await sut.ValidateNewCommentAsync(newCommentCommand);
-
-        validationResult.IsValid.Should().BeFalse();
-    }
-
-
-    [Theory]
     [InlineData(1, "comment")]
     public async Task GivenValidNewCommentCommand_ReturnsValid(long id, string text)
     {

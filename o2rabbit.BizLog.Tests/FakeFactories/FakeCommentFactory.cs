@@ -6,7 +6,7 @@ internal static class FakeCommentFactory
 {
     internal static TicketComment CreateComment()
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTimeOffset.UtcNow;
         return new TicketComment()
         {
             Created = utcNow,

@@ -10,5 +10,7 @@ public class NewCommentValidator : AbstractValidator<NewCommentCommand>
     {
         RuleFor(c => c.Text)
             .NotEmpty();
+
+        RuleFor(c => c.TicketId).GreaterThan(0);
     }
 }

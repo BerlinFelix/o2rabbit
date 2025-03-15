@@ -25,7 +25,7 @@ internal partial class CommentService
 
             var existing = await _context.TicketComments.FindAsync(update.Id).ConfigureAwait(false);
             _context.Update(existing!).CurrentValues.SetValues(update);
-            existing.LastModified = DateTime.UtcNow;
+            existing.LastModified = DateTimeOffset.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

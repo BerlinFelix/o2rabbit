@@ -7,9 +7,9 @@ public class SpaceCommentDto
 
     public required string Text { get; set; } = string.Empty;
 
-    public DateTime Created { get; set; } = DateTime.MinValue;
+    public DateTimeOffset Created { get; set; } = DateTimeOffset.MinValue;
 
-    public DateTime LastModified { get; set; } = DateTime.MinValue;
+    public DateTimeOffset LastModified { get; set; } = DateTimeOffset.MinValue;
 
     public long SpaceId { get; set; }
 

@@ -58,9 +58,10 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         var existingComment = fixture.Create<TicketComment>();
         existingComment.Id = 1;
-        existingComment.Created = DateTime.UtcNow;
-        existingComment.LastModified = DateTime.UtcNow;
-        existingComment.DeletedAt = DateTime.UtcNow;
+        existingComment.Created = DateTimeOffset.UtcNow;
+        ;
+        existingComment.LastModified = DateTimeOffset.UtcNow;
+        existingComment.DeletedAt = DateTimeOffset.UtcNow;
 
         setupContext.Add(existingComment);
         await setupContext.SaveChangesAsync();
@@ -172,8 +173,8 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
         var existingComment = fixture.Create<TicketComment>();
         existingComment.Id = 1;
-        existingComment.Created = DateTime.UtcNow;
-        existingComment.LastModified = DateTime.UtcNow;
+        existingComment.Created = DateTimeOffset.UtcNow;
+        existingComment.LastModified = DateTimeOffset.UtcNow;
         existingComment.DeletedAt = null;
 
         context.Add(existingComment);

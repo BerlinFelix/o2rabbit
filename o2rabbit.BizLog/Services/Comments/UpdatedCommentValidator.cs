@@ -8,6 +8,9 @@ public class UpdatedCommentValidator : AbstractValidator<UpdateCommentCommand>
 {
     public UpdatedCommentValidator(DefaultContext defaultContext)
     {
+        RuleFor(c => c.Id)
+            .GreaterThan(0);
+
         RuleFor(c => c.Text)
             .NotEmpty();
     }

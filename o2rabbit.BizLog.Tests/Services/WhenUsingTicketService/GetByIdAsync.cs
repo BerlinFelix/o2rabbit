@@ -217,8 +217,8 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var comment = fixture.Create<TicketComment>();
         comment.TicketId = 1;
         comment.Ticket = null;
-        comment.Created = DateTime.UtcNow;
-        comment.LastModified = DateTime.UtcNow;
+        comment.Created = DateTimeOffset.UtcNow;
+        comment.LastModified = DateTimeOffset.UtcNow;
         var context = GetDefaultContext();
         context.Add(comment);
         await context.SaveChangesAsync();
@@ -249,8 +249,8 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var comment = fixture.Create<TicketComment>();
         comment.TicketId = 1;
         comment.Ticket = null;
-        comment.Created = DateTime.UtcNow;
-        comment.LastModified = DateTime.UtcNow;
+        comment.Created = DateTimeOffset.UtcNow;
+        comment.LastModified = DateTimeOffset.UtcNow;
         var context = GetDefaultContext();
         context.Add(comment);
         await context.SaveChangesAsync();

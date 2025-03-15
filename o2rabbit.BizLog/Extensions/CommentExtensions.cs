@@ -7,7 +7,7 @@ internal static class CommentExtensions
 {
     public static TicketComment ToComment(this NewCommentCommand command)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         var comment = new TicketComment()
         {
             Id = 0,

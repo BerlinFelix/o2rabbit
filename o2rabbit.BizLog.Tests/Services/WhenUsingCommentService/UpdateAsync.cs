@@ -35,10 +35,10 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
         var sut = CreateDefaultSut();
         var update = new UpdateCommentCommand() { Id = id, Text = text };
 
-        var validationResult = await sut.UpdateAsync(update);
+        var result = await sut.UpdateAsync(update);
 
-        validationResult.IsFailed.Should().BeTrue();
-        validationResult.Errors.Should().ContainSingle(e => e is ValidationNotSuccessfulError);
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e => e is ValidationNotSuccessfulError);
     }
 
     [Theory]
