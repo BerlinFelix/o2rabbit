@@ -15,21 +15,7 @@ public class UpdatedTicketValidator : AbstractValidator<UpdateTicketCommand>
         _context = context;
         ArgumentNullException.ThrowIfNull(context);
 
-        RuleFor(u => u.ParentId).MustAsync(async (id, c) =>
-        {
-            if (!id.HasValue)
-            {
-                return true;
-            }
-
-            return await context.Tickets.FindAsync(id, c).ConfigureAwait(false) != null;
-        });
         RuleFor(u => u.Name).NotEmpty();
-        RuleFor(u => u.Id).MustAsync(async (id, c) =>
-        {
-            var ticketExists = await context.Tickets.FindAsync(id, c).ConfigureAwait(false) != null;
-            return ticketExists;
-        });
         RuleFor(u => u.ParentId).MustAsync(async (u, parentId, c) =>
         {
             if (!parentId.HasValue)
