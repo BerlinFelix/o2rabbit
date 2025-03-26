@@ -58,9 +58,13 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
     {
         await SetupAsync();
         var fixture = new Fixture();
-        var newTicket = fixture.Create<NewTicketCommand>();
-        newTicket.ParentId = null;
-        newTicket.ProcessId = null;
+        var newTicket = new NewTicketCommand()
+        {
+            Name = string.Empty, // Invalid or empty name to trigger validation failure
+            ParentId = null,
+            ProcessId = null,
+            SpaceId = 0 // Assuming invalid SpaceId to trigger validation failure
+        };
 
         var result = await _sut.CreateAsync(newTicket);
 
