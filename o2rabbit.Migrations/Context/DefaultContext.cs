@@ -70,6 +70,12 @@ public class DefaultContext : DbContext
             .ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Process>()
+            .HasOne(x => x.Workflow)
+            .WithOne(x => x.Process)
+            .HasForeignKey<Workflow>(x => x.ProcessId)
+            .IsRequired(true);
+
+        modelBuilder.Entity<Process>()
             .HasMany(x => x.SubProcesses)
             .WithMany(x => x.PossibleParentProcesses)
             .UsingEntity<ProcessProcessMapping>(
@@ -100,7 +106,7 @@ public class DefaultContext : DbContext
             .WithMany(p => p.Tickets)
             .HasForeignKey(x => x.ProcessId)
             .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
+            .IsRequired(true);
 
         #endregion
 
@@ -118,11 +124,6 @@ public class DefaultContext : DbContext
             .HasMany(x => x.Statuses)
             .WithOne(x => x.Workflow)
             .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired(true);
-
-        modelBuilder.Entity<Workflow>()
-            .HasOne(x => x.Process)
-            .WithOne(x => x.Workflow)
             .IsRequired(true);
 
         #endregion

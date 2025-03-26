@@ -68,8 +68,8 @@ namespace o2rabbit.Migrations.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WorkflowId")
-                        .HasColumnType("integer");
+                    b.Property<long>("WorkflowId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -238,7 +238,7 @@ namespace o2rabbit.Migrations.Migrations
                     b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("ProcessId")
+                    b.Property<long>("ProcessId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("SpaceId")
@@ -402,7 +402,8 @@ namespace o2rabbit.Migrations.Migrations
                     b.HasOne("o2rabbit.Core.Entities.Process", "Process")
                         .WithMany("Tickets")
                         .HasForeignKey("ProcessId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("o2rabbit.Core.Entities.Space", "Space")
                         .WithMany("AttachedTickets")

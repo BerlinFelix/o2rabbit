@@ -6,7 +6,7 @@ public class NewTicketCommand
 
     public long? ParentId { get; set; }
 
-    public long? ProcessId { get; set; }
+    public long ProcessId { get; set; }
 
     public long SpaceId { get; set; }
 }
