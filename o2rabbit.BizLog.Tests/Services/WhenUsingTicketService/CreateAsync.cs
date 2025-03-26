@@ -14,7 +14,7 @@ using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
-public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifetime
+public class CreateAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
     private readonly DefaultContext _defaultContext;
@@ -45,26 +45,22 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
         _sut = new TicketService(_ticketContext, loggerMock.Object, _validator, searchOptionsValidatorMock.Object);
     }
 
-    public async Task InitializeAsync()
-    {
-        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
-            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        await migrationContext.Database.EnsureCreatedAsync();
-    }
-
-    public async Task DisposeAsync()
+    public async Task SetupAsync()
     {
         var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
             new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         await migrationContext.Database.EnsureDeletedAsync();
+        await migrationContext.Database.EnsureCreatedAsync();
     }
 
     [Fact]
     public async Task GivenInvalidTicket_ReturnsFail()
     {
+        await SetupAsync();
         var fixture = new Fixture();
-        fixture.Customize(new NewTicketHasProcess());
         var newTicket = fixture.Create<NewTicketCommand>();
+        newTicket.ParentId = null;
+        newTicket.ProcessId = null;
 
         var result = await _sut.CreateAsync(newTicket);
 
@@ -76,6 +72,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewTicket_ReturnsOkWithTicketAsValue()
     {
+        await SetupAsync();
         var existingSpace = new Space()
         {
             Id = 1,
@@ -107,6 +104,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task GivenNewTicket_CreatesNewTicketInDatabase()
     {
+        await SetupAsync();
         var existingSpace = new Space()
         {
             Id = 1,
@@ -139,6 +137,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifet
     [Fact]
     public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
+        await SetupAsync();
         var newTicket = _fixture.Create<NewTicketCommand>();
         var contextMock = new Mock<DefaultContext>();
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
