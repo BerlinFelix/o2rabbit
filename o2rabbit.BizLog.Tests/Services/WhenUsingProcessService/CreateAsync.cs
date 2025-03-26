@@ -52,7 +52,8 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>
         var command = new NewProcessCommand
         {
             Name = "invalid",
-            Description = "description"
+            Description = "description",
+            Workflow = new NewProcessCommand.NewWorkflowCommand(),
         };
         var fixture = new AutoMoqFixture();
         var validatorMock = fixture.Freeze<Mock<IProcessValidator>>();
@@ -74,7 +75,8 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>
         var command = new NewProcessCommand
         {
             Name = "title",
-            Description = "description"
+            Description = "description",
+            Workflow = new NewProcessCommand.NewWorkflowCommand()
         };
         var sut = SetUpDefaultSut();
 
@@ -93,7 +95,8 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>
         var command = new NewProcessCommand
         {
             Name = "title",
-            Description = "description"
+            Description = "description",
+            Workflow = new NewProcessCommand.NewWorkflowCommand()
         };
         var sut = SetUpDefaultSut();
 
@@ -107,7 +110,8 @@ public class CreateAsync : IClassFixture<ProcessServiceClassFixture>
         process.Should().BeEquivalentTo(command, config =>
         {
             config.Excluding(c => c.PossibleSpaceIds)
-                .Excluding(c => c.SubProcessIds);
+                .Excluding(c => c.SubProcessIds)
+                .Excluding(c => c.Workflow);
 
             return config;
         });

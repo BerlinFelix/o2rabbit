@@ -15,4 +15,9 @@ public class Status
     public List<StatusTransition> FromTransitions { get; } = [];
 
     public List<StatusTransition> ToTransitions { get; } = [];
+
+    //TODO configure in db etc.
+    // public long InitialStatusId { get; set; }
+    //
+    // public Status? InitialStatus { get; set; }
 }
