@@ -6,6 +6,7 @@ using Moq;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
 using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.NewTicketDtoCustomizations;
@@ -17,7 +18,6 @@ namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 public class CreateAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
-    private readonly DefaultContext _defaultContext;
     private readonly Fixture _fixture;
     private readonly TicketService _sut;
     private readonly DefaultContext _ticketContext;
@@ -26,8 +26,6 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
     public CreateAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
-            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
         _fixture = new Fixture();
         _fixture.Customize(new NewTicketHasNoProcessAndNoParent());
 
@@ -47,22 +45,22 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
 
     public async Task SetupAsync()
     {
-        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
             new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        await migrationContext.Database.EnsureDeletedAsync();
-        await migrationContext.Database.EnsureCreatedAsync();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
     }
 
     [Fact]
-    public async Task GivenInvalidTicket_ReturnsFail()
+    public async Task GivenInvalidTicket_ReturnsValidationNotSuccessful()
     {
         await SetupAsync();
-        var fixture = new Fixture();
         var newTicket = new NewTicketCommand()
         {
             Name = string.Empty, // Invalid or empty name to trigger validation failure
             ParentId = null,
-            ProcessId = null,
+            ProcessId = 0,
             SpaceId = 0 // Assuming invalid SpaceId to trigger validation failure
         };
 
@@ -77,26 +75,13 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenNewTicket_ReturnsOkWithTicketAsValue()
     {
         await SetupAsync();
-        var existingSpace = new Space()
-        {
-            Id = 1,
-            Title = "Default Title",
-            Description = "Default Description",
-            Created = DateTimeOffset.UtcNow,
-            LastModified = DateTimeOffset.UtcNow
-        };
         var newTicket = new NewTicketCommand()
         {
             Name = "Default Ticket Name",
             ParentId = null,
-            ProcessId = null,
+            ProcessId = 1,
             SpaceId = 1
         };
-
-        var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        context.Spaces.Add(existingSpace);
-        await context.SaveChangesAsync();
 
         var result = await _sut.CreateAsync(newTicket);
 
@@ -109,28 +94,18 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenNewTicket_CreatesNewTicketInDatabase()
     {
         await SetupAsync();
-        var existingSpace = new Space()
-        {
-            Id = 1,
-            Title = "Default Title",
-            Description = "Default Description",
-            Created = DateTimeOffset.UtcNow,
-            LastModified = DateTimeOffset.UtcNow
-        };
         var newTicket = new NewTicketCommand()
         {
             Name = "Default Ticket Name",
             ParentId = null,
-            ProcessId = null,
+            ProcessId = 1,
             SpaceId = 1
         };
 
+        var result = await _sut.CreateAsync(newTicket);
+
         var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
             DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        context.Spaces.Add(existingSpace);
-        await context.SaveChangesAsync();
-
-        var result = await _sut.CreateAsync(newTicket);
 
         var saved = await context.Tickets.FindAsync(result.Value.Id);
 

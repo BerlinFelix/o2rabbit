@@ -1,13 +1,12 @@
-using AutoFixture;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Comments;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
@@ -41,33 +40,26 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
         result.Value.Should().NotBeNull();
     }
 
-    [Theory]
-    [InlineData(1)]
-    public async Task WhenCommentIsAlreadyDeleted_ReturnsFalseAndComment(long id)
+    [Fact]
+    public async Task WhenCommentIsAlreadyDeleted_ReturnsFalseAndComment()
     {
-        await using var setupContext = CreateDefaultContext();
-        await setupContext.Database.EnsureDeletedAsync();
-        await setupContext.Database.EnsureCreatedAsync();
+        await SetUpAsync();
 
-        var fixture = new Fixture();
-        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+        var deletedComment = new TicketComment()
+        {
+            Created = DateTimeOffset.UtcNow,
+            DeletedAt = DateTimeOffset.UtcNow,
+            LastModified = DateTimeOffset.UtcNow,
+            Text = "comment",
+            TicketId = 1,
+        };
+        var context = CreateDefaultContext();
 
-        var existingTicket = fixture.Create<Ticket>();
-        setupContext.Add(existingTicket);
-        await setupContext.SaveChangesAsync();
-
-        var existingComment = fixture.Create<TicketComment>();
-        existingComment.Id = 1;
-        existingComment.Created = DateTimeOffset.UtcNow;
-        ;
-        existingComment.LastModified = DateTimeOffset.UtcNow;
-        existingComment.DeletedAt = DateTimeOffset.UtcNow;
-
-        setupContext.Add(existingComment);
-        await setupContext.SaveChangesAsync();
+        context.Add(deletedComment);
+        await context.SaveChangesAsync();
         var sut = CreateDefaultSut();
 
-        var result = await sut.DeleteAsync(id);
+        var result = await sut.DeleteAsync(deletedComment.Id);
 
         result.IsSuccess.Should().BeFalse();
         result.Errors.Should().ContainSingle(e => e is AlreadyDeletedError);
@@ -160,22 +152,19 @@ public class DeleteAsync : IClassFixture<CommentServiceClassFixture>
 
     private async Task SetUpAsync()
     {
-        await using var context = CreateDefaultContext();
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
+            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
 
-        var fixture = new Fixture();
-        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+        var existingTicket = new Ticket { Name = "ticket", ProcessId = 1, SpaceId = 1 };
 
-        var existingTicket = fixture.Create<Ticket>();
-        context.Add(existingTicket);
+        context.Tickets.Add(existingTicket);
         await context.SaveChangesAsync();
 
-        var existingComment = fixture.Create<TicketComment>();
-        existingComment.Id = 1;
-        existingComment.Created = DateTimeOffset.UtcNow;
-        existingComment.LastModified = DateTimeOffset.UtcNow;
-        existingComment.DeletedAt = null;
+        var existingComment = new TicketComment
+            { Text = "comment", TicketId = 1, Created = DateTimeOffset.UtcNow, LastModified = DateTimeOffset.UtcNow };
 
         context.Add(existingComment);
         await context.SaveChangesAsync();

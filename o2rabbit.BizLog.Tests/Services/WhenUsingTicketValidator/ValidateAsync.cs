@@ -1,63 +1,62 @@
-using AutoFixture;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketValidator;
 
-public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLifetime
+public class ValidateAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
-    private readonly DefaultContext _context;
-    private readonly TicketValidator _sut;
-    private readonly Fixture _fixture;
 
     public ValidateAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
-        _context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
-            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-
-        var newTicketValidator = new NewTicketValidator(_context);
-        var updatedTicketValidator = new UpdatedTicketValidator(_context);
-        _sut = new TicketValidator(newTicketValidator, updatedTicketValidator);
     }
 
-    public async Task InitializeAsync()
+    private TicketValidator CreateDefaultSut()
     {
-        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+        var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
             new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        await migrationContext.Database.EnsureCreatedAsync();
+        var newTicketValidator = new NewTicketValidator(context);
+        var updatedTicketValidator = new UpdatedTicketValidator(context);
+        var sut = new TicketValidator(newTicketValidator, updatedTicketValidator);
+        return sut;
     }
 
-    public async Task DisposeAsync()
+    public async Task SetupAsync()
     {
-        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
             new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        await migrationContext.Database.EnsureDeletedAsync();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
     }
 
     [Fact]
     public async Task WhenChildCircle_ValidationFails()
     {
-        var parent = _fixture.Create<Ticket>();
-        var child = _fixture.Create<Ticket>();
-        child.ParentId = parent.Id;
-        _context.Tickets.Add(child);
-        _context.Tickets.Add(parent);
-        await _context.SaveChangesAsync();
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+
+        var parent = new Ticket() { Name = "parent", ProcessId = 1, SpaceId = 1 };
+        var child = new Ticket() { Name = "child", ProcessId = 1, SpaceId = 1, ParentId = 1 };
+
+        await using var context =
+            new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
+                { ConnectionString = _classFixture.ConnectionString }));
+        context.Tickets.AddRange(parent, child);
+
+        await context.SaveChangesAsync();
 
         var update = new UpdateTicketCommand() { Id = parent.Id, Name = parent.Name, ParentId = child.Id };
 
-        var validationResult = await _sut.ValidateAsync(update);
+        var validationResult = await sut.ValidateAsync(update);
 
         validationResult.IsValid.Should().BeFalse();
     }
@@ -65,19 +64,23 @@ public class ValidateAsync : IClassFixture<TicketServiceClassFixture>, IAsyncLif
     [Fact]
     public async Task WhenGrandChildCircle_ValidationFails()
     {
-        var parent = _fixture.Create<Ticket>();
-        var child = _fixture.Create<Ticket>();
-        child.ParentId = parent.Id;
-        var grandChild = _fixture.Create<Ticket>();
-        grandChild.ParentId = child.Id;
-        _context.Tickets.Add(grandChild);
-        _context.Tickets.Add(child);
-        _context.Tickets.Add(parent);
-        await _context.SaveChangesAsync();
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+
+        var parent = new Ticket() { Name = "parent", ProcessId = 1, SpaceId = 1 };
+        var child = new Ticket() { Name = "child", ProcessId = 1, SpaceId = 1, ParentId = 1 };
+        var grandChild = new Ticket() { Name = "grandChild", ProcessId = 1, SpaceId = 1, ParentId = 2 };
+
+        await using var context =
+            new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
+                { ConnectionString = _classFixture.ConnectionString }));
+        context.Tickets.AddRange(parent, child, grandChild);
+
+        await context.SaveChangesAsync();
 
         var update = new UpdateTicketCommand() { Id = parent.Id, Name = parent.Name, ParentId = grandChild.Id };
 
-        var validationResult = await _sut.ValidateAsync(update);
+        var validationResult = await sut.ValidateAsync(update);
 
         validationResult.IsValid.Should().BeFalse();
     }

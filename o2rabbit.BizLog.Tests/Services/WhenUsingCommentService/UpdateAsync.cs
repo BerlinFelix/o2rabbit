@@ -5,10 +5,9 @@ using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Models.CommentModels;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Comments;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
-using o2rabbit.BizLog.Tests.FakeFactories;
 using o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
@@ -100,23 +99,33 @@ public class UpdateAsync : IClassFixture<CommentServiceClassFixture>
 
     private async Task SetupAsync()
     {
-        await using var setupContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
+        await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
             new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString })
         );
-        await setupContext.Database.EnsureDeletedAsync();
-        await setupContext.Database.EnsureCreatedAsync();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
 
-        var fixture = new Fixture();
-        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
-        var ticket = fixture.Create<Ticket>();
-        ticket.Id = 1;
-        var existingComment = FakeCommentFactory.CreateComment();
-        existingComment.Id = 1;
+        var ticket = new Ticket()
+        {
+            Name = "ticket",
+            ProcessId = 1,
+            SpaceId = 1
+        };
+        context.Add(ticket);
+        await context.SaveChangesAsync();
 
-        setupContext.Add(existingComment);
-        setupContext.Add(ticket);
+        var existingComment = new TicketComment()
+        {
+            Text = "comment",
+            TicketId = 1,
+            Created = DateTimeOffset.UtcNow,
+            LastModified = DateTimeOffset.UtcNow
+        };
 
-        await setupContext.SaveChangesAsync();
+        context.Add(existingComment);
+
+        await context.SaveChangesAsync();
     }
 
     private CommentService CreateDefaultSut()

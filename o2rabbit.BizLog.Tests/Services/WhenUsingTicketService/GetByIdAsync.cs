@@ -1,11 +1,11 @@
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
@@ -18,52 +18,60 @@ namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
-    private readonly DefaultContext _defaultContext;
-    private readonly Fixture _fixture;
-    private readonly TicketService _sut;
-    private readonly Mock<ITicketValidator> _ticketValidatorMock;
 
     public GetByIdAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+    }
 
-        var DefaultContext =
+    private TicketService CreateDefaultSut()
+    {
+        var ticketContext = CreateDefaultContext();
+
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(ticketContext, loggerMock.Object, ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+        return sut;
+    }
+
+    private DefaultContext CreateDefaultContext()
+    {
+        var ticketContext =
             new DefaultContext(
                 new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
-
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        _ticketValidatorMock = new Mock<ITicketValidator>();
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        _sut = new TicketService(DefaultContext, loggerMock.Object, _ticketValidatorMock.Object,
-            searchOptionsValidatorMock.Object);
+        return ticketContext;
     }
 
-    public async Task SetUpAsync()
+    private async Task SetUpAsync()
     {
         await using var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
             DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
 
-        var existingTicket = _fixture.Create<Ticket>();
-        var existingTicket2 = _fixture.Create<Ticket>();
-        existingTicket.Id = 1;
-        existingTicket2.Id = 2;
+        var existingTicket = new Ticket()
+        {
+            ProcessId = 1,
+            SpaceId = 1,
+            Name = "e1"
+        };
+        var existingTicket2 = new Ticket()
+        {
+            ProcessId = 1,
+            SpaceId = 1,
+            Name = "e2"
+        };
 
-        _defaultContext.Add(existingTicket);
-        _defaultContext.Add(existingTicket2);
+        context.Add(existingTicket);
+        context.Add(existingTicket2);
 
-        await _defaultContext.SaveChangesAsync();
-
-        _defaultContext.Entry(existingTicket).State = EntityState.Detached;
-        _defaultContext.Entry(existingTicket2).State = EntityState.Detached;
+        await context.SaveChangesAsync();
     }
 
     [Theory]
@@ -72,7 +80,8 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenExistingId_ReturnsIsSuccess(long id)
     {
         await SetUpAsync();
-        var result = await _sut.GetByIdAsync(id);
+        var sut = CreateDefaultSut();
+        var result = await sut.GetByIdAsync(id);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -83,7 +92,8 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenExistingId_ReturnsIsSuccessWithTicket(long id)
     {
         await SetUpAsync();
-        var result = await _sut.GetByIdAsync(id);
+        var sut = CreateDefaultSut();
+        var result = await sut.GetByIdAsync(id);
 
         result.Value.Should().NotBeNull();
         result.Value.Should().BeOfType<Ticket>();
@@ -96,14 +106,21 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenExistingIdAndIncludeParent_ReturnsIsSuccessWithParent(long id)
     {
         await SetUpAsync();
-        var ticketWithParent = _fixture.Create<Ticket>();
-        ticketWithParent.Id = 3;
+        var sut = CreateDefaultSut();
+        var ticketWithParent = new Ticket()
+        {
+            Name = "child",
+            ProcessId = 1,
+            SpaceId = 1,
+            ParentId = id
+        };
         ticketWithParent.ParentId = id;
 
-        _defaultContext.Add(ticketWithParent);
-        await _defaultContext.SaveChangesAsync();
+        await using var context = CreateDefaultContext();
+        context.Add(ticketWithParent);
+        await context.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(3, new GetTicketByIdOptions() { IncludeParent = true });
+        var result = await sut.GetByIdAsync(3, new GetTicketByIdOptions() { IncludeParent = true });
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeOfType<Ticket>();
@@ -117,14 +134,21 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenExistingIdAndIncludeChildren_ReturnsIsSuccessWithChildren(long id)
     {
         await SetUpAsync();
-        var ticketWithParent = _fixture.Create<Ticket>();
-        ticketWithParent.Id = 3;
+        var sut = CreateDefaultSut();
+        var ticketWithParent = new Ticket()
+        {
+            Name = "child",
+            ProcessId = 1,
+            SpaceId = 1,
+            ParentId = id
+        };
         ticketWithParent.ParentId = id;
 
-        _defaultContext.Add(ticketWithParent);
-        await _defaultContext.SaveChangesAsync();
+        await using var context = CreateDefaultContext();
+        context.Add(ticketWithParent);
+        await context.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, new GetTicketByIdOptions() { IncludeChildren = true });
+        var result = await sut.GetByIdAsync(id, new GetTicketByIdOptions() { IncludeChildren = true });
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeOfType<Ticket>();
@@ -137,53 +161,26 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenExistingIdWithChildren_ReturnsTicketWithoutChildren(long id)
     {
         await SetUpAsync();
-        var ticketWithParent = _fixture.Create<Ticket>();
-        ticketWithParent.Id = 3;
+        var sut = CreateDefaultSut();
+        var ticketWithParent = new Ticket()
+        {
+            Name = "child",
+            ProcessId = 1,
+            SpaceId = 1,
+            ParentId = id
+        };
         ticketWithParent.ParentId = id;
 
-        _defaultContext.Add(ticketWithParent);
-        await _defaultContext.SaveChangesAsync();
+        await using var context = CreateDefaultContext();
+        context.Add(ticketWithParent);
+        await context.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id);
+        var result = await sut.GetByIdAsync(id);
 
         result.Value.Should().NotBeNull();
         result.Value.Should().BeOfType<Ticket>();
         result.Value.Id.Should().Be(id);
         result.Value.Children.Should().BeEmpty();
-    }
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenExistingIdWithChildrenAndOptionsIncludingChildren_ReturnsTicketWithChildren(long id)
-    {
-        await SetUpAsync();
-        var ticketWithParent = _fixture.Create<Ticket>();
-        ticketWithParent.ParentId = id;
-
-        _defaultContext.Add(ticketWithParent);
-        await _defaultContext.SaveChangesAsync();
-
-        var result = await _sut.GetByIdAsync(id, new GetTicketByIdOptions() { IncludeChildren = true });
-
-        result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<Ticket>();
-        // Note that you cannot use ...Should().BeEquivalentTo(), weil Parent-Child eine zirkulaere Referenz enthaelt.
-        result.Value.Id.Should().Be(id);
-        result.Value.Children.Should().HaveCount(1);
-        result.Value.Children.First().ParentId.Should().Be(id);
-    }
-
-    [Theory]
-    [InlineData(3)]
-    [InlineData(4)]
-    [InlineData(-1)]
-    public async Task GivenNotExistingId_ReturnsIsFail(long id)
-    {
-        await SetUpAsync();
-        var result = await _sut.GetByIdAsync(id);
-
-        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -193,8 +190,10 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
     public async Task GivenNotExistingId_ReturnsInvalidIdError(long id)
     {
         await SetUpAsync();
-        var result = await _sut.GetByIdAsync(id);
+        var sut = CreateDefaultSut();
+        var result = await sut.GetByIdAsync(id);
 
+        result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e is InvalidIdError);
     }
 
@@ -206,20 +205,19 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         fixture.Customize(
             new TicketHasNoProcessNoParentsNoChildren());
         var DefaultContext =
-            GetDefaultContext();
+            CreateDefaultSut();
 
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        var ticketValidatorMock = new Mock<ITicketValidator>();
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        var sut = new TicketService(DefaultContext, loggerMock.Object, ticketValidatorMock.Object,
-            searchOptionsValidatorMock.Object);
+        var sut = CreateDefaultSut();
 
-        var comment = fixture.Create<TicketComment>();
-        comment.TicketId = 1;
-        comment.Ticket = null;
-        comment.Created = DateTimeOffset.UtcNow;
-        comment.LastModified = DateTimeOffset.UtcNow;
-        var context = GetDefaultContext();
+        var comment = new TicketComment()
+        {
+            Text = "Comment 1",
+            TicketId = 1,
+            Ticket = null,
+            Created = DateTimeOffset.UtcNow,
+            LastModified = DateTimeOffset.UtcNow
+        };
+        var context = CreateDefaultContext();
         context.Add(comment);
         await context.SaveChangesAsync();
 
@@ -237,21 +235,18 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
         var fixture = new Fixture();
         fixture.Customize(
             new TicketHasNoProcessNoParentsNoChildren());
-        var DefaultContext =
-            GetDefaultContext();
 
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        var ticketValidatorMock = new Mock<ITicketValidator>();
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        var sut = new TicketService(DefaultContext, loggerMock.Object, ticketValidatorMock.Object,
-            searchOptionsValidatorMock.Object);
+        var sut = CreateDefaultSut();
 
-        var comment = fixture.Create<TicketComment>();
-        comment.TicketId = 1;
-        comment.Ticket = null;
-        comment.Created = DateTimeOffset.UtcNow;
-        comment.LastModified = DateTimeOffset.UtcNow;
-        var context = GetDefaultContext();
+        var comment = new TicketComment()
+        {
+            Text = "Comment 1",
+            TicketId = 1,
+            Ticket = null,
+            Created = DateTimeOffset.UtcNow,
+            LastModified = DateTimeOffset.UtcNow
+        };
+        var context = CreateDefaultContext();
         context.Add(comment);
         await context.SaveChangesAsync();
 
@@ -259,33 +254,5 @@ public class GetByIdAsync : IClassFixture<TicketServiceClassFixture>
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Comments.Should().BeEmpty();
-    }
-
-    private DefaultContext GetDefaultContext()
-    {
-        return new DefaultContext(
-            new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
-            {
-                ConnectionString = _classFixture.ConnectionString!
-            }));
-    }
-
-    private TicketService SetUpDefaultTicketService()
-    {
-        var fixture = new Fixture();
-        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
-
-        var DefaultContext =
-            new DefaultContext(
-                new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
-                {
-                    ConnectionString = _classFixture.ConnectionString!
-                }));
-
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        var ticketValidatorMock = new Mock<ITicketValidator>();
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        return new TicketService(DefaultContext, loggerMock.Object, _ticketValidatorMock.Object,
-            searchOptionsValidatorMock.Object);
     }
 }

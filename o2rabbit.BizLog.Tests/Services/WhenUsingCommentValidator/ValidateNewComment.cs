@@ -1,11 +1,10 @@
-using AutoFixture;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using o2rabbit.BizLog.Abstractions.Models.CommentModels;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Comments;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingCommentValidator;
@@ -81,13 +80,9 @@ public class ValidateNewComment : IClassFixture<CommentServiceClassFixture>
             DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
 
-        var fixture = new Fixture();
-        fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
-
-        var existingTicket = fixture.Create<Ticket>();
-        existingTicket.Id = 1;
-        context.Tickets.Add(existingTicket);
+        context.Add(new Ticket { Id = 1, Name = "ticket", ProcessId = 1, SpaceId = 1 });
         await context.SaveChangesAsync();
     }
 }

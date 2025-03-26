@@ -1,69 +1,73 @@
-using AutoFixture;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
 using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
 using o2rabbit.Core.Entities;
 using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
-public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixture>
+public class DeleteAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
-    private readonly DefaultContext _defaultContext;
-    private readonly Fixture _fixture;
-    private readonly TicketService _sut;
-    private readonly DefaultContext _ticketContext;
-    private readonly Mock<ITicketValidator> _ticketValidatorMock;
 
     public DeleteAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        _fixture = new Fixture();
-        _fixture.Customize(new TicketHasNoProcessNoParentsNoChildren());
+    }
 
-        _ticketContext =
+    private TicketService CreateDefaultSut()
+    {
+        var ticketContext = CreateDefaultContext();
+
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(ticketContext, loggerMock.Object, ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+        return sut;
+    }
+
+    private DefaultContext CreateDefaultContext()
+    {
+        var ticketContext =
             new DefaultContext(
                 new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
-
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        _ticketValidatorMock = new Mock<ITicketValidator>();
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        _sut = new TicketService(_ticketContext, loggerMock.Object, _ticketValidatorMock.Object,
-            searchOptionsValidatorMock.Object);
+        return ticketContext;
     }
 
-    public async Task InitializeAsync()
+    private async Task SetupAsync()
     {
-        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        await migrationContext.Database.EnsureCreatedAsync();
+        await using var context = CreateDefaultContext();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
 
-        var existingTicket = _fixture.Create<Ticket>();
-        var existingTicket2 = _fixture.Create<Ticket>();
-        existingTicket.Id = 1;
-        existingTicket2.Id = 2;
+        var existingTicket = new Ticket()
+        {
+            Name = "existing Ticket 1",
+            ProcessId = 1,
+            SpaceId = 1,
+        };
+        var existingTicket2 = new Ticket()
+        {
+            Name = "existing Ticket 2",
+            ProcessId = 1,
+            SpaceId = 1,
+        };
 
-        _defaultContext.Add(existingTicket);
-        _defaultContext.Add(existingTicket2);
+        context.AddRange(existingTicket, existingTicket2);
 
-        await _defaultContext.SaveChangesAsync();
-
-        _defaultContext.Entry(existingTicket).State = EntityState.Detached;
-        _defaultContext.Entry(existingTicket2).State = EntityState.Detached;
+        await context.SaveChangesAsync();
     }
 
     [Theory]
@@ -71,7 +75,9 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(5)]
     public async Task GivenNotExistingId_ReturnsFail(long id)
     {
-        var result = await _sut.DeleteAsync(id);
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+        var result = await sut.DeleteAsync(id);
 
         result.IsFailed.Should().BeTrue();
     }
@@ -81,7 +87,9 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(5)]
     public async Task GivenNotExistingId_ReturnsUnknownInvalidIdError(long id)
     {
-        var result = await _sut.DeleteAsync(id);
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+        var result = await sut.DeleteAsync(id);
 
         result.Errors.Should().ContainSingle(e => e is InvalidIdError);
     }
@@ -91,7 +99,9 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenExistingId_ReturnsOk(long id)
     {
-        var result = await _sut.DeleteAsync(id);
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+        var result = await sut.DeleteAsync(id);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -101,16 +111,12 @@ public class DeleteAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenExistingId_DeletesTicket(long id)
     {
-        var result = await _sut.DeleteAsync(id);
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+        var result = await sut.DeleteAsync(id);
 
-        var ticket = await _defaultContext.Tickets.FindAsync(id);
+        await using var context = CreateDefaultContext();
+        var ticket = await context.Tickets.FindAsync(id);
         ticket.Should().BeNull();
-    }
-
-    public async Task DisposeAsync()
-    {
-        var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        await migrationContext.Database.EnsureDeletedAsync();
     }
 }

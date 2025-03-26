@@ -1,99 +1,106 @@
-using AutoFixture;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using o2rabbit.BizLog.Abstractions.Models.TicketModels;
 using o2rabbit.BizLog.Abstractions.Options;
 using o2rabbit.BizLog.Context;
+using o2rabbit.BizLog.Extensions;
+using o2rabbit.BizLog.InternalAbstractions;
 using o2rabbit.BizLog.Options.ProcessServiceContext;
 using o2rabbit.BizLog.Services.Tickets;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations;
-using o2rabbit.BizLog.Tests.AutoFixtureCustomization.TicketCustomizations.UpdatedTicketDto;
 using o2rabbit.Core.Entities;
+using o2rabbit.Core.ResultErrors;
 
 namespace o2rabbit.BizLog.Tests.Services.WhenUsingTicketService;
 
-public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixture>
+public class UpdateAsync : IClassFixture<TicketServiceClassFixture>
 {
     private readonly TicketServiceClassFixture _classFixture;
-    private readonly DefaultContext _defaultContext;
-    private readonly Fixture _fixture;
-    private readonly TicketService _sut;
-    private readonly DefaultContext _ticketContext;
 
     public UpdateAsync(TicketServiceClassFixture classFixture)
     {
         _classFixture = classFixture;
-        _defaultContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
-            new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        _fixture = new Fixture();
-        _fixture.Customize(
-            new CompositeCustomization(
-                new TicketHasNoProcessNoParentsNoChildren(),
-                new UpdatedTicketHasNoParent()
-            )
-        );
+    }
 
-        _ticketContext =
+    private TicketService CreateDefaultSut()
+    {
+        var ticketContext = CreateDefaultContext();
+
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        ticketValidatorMock.Setup(m => m.ValidateAsync(It.IsAny<UpdateTicketCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(ticketContext, loggerMock.Object, ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+        return sut;
+    }
+
+    private DefaultContext CreateDefaultContext()
+    {
+        var ticketContext =
             new DefaultContext(
                 new OptionsWrapper<DefaultContextOptions>(new DefaultContextOptions()
                 {
                     ConnectionString = _classFixture.ConnectionString!
                 }));
-
-        var loggerMock = new Mock<ILogger<TicketService>>();
-        var ticketValidator = new TicketValidator(new NewTicketValidator(_ticketContext),
-            new UpdatedTicketValidator(_ticketContext));
-        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
-        _sut = new TicketService(_ticketContext, loggerMock.Object, ticketValidator, searchOptionsValidatorMock.Object);
+        return ticketContext;
     }
 
-    public async Task InitializeAsync()
+    private async Task SetupAsync()
     {
-        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        await migrationContext.Database.EnsureCreatedAsync();
+        await using var context = CreateDefaultContext();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+        await context.AddAndSaveDefaultEntitiesAsync();
 
-        var existingTicket = _fixture.Create<Ticket>();
-        var existingTicket2 = _fixture.Create<Ticket>();
-        existingTicket.Id = 1;
-        existingTicket2.Id = 2;
+        var existingTicket = new Ticket()
+        {
+            Name = "existing Ticket 1",
+            ProcessId = 1,
+            SpaceId = 1,
+        };
+        var existingTicket2 = new Ticket()
+        {
+            Name = "existing Ticket 2",
+            ProcessId = 1,
+            SpaceId = 1,
+        };
 
-        _defaultContext.Add(existingTicket);
-        _defaultContext.Add(existingTicket2);
+        context.AddRange(existingTicket, existingTicket2);
 
-        await _defaultContext.SaveChangesAsync();
-
-        _defaultContext.Entry(existingTicket).State = EntityState.Detached;
-        _defaultContext.Entry(existingTicket2).State = EntityState.Detached;
+        await context.SaveChangesAsync();
     }
 
     [Theory]
     [InlineData(-1)]
     [InlineData(5)]
-    public async Task GivenValidatorReturnsInvalid_ReturnsFail(long id)
+    public async Task GivenInvalidId_ReturnsValidationNotSuccessfulError(long id)
     {
-        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
-        updatedTicket.Id = id;
+        await SetupAsync();
 
-        var result = await _sut.UpdateAsync(updatedTicket);
+        var ticketContext = CreateDefaultContext();
+        var loggerMock = new Mock<ILogger<TicketService>>();
+        var ticketValidatorMock = new Mock<ITicketValidator>();
+        ticketValidatorMock.Setup(m => m.ValidateAsync(It.IsAny<UpdateTicketCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult() { Errors = [new ValidationFailure("Id", "Invalid Id")] });
+        var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
+        var sut = new TicketService(ticketContext, loggerMock.Object, ticketValidatorMock.Object,
+            searchOptionsValidatorMock.Object);
+
+        var update = new UpdateTicketCommand()
+        {
+            Id = id,
+            Name = "Updated Ticket Name",
+            ParentId = null
+        };
+
+        var result = await sut.UpdateAsync(update);
 
         result.IsFailed.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(5)]
-    public async Task GivenValidatorReturnsInvalid_ReturnsErrors(long id)
-    {
-        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
-        updatedTicket.Id = id;
-
-        var result = await _sut.UpdateAsync(updatedTicket);
-
-        result.Errors.Should().NotBeEmpty();
+        result.Errors.Should().ContainSingle(e => e is ValidationNotSuccessfulError);
     }
 
     [Theory]
@@ -101,50 +108,42 @@ public class UpdateAsync : IAsyncLifetime, IClassFixture<TicketServiceClassFixtu
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_SavesChanges(long id)
     {
-        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
-        updatedTicket.Id = id;
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+        var update = new UpdateTicketCommand()
+        {
+            Id = id,
+            Name = "Updated Ticket Name",
+            ParentId = null
+        };
 
-        await _sut.UpdateAsync(updatedTicket);
+        var result = await sut.UpdateAsync(update);
 
-        var ticket = await _defaultContext.Tickets.FindAsync(id);
+        var context = CreateDefaultContext();
+        var ticket = await context.Tickets.FindAsync(id);
 
         ticket.Should().NotBeNull();
-        ticket.Should().BeEquivalentTo(updatedTicket);
+        ticket.Should().BeEquivalentTo(update);
     }
 
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task GivenValidUpdatedTicket_ReturnsOk(long id)
-    {
-        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
-        updatedTicket.Id = id;
-
-        var result = await _sut.UpdateAsync(updatedTicket);
-
-        result.IsSuccess.Should().BeTrue();
-    }
 
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
     public async Task GivenValidUpdatedTicket_ReturnsUpdatedTicketAsValue(long id)
     {
-        var updatedTicket = _fixture.Create<UpdateTicketCommand>();
-        updatedTicket.Id = id;
+        await SetupAsync();
+        var sut = CreateDefaultSut();
+        var update = new UpdateTicketCommand()
+        {
+            Id = id,
+            Name = "Updated Ticket Name",
+            ParentId = null
+        };
 
-        var result = await _sut.UpdateAsync(updatedTicket);
+        var result = await sut.UpdateAsync(update);
 
-        result.Value.Should().BeEquivalentTo(updatedTicket);
-    }
-
-    public async Task DisposeAsync()
-    {
-        await using var migrationContext = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(new
-            DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString! }));
-        await migrationContext.Database.EnsureDeletedAsync();
-
-        await _defaultContext.DisposeAsync();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEquivalentTo(update);
     }
 }
