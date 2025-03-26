@@ -13,12 +13,22 @@ public class NewProcessValidator : AbstractValidator<NewProcessCommand>
         RuleFor(t => t.Workflow).NotNull();
         RuleFor(t => t.Workflow)
             .ChildRules(validator =>
-                validator.RuleFor(workflow => workflow.StatusList)
-                    .NotEmpty()
-                    .Must(list => list.Any(status => status.IsFinal)));
+                {
+                    validator.RuleFor(workflow => workflow.Statuses)
+                        .NotEmpty()
+                        .Must(list => list.Any(status => status.IsFinal))
+                        .WithMessage("At least one status must be final");
+                    validator.RuleFor(workflow => workflow.Statuses)
+                        .Must(list =>
+                            list.Select(s => s.Name).Count()
+                            == list.Select(s => s.Name).Distinct().Count())
+                        .WithMessage("Names of statuses must be unique");
+                }
+            );
+
         RuleFor(t => t.Workflow)
             .ChildRules(validator =>
-                validator.RuleFor(list => list.StatusTransitionList)
+                validator.RuleFor(list => list.StatusTransitions)
                     .NotEmpty()
             );
     }

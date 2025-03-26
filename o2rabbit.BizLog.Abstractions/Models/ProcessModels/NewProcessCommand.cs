@@ -4,7 +4,6 @@ public class NewProcessCommand
 {
     public class NewStatusCommand
     {
-        public long TempId { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsFinal { get; set; }
     }
@@ -13,18 +12,18 @@ public class NewProcessCommand
     {
         public string Name { get; set; } = string.Empty;
 
-        public long FromStatusTempId { get; set; }
+        public string FromStatusName { get; set; } = string.Empty;
 
-        public long ToStatusTempId { get; set; }
+        public string ToStatusName { get; set; } = string.Empty;
     }
 
     public class NewWorkflowCommand
     {
         public string Name { get; set; } = string.Empty;
 
-        public List<NewStatusCommand> StatusList { get; } = [];
+        public List<NewStatusCommand> Statuses { get; } = [];
 
-        public List<NewStatusTransitionCommand> StatusTransitionList { get; } = [];
+        public List<NewStatusTransitionCommand> StatusTransitions { get; } = [];
     }
 
     public string Name { get; set; } = string.Empty;

@@ -19,7 +19,6 @@ public static class ContextExtensions
     {
         var workflow = new Workflow
         {
-            Name = "Task",
             ProcessId = 1
         };
         context.Workflows.Add(workflow);
@@ -90,7 +89,6 @@ public static class ContextExtensions
     {
         var todoWorkflow = new Workflow
         {
-            Name = "Todo",
             ProcessId = 1
         };
         context.Workflows.Add(todoWorkflow);
