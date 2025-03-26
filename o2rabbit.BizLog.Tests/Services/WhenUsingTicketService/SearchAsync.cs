@@ -44,7 +44,7 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
                     ConnectionString = _classFixture.ConnectionString
                 }));
         var loggerMock = new Mock<ILogger<TicketService>>();
-        var validator = new TicketValidator(new NewTicketValidator(ticketContext),
+        var validator = new TicketValidator(new NewTicketValidator(),
             new UpdatedTicketValidator(ticketContext));
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
         searchOptionsValidatorMock.Setup(m => m.Validate(null, It.IsAny<SearchOptions>()))
@@ -143,7 +143,7 @@ public class SearchAsync : IClassFixture<TicketServiceClassFixture>
                     ConnectionString = _classFixture.ConnectionString
                 }));
         var loggerMock = new Mock<ILogger<TicketService>>();
-        var validator = new TicketValidator(new NewTicketValidator(ticketContext),
+        var validator = new TicketValidator(new NewTicketValidator(),
             new UpdatedTicketValidator(ticketContext));
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
         searchOptionsValidatorMock.Setup(m => m.Validate(null, It.IsAny<SearchOptions>()))

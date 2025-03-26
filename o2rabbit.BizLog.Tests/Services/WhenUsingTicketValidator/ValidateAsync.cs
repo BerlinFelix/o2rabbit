@@ -23,7 +23,7 @@ public class ValidateAsync : IClassFixture<TicketServiceClassFixture>
     {
         var context = new DefaultContext(new OptionsWrapper<DefaultContextOptions>(
             new DefaultContextOptions() { ConnectionString = _classFixture.ConnectionString }));
-        var newTicketValidator = new NewTicketValidator(context);
+        var newTicketValidator = new NewTicketValidator();
         var updatedTicketValidator = new UpdatedTicketValidator(context);
         var sut = new TicketValidator(newTicketValidator, updatedTicketValidator);
         return sut;

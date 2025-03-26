@@ -37,7 +37,7 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
                 }));
 
         var loggerMock = new Mock<ILogger<TicketService>>();
-        _validator = new TicketValidator(new NewTicketValidator(_ticketContext),
+        _validator = new TicketValidator(new NewTicketValidator(),
             new UpdatedTicketValidator(_ticketContext));
         var searchOptionsValidatorMock = new Mock<IValidateOptions<SearchOptions>>();
         _sut = new TicketService(_ticketContext, loggerMock.Object, _validator, searchOptionsValidatorMock.Object);
@@ -117,7 +117,13 @@ public class CreateAsync : IClassFixture<TicketServiceClassFixture>
     public async Task IfAnyExceptionIsThrownWhenAccessingDb_ReturnsUnknownError()
     {
         await SetupAsync();
-        var newTicket = _fixture.Create<NewTicketCommand>();
+        var newTicket = new NewTicketCommand()
+        {
+            Name = "Default Ticket Name",
+            ParentId = null,
+            ProcessId = 1,
+            SpaceId = 1
+        };
         var contextMock = new Mock<DefaultContext>();
         contextMock.Setup(x => x.Tickets).Throws<Exception>();
         var loggerMock = new Mock<ILogger<TicketService>>();
