@@ -68,6 +68,9 @@ namespace o2rabbit.Migrations.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("WorkflowId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("Processes", (string)null);
@@ -81,7 +84,7 @@ namespace o2rabbit.Migrations.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("Created")
+                    b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
@@ -90,7 +93,7 @@ namespace o2rabbit.Migrations.Migrations
                     b.Property<bool>("IsPinned")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("LastModified")
+                    b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("ProcessId")
@@ -142,7 +145,7 @@ namespace o2rabbit.Migrations.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("Created")
+                    b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
@@ -151,7 +154,7 @@ namespace o2rabbit.Migrations.Migrations
                     b.Property<bool>("IsPinned")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("LastModified")
+                    b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("SpaceId")
@@ -166,6 +169,58 @@ namespace o2rabbit.Migrations.Migrations
                     b.HasIndex("SpaceId");
 
                     b.ToTable("SpaceComments", (string)null);
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.Status", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsFinal")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("WorkflowId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowId");
+
+                    b.ToTable("Statuses", (string)null);
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.StatusTransition", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("FromStatusId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("ToStatusId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromStatusId");
+
+                    b.HasIndex("ToStatusId");
+
+                    b.ToTable("StatusTransitions", (string)null);
                 });
 
             modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
@@ -208,7 +263,7 @@ namespace o2rabbit.Migrations.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("Created")
+                    b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
@@ -217,7 +272,7 @@ namespace o2rabbit.Migrations.Migrations
                     b.Property<bool>("IsPinned")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("LastModified")
+                    b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Text")
@@ -232,6 +287,29 @@ namespace o2rabbit.Migrations.Migrations
                     b.HasIndex("TicketId");
 
                     b.ToTable("TicketComments", (string)null);
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.Workflow", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("ProcessId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique();
+
+                    b.ToTable("Workflows", (string)null);
                 });
 
             modelBuilder.Entity("o2rabbit.Core.Entities.Mappings.ProcessProcessMapping", b =>
@@ -284,6 +362,36 @@ namespace o2rabbit.Migrations.Migrations
                     b.Navigation("Space");
                 });
 
+            modelBuilder.Entity("o2rabbit.Core.Entities.Status", b =>
+                {
+                    b.HasOne("o2rabbit.Core.Entities.Workflow", "Workflow")
+                        .WithMany("Statuses")
+                        .HasForeignKey("WorkflowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workflow");
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.StatusTransition", b =>
+                {
+                    b.HasOne("o2rabbit.Core.Entities.Status", "FromStatus")
+                        .WithMany("FromTransitions")
+                        .HasForeignKey("FromStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("o2rabbit.Core.Entities.Status", "ToStatus")
+                        .WithMany("ToTransitions")
+                        .HasForeignKey("ToStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FromStatus");
+
+                    b.Navigation("ToStatus");
+                });
+
             modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
                 {
                     b.HasOne("o2rabbit.Core.Entities.Ticket", "Parent")
@@ -319,11 +427,24 @@ namespace o2rabbit.Migrations.Migrations
                     b.Navigation("Ticket");
                 });
 
+            modelBuilder.Entity("o2rabbit.Core.Entities.Workflow", b =>
+                {
+                    b.HasOne("o2rabbit.Core.Entities.Process", "Process")
+                        .WithOne("Workflow")
+                        .HasForeignKey("o2rabbit.Core.Entities.Workflow", "ProcessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Process");
+                });
+
             modelBuilder.Entity("o2rabbit.Core.Entities.Process", b =>
                 {
                     b.Navigation("Comments");
 
                     b.Navigation("Tickets");
+
+                    b.Navigation("Workflow");
                 });
 
             modelBuilder.Entity("o2rabbit.Core.Entities.Space", b =>
@@ -333,11 +454,23 @@ namespace o2rabbit.Migrations.Migrations
                     b.Navigation("Comments");
                 });
 
+            modelBuilder.Entity("o2rabbit.Core.Entities.Status", b =>
+                {
+                    b.Navigation("FromTransitions");
+
+                    b.Navigation("ToTransitions");
+                });
+
             modelBuilder.Entity("o2rabbit.Core.Entities.Ticket", b =>
                 {
                     b.Navigation("Children");
 
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("o2rabbit.Core.Entities.Workflow", b =>
+                {
+                    b.Navigation("Statuses");
                 });
 #pragma warning restore 612, 618
         }

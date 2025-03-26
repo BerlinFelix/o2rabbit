@@ -17,4 +17,8 @@ public class Process
     public List<Space> PossibleSpaces { get; } = [];
 
     public List<Ticket> Tickets { get; } = [];
+
+    public int WorkflowId { get; set; }
+
+    public Workflow? Workflow { get; set; }
 }

@@ -28,7 +28,9 @@ public class DefaultContext : DbContext
     public DbSet<TicketComment> TicketComments { get; set; }
     public DbSet<Space> Spaces { get; set; }
     public DbSet<SpaceComment> SpaceComments { get; set; }
-
+    public DbSet<Status> Statuses { get; set; }
+    public DbSet<StatusTransition> StatusTransitions { get; set; }
+    public DbSet<Workflow> Workflows { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -40,6 +42,7 @@ public class DefaultContext : DbContext
 
         base.OnConfiguring(optionsBuilder);
     }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,6 +122,65 @@ public class DefaultContext : DbContext
             .HasForeignKey(x => x.ProcessId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
+
+        #endregion
+
+        #region Workflow
+
+        modelBuilder.Entity<Workflow>()
+            .ToTable("Workflows")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Workflow>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Workflow>()
+            .HasMany(x => x.Statuses)
+            .WithOne(x => x.Workflow)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        modelBuilder.Entity<Workflow>()
+            .HasOne(x => x.Process)
+            .WithOne(x => x.Workflow)
+            .IsRequired(true);
+
+        #endregion
+
+        #region Status
+
+        modelBuilder.Entity<Status>()
+            .ToTable("Statuses")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<Status>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Status>()
+            .HasMany(x => x.FromTransitions)
+            .WithOne(x => x.FromStatus)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        modelBuilder.Entity<Status>()
+            .HasMany(x => x.ToTransitions)
+            .WithOne(x => x.ToStatus)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(true);
+
+        #endregion
+
+        #region StatusTransition
+
+        modelBuilder.Entity<StatusTransition>()
+            .ToTable("StatusTransitions")
+            .HasKey(x => x.Id);
+
+        modelBuilder.Entity<StatusTransition>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
 
         #endregion
 
